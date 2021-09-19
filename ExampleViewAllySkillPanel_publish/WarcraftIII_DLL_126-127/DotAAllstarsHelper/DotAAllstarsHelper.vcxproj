@@ -1,0 +1,197 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4B94B582-A36C-43FF-AB86-D01CF1299739}</ProjectGuid>
+    <RootNamespace>DotAAllstarsHelper</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <ProjectName>DotAAllstarsHelper688v</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+    <SpectreMitigation>false</SpectreMitigation>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LibraryPath>.\..\DreamUI;.\..\MinHook;$(LibraryPath);.\..\JPEG\;.\..\NTDLL\;.\..\includes\;.\..\pa_snapshot\portaudio\build\msvc\Win32\ReleaseMinDependency\</LibraryPath>
+    <IncludePath>.\..\DreamUI;.\..\MinHook;$(IncludePath);.\..\JPEG\;.\..\NTDLL\;.\..\includes\;.\..\pa_snapshot\portaudio\include\;.\..\ydbase\</IncludePath>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <IgnoreImportLibrary>
+    </IgnoreImportLibrary>
+    <GenerateManifest>true</GenerateManifest>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <SDLCheck>
+      </SDLCheck>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <EnablePREfast>false</EnablePREfast>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <Optimization>Custom</Optimization>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <SmallerTypeCheck>
+      </SmallerTypeCheck>
+      <BasicRuntimeChecks>
+      </BasicRuntimeChecks>
+      <ControlFlowGuard>false</ControlFlowGuard>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableParallelCodeGeneration>
+      </EnableParallelCodeGeneration>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PreprocessorDefinitions>NDEBUG;NO_WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <StringPooling>true</StringPooling>
+      <FloatingPointExceptions>
+      </FloatingPointExceptions>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <OmitDefaultLibName>true</OmitDefaultLibName>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Windows</SubSystem>
+      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <TargetMachine>MachineX86</TargetMachine>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <LinkStatus>
+      </LinkStatus>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <SetChecksum>true</SetChecksum>
+      <CLRSupportLastError>
+      </CLRSupportLastError>
+      <RandomizedBaseAddress>true</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <EnableUAC>
+      </EnableUAC>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <MergeSections>
+      </MergeSections>
+      <SectionAlignment>
+      </SectionAlignment>
+      <GenerateMapFile>false</GenerateMapFile>
+      <AssemblyDebug>
+      </AssemblyDebug>
+    </Link>
+    <Manifest>
+      <UpdateFileHashes>true</UpdateFileHashes>
+    </Manifest>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>
+      </Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="Source.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DotAAllstarsHelper688.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="BlpReadWrite.cpp" />
+    <ClCompile Include="Crc32Dynamic.cpp" />
+    <ClCompile Include="DotaAllstarsHelper.cpp" />
+    <ClCompile Include="DotaChatHelper.cpp" />
+    <ClCompile Include="DotaClickHelper.cpp" />
+    <ClCompile Include="DotaCustomFrames.cpp" />
+    <ClCompile Include="DotaCustomMinimap.cpp" />
+    <ClCompile Include="DotaDebugHelpers.cpp" />
+    <ClCompile Include="DotaDreamConfig.cpp" />
+    <ClCompile Include="DotaDreamHUD.cpp" />
+    <ClCompile Include="DotaErrorHandler.cpp" />
+    <ClCompile Include="DotaFilesHelper.cpp" />
+    <ClCompile Include="DotaFOVfix.cpp" />
+    <ClCompile Include="DotaFPSHelper.cpp" />
+    <ClCompile Include="DotaFrameDefHelper.cpp" />
+    <ClCompile Include="DotaHelperOverlayDirectx8.cpp" />
+    <ClCompile Include="DotaHelperOverlayOpengl.cpp" />
+    <ClCompile Include="DotaHPBarHelper.cpp" />
+    <ClCompile Include="DotaHttpHelper.cpp" />
+    <ClCompile Include="DotaMemoryHackHelper.cpp" />
+    <ClCompile Include="DotaMinimapHelper.cpp" />
+    <ClCompile Include="DotaMPBarHelper.cpp" />
+    <ClCompile Include="DotaPlayerHelper.cpp" />
+    <ClCompile Include="DotaRawImagesDrawApi.cpp" />
+    <ClCompile Include="DotaSyncScanner.cpp" />
+    <ClCompile Include="DotaSystemInfo.cpp" />
+    <ClCompile Include="DotaViewAllySkill.cpp" />
+    <ClCompile Include="DotaWebHelper.cpp" />
+    <ClCompile Include="DoteNewDebugSystem.cpp" />
+    <ClCompile Include="DreamDotaUI.cpp" />
+    <ClCompile Include="hash_64.cpp" />
+    <ClCompile Include="IniReader.cpp" />
+    <ClCompile Include="IniWriter.cpp" />
+    <ClCompile Include="MegaPacketHandler.cpp" />
+    <ClCompile Include="quantizer.cpp" />
+    <ClCompile Include="Storm.cpp" />
+    <ClCompile Include="UnitAndItem.cpp" />
+    <ClCompile Include="WarcraftFrameHelper.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="base64.h" />
+    <ClInclude Include="BlpReadWrite.h" />
+    <ClInclude Include="buffer.h" />
+    <ClInclude Include="Common.h" />
+    <ClInclude Include="Crc32Dynamic.h" />
+    <ClInclude Include="DotaClickHelper.h" />
+    <ClInclude Include="DotaDreamHUD.h" />
+    <ClInclude Include="fnv.h" />
+    <ClInclude Include="fp_call.h" />
+    <ClInclude Include="FunctionTemplate.h" />
+    <ClInclude Include="HttpClass.h" />
+    <ClInclude Include="IniReader.h" />
+    <ClInclude Include="IniWriter.h" />
+    <ClInclude Include="longlong.h" />
+    <ClInclude Include="Main.h" />
+    <ClInclude Include="MegaPacketHandler.h" />
+    <ClInclude Include="quantizer.h" />
+    <ClInclude Include="RawImageApi.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Storm.h" />
+    <ClInclude Include="Structures.h" />
+    <ClInclude Include="ViewAllySkill.h" />
+    <ClInclude Include="WarcraftFrameHelper.h" />
+    <ClInclude Include="WinHttpClient.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

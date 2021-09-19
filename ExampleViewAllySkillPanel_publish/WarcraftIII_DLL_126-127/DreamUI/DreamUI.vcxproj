@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{03EA1767-0B76-4533-9F21-F80FC17F04A7}</ProjectGuid>
+    <RootNamespace>DreamUI</RootNamespace>
+    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <SpectreMitigation>false</SpectreMitigation>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)\DreamUI\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Button.cpp" />
+    <ClCompile Include="CheckBox.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="DropDownList.cpp" />
+    <ClCompile Include="EditBoxButton.cpp" />
+    <ClCompile Include="EventDispatcher.cpp" />
+    <ClCompile Include="Foundation.cpp" />
+    <ClCompile Include="Frame.cpp" />
+    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="GameEventObserver.cpp" />
+    <ClCompile Include="GameTime.cpp" />
+    <ClCompile Include="Hook.cpp" />
+    <ClCompile Include="HotkeyButton.cpp" />
+    <ClCompile Include="InfoPanelPanel.cpp" />
+    <ClCompile Include="InfoPanelPullDown.cpp" />
+    <ClCompile Include="InfoPanelRow.cpp" />
+    <ClCompile Include="Input.cpp" />
+    <ClCompile Include="IUIObject.cpp" />
+    <ClCompile Include="KeyCode.cpp" />
+    <ClCompile Include="KeyRepeat.cpp" />
+    <ClCompile Include="Label.cpp" />
+    <ClCompile Include="ObjectHookManager.cpp" />
+    <ClCompile Include="Observer.cpp" />
+    <ClCompile Include="Offsets.cpp" />
+    <ClCompile Include="Point.cpp" />
+    <ClCompile Include="RCString.cpp" />
+    <ClCompile Include="RefreshManager.cpp" />
+    <ClCompile Include="SimpleButton.cpp" />
+    <ClCompile Include="SimpleFontString.cpp" />
+    <ClCompile Include="SimpleFrame.cpp" />
+    <ClCompile Include="SimpleStatusBar.cpp" />
+    <ClCompile Include="SimpleTexture.cpp" />
+    <ClCompile Include="Skin.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="Storm.cpp" />
+    <ClCompile Include="StringRep.cpp" />
+    <ClCompile Include="SystemTools.cpp" />
+    <ClCompile Include="Table.cpp" />
+    <ClCompile Include="TextFrame.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="Tools.cpp" />
+    <ClCompile Include="ToolTip.cpp" />
+    <ClCompile Include="UI.cpp" />
+    <ClCompile Include="UICommandButton.cpp" />
+    <ClCompile Include="UILayoutFrame.cpp" />
+    <ClCompile Include="UIObject.cpp" />
+    <ClCompile Include="UISimpleButton.cpp" />
+    <ClCompile Include="UISimpleCheckBox.cpp" />
+    <ClCompile Include="UISimpleFontString.cpp" />
+    <ClCompile Include="UISimpleFrame.cpp" />
+    <ClCompile Include="UISimpleRegion.cpp" />
+    <ClCompile Include="UISimpleStatusBar.cpp" />
+    <ClCompile Include="UISimpleTexture.cpp" />
+    <ClCompile Include="UIStatBar.cpp" />
+    <ClCompile Include="UITest.cpp" />
+    <ClCompile Include="War3ClassWrapper.cpp" />
+    <ClCompile Include="War3Window.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Action.h" />
+    <ClInclude Include="BaseStructs.h" />
+    <ClInclude Include="Benchmark.h" />
+    <ClInclude Include="BinaryDumper.h" />
+    <ClInclude Include="Button.h" />
+    <ClInclude Include="CheckBox.h" />
+    <ClInclude Include="ClassDef.h" />
+    <ClInclude Include="CustomDataObject.h" />
+    <ClInclude Include="DreamUI.h" />
+    <ClInclude Include="DropDownList.h" />
+    <ClInclude Include="EditBoxButton.h" />
+    <ClInclude Include="Event.h" />
+    <ClInclude Include="EventData.h" />
+    <ClInclude Include="EventDispatcher.h" />
+    <ClInclude Include="Foundation.h" />
+    <ClInclude Include="fp_call.h" />
+    <ClInclude Include="Frame.h" />
+    <ClInclude Include="FramePoint.h" />
+    <ClInclude Include="FunctionTemplate.h" />
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="GameEventObserver.h" />
+    <ClInclude Include="GameStructs.h" />
+    <ClInclude Include="GameTime.h" />
+    <ClInclude Include="Hook.h" />
+    <ClInclude Include="HotkeyButton.h" />
+    <ClInclude Include="InfoPanelPanel.h" />
+    <ClInclude Include="InfoPanelPullDown.h" />
+    <ClInclude Include="InfoPanelRow.h" />
+    <ClInclude Include="Input.h" />
+    <ClInclude Include="IUIObject.h" />
+    <ClInclude Include="KeyCode.h" />
+    <ClInclude Include="KeyRepeat.h" />
+    <ClInclude Include="Label.h" />
+    <ClInclude Include="LayoutFrame.h" />
+    <ClInclude Include="native_offsets_6401.h" />
+    <ClInclude Include="ObjectHookManager.h" />
+    <ClInclude Include="ObjectPool.h" />
+    <ClInclude Include="Observer.h" />
+    <ClInclude Include="Offsets.h" />
+    <ClInclude Include="Point.h" />
+    <ClInclude Include="RCString.h" />
+    <ClInclude Include="RefreshManager.h" />
+    <ClInclude Include="RTTIHelper.h" />
+    <ClInclude Include="SimpleButton.h" />
+    <ClInclude Include="SimpleException.h" />
+    <ClInclude Include="SimpleFontString.h" />
+    <ClInclude Include="SimpleFrame.h" />
+    <ClInclude Include="SimpleRegion.h" />
+    <ClInclude Include="SimpleStatusBar.h" />
+    <ClInclude Include="SimpleTexture.h" />
+    <ClInclude Include="Skin.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Storm.h" />
+    <ClInclude Include="StringRep.h" />
+    <ClInclude Include="StringStructs.h" />
+    <ClInclude Include="StructHelper.h" />
+    <ClInclude Include="SystemTools.h" />
+    <ClInclude Include="Table.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="TextFrame.h" />
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="Thread.h" />
+    <ClInclude Include="Timer.h" />
+    <ClInclude Include="Tools.h" />
+    <ClInclude Include="ToolTip.h" />
+    <ClInclude Include="UI.h" />
+    <ClInclude Include="UICommandButton.h" />
+    <ClInclude Include="UIHeaders.h" />
+    <ClInclude Include="UILayoutFrame.h" />
+    <ClInclude Include="UIObject.h" />
+    <ClInclude Include="UISimpleButton.h" />
+    <ClInclude Include="UISimpleCheckBox.h" />
+    <ClInclude Include="UISimpleFontString.h" />
+    <ClInclude Include="UISimpleFrame.h" />
+    <ClInclude Include="UISimpleRegion.h" />
+    <ClInclude Include="UISimpleStatusBar.h" />
+    <ClInclude Include="UISimpleTexture.h" />
+    <ClInclude Include="UIStatBar.h" />
+    <ClInclude Include="UIStructs.h" />
+    <ClInclude Include="UITest.h" />
+    <ClInclude Include="Version.h" />
+    <ClInclude Include="War3ClassWrapper.h" />
+    <ClInclude Include="War3Window.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
