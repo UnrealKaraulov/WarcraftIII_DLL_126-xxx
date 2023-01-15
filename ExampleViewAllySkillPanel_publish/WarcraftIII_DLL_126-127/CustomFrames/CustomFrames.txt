@@ -1,2 +1,0 @@
-DotaConfigEditor.fdf
-GlyphButton.fdf
