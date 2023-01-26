@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Файлы ресурсов">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Headers">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
@@ -13,16 +9,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Source.def">
-      <Filter>Src</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="DotAAllstarsHelper688.rc">
-      <Filter>Файлы ресурсов</Filter>
-    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BlpReadWrite.cpp">
@@ -41,9 +27,6 @@
       <Filter>Src</Filter>
     </ClCompile>
     <ClCompile Include="DotaCustomFrames.cpp">
-      <Filter>Src</Filter>
-    </ClCompile>
-    <ClCompile Include="DotaCustomMinimap.cpp">
       <Filter>Src</Filter>
     </ClCompile>
     <ClCompile Include="DotaDebugHelpers.cpp">
@@ -97,9 +80,6 @@
     <ClCompile Include="DotaWebHelper.cpp">
       <Filter>Src</Filter>
     </ClCompile>
-    <ClCompile Include="DoteNewDebugSystem.cpp">
-      <Filter>Src</Filter>
-    </ClCompile>
     <ClCompile Include="hash_64.cpp">
       <Filter>Src</Filter>
     </ClCompile>
@@ -124,22 +104,10 @@
     <ClCompile Include="DotaFPSHelper.cpp">
       <Filter>Src</Filter>
     </ClCompile>
-    <ClCompile Include="DreamDotaUI.cpp">
-      <Filter>Src</Filter>
-    </ClCompile>
-    <ClCompile Include="DotaDreamConfig.cpp">
-      <Filter>Src</Filter>
-    </ClCompile>
     <ClCompile Include="IniReader.cpp">
       <Filter>Src</Filter>
     </ClCompile>
     <ClCompile Include="IniWriter.cpp">
-      <Filter>Src</Filter>
-    </ClCompile>
-    <ClCompile Include="DotaDreamHUD.cpp">
-      <Filter>Src</Filter>
-    </ClCompile>
-    <ClCompile Include="DotaHelperOverlayNative.cpp">
       <Filter>Src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -213,11 +181,20 @@
     <ClInclude Include="DotaClickHelper.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="DotaDreamHUD.h">
+    <ClInclude Include="StructHelper.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="DotaDreamRawImage.h">
+    <ClInclude Include="BaseStructs.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="UIStructs.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Source.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DotAAllstarsHelper688.rc" />
   </ItemGroup>
 </Project>

@@ -76,7 +76,7 @@ namespace fs = std::filesystem;
 
 #pragma endregion
 
-
+extern bool DEBUG_FULL;
 
 #pragma comment(lib,"legacy_stdio_definitions.lib")
 #pragma comment(lib,"Psapi.lib")
@@ -97,6 +97,11 @@ extern int IsVEHex;
 extern int TestModeActivated;
 
 extern const char* configfilename;
+
+extern float CustomFovFix;
+
+extern int NewCallBackTriggerHandle;
+extern int LastEventId;
 
 void FrameDefHelperUninitialize();
 void FrameDefHelperInitialize();
@@ -190,8 +195,8 @@ extern pOnChatMessage pOnChatMessage_org, pOnChatMessage_ptr;
 int IsPlayerObserver(int pid);
 int _IsPlayerObserver(int pid);
 int IsLocalPlayerObserver();
-extern int ShowSkillPanelForObservers;
-extern int ShowSkillPanelOnlyForHeroes;
+extern bool ShowSkillPanelForObservers;
+extern bool ShowSkillPanelOnlyForHeroes;
 #pragma endregion
 
 #pragma region UnitAndItem.cpp
@@ -530,7 +535,7 @@ inline std::wstring StringToWString(LPCSTR s)
 	return converter.from_bytes(s);
 }
 
-
+int __stdcall InitHpBar(int);
 void SetTlsForMe();
 void __stdcall Packet_Initialize(int TriggerHandle);
 /* Voice chat. Works only in a single player game :(
@@ -539,22 +544,3 @@ void UninitializeVoiceClient( );
 void InitVoiceClientThread( );
 void AddNewPaTestData( std::vector<unsigned char> _samples, int playerid, int packetsize, bool compressed );
 */
-
-
-
-
-
-
-bool IsAnyHotkeyIsActive();
-bool IsAnyEditBoxIsActive();
-
-void DisableInputForAnyHotkeyAndEditBox();
-
-void CurrentEditBoxRemoveCharacter(bool right = false);
-void CurrentEditBoxMoveCursorLeft();
-void CurrentEditBoxMoveCursorRight();
-void CurrentEditBoxEnterText(std::wstring text);
-
-void InitializeDreamDotaAPI(int config, void* _GameDll, HWND war3hwnd);
-void UninitializeDreamDotaAPI();
-void RegisterConfigWindow();

@@ -468,8 +468,6 @@ namespace NWar3Frame
 		return 0;
 	}
 
-
-
 	void CWar3Frame::SetSkipAnotherCallback(bool skip)
 	{
 		SkipOtherEvents = skip;
@@ -494,9 +492,6 @@ namespace NWar3Frame
 		}
 		tmpframelist.clear();
 	}
-
-
-
 
 	void CWar3Frame::Init(unsigned char* GameDll)
 	{

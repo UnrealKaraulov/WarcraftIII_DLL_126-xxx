@@ -705,7 +705,6 @@ float GetUnitY_real(unsigned char* unitaddr)
 	return result;
 }
 
-
 void(__thiscall* SelectUnitReal)(int pPlayerSelectData, unsigned char * pUnit, int id, int unk1, int unk2, int unk3) = NULL;
 void(__thiscall* UpdatePlayerSelection)(int pPlayerSelectData, int unk) = NULL;
 int(__cdecl* ClearSelection)(void) = NULL;

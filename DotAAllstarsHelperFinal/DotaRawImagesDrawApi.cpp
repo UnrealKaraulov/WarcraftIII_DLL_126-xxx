@@ -1905,10 +1905,6 @@ void ClearAllRawImages()
 
 		if (s.backup_img)
 			delete[] s.backup_img;
-
-		if (s.DreamTexture)
-			UISimpleTexture::Destroy(s.DreamTexture);
-
 	}
 	ListOfRawImages.clear();
 
