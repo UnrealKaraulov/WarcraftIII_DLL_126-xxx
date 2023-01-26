@@ -2,13 +2,8 @@
 
 #include "Main.h"
 #include "DotaClickHelper.h"
-#include <Timer.h>
-#include <Input.h>
 #include "buffer.h"
 #include "Structures.h"
-#include <UIObject.h>
-#include <SimpleTexture.h>
-#include <UISimpleTexture.h>
 
 using namespace Storm;
 #define OLD_CODE
@@ -91,8 +86,6 @@ struct RawImageStruct
 	int UseImageCoords;
 	int Flipped;
 
-	UISimpleTexture* DreamTexture;
-
 	RawImageStruct()
 	{
 		UseImageCoords = false;
@@ -126,7 +119,6 @@ struct RawImageStruct
 		SleepTime = 0;
 		StartTimer = 0;
 		Flipped = false;
-		DreamTexture = NULL;
 	}
 };
 

@@ -204,3 +204,4 @@ GetLatestRegisteredHotkeyMsg
 CheckWriteAccess
 EnableLocalFiles
 IsLocalFilesEnabled
+SLOW_DEBUG_INIT

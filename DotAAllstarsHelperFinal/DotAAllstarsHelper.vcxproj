@@ -30,8 +30,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LibraryPath>.\..\DreamUI;.\..\MinHook;$(LibraryPath);.\..\JPEG\;.\..\NTDLL\;.\..\includes\;.\..\pa_snapshot\portaudio\build\msvc\Win32\ReleaseMinDependency\</LibraryPath>
-    <IncludePath>.\..\DreamUI;.\..\MinHook;$(IncludePath);.\..\JPEG\;.\..\NTDLL\;.\..\includes\;.\..\pa_snapshot\portaudio\include\;.\..\ydbase\</IncludePath>
+    <LibraryPath>.\..\MinHook;$(LibraryPath);.\..\JPEG\;.\..\NTDLL\;.\..\includes\;.\..\pa_snapshot\portaudio\build\msvc\Win32\ReleaseMinDependency\</LibraryPath>
+    <IncludePath>.\..\MinHook;$(IncludePath);.\..\JPEG\;.\..\NTDLL\;.\..\includes\;.\..\pa_snapshot\portaudio\include\;.\..\ydbase\</IncludePath>
     <CodeAnalysisRuleSet>CppCoreCheckRawPointerRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <IgnoreImportLibrary>
@@ -45,32 +45,29 @@
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>false</IntrinsicFunctions>
-      <SDLCheck>
-      </SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <EnablePREfast>false</EnablePREfast>
       <ExceptionHandling>Sync</ExceptionHandling>
       <OmitFramePointers>true</OmitFramePointers>
-      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <Optimization>Custom</Optimization>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <Optimization>Disabled</Optimization>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
       <StructMemberAlignment>Default</StructMemberAlignment>
-      <SmallerTypeCheck>
-      </SmallerTypeCheck>
-      <BasicRuntimeChecks>
-      </BasicRuntimeChecks>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <ControlFlowGuard>false</ControlFlowGuard>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <EnableParallelCodeGeneration>
       </EnableParallelCodeGeneration>
-      <FloatingPointModel>Fast</FloatingPointModel>
+      <FloatingPointModel>Precise</FloatingPointModel>
       <PreprocessorDefinitions>SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;NDEBUG;NO_WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <StringPooling>true</StringPooling>
+      <StringPooling>false</StringPooling>
       <FloatingPointExceptions>
       </FloatingPointExceptions>
       <RuntimeTypeInfo>
@@ -97,19 +94,20 @@
       <CLRSupportLastError>
       </CLRSupportLastError>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
-      <DataExecutionPrevention>
-      </DataExecutionPrevention>
-      <EnableUAC>
-      </EnableUAC>
+      <DataExecutionPrevention>false</DataExecutionPrevention>
+      <EnableUAC>false</EnableUAC>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
       <MergeSections>
       </MergeSections>
-      <SectionAlignment>
-      </SectionAlignment>
+      <SectionAlignment>4096</SectionAlignment>
       <GenerateMapFile>false</GenerateMapFile>
       <AssemblyDebug>
       </AssemblyDebug>
+      <MinimumRequiredVersion>5.01</MinimumRequiredVersion>
+      <LargeAddressAware>false</LargeAddressAware>
+      <FixedBaseAddress>false</FixedBaseAddress>
+      <BaseAddress>0x50000000</BaseAddress>
     </Link>
     <Manifest>
       <UpdateFileHashes>true</UpdateFileHashes>
@@ -136,11 +134,7 @@
     <ClCompile Include="DotaChatHelper.cpp" />
     <ClCompile Include="DotaClickHelper.cpp" />
     <ClCompile Include="DotaCustomFrames.cpp" />
-    <ClCompile Include="DotaCustomMinimap.cpp" />
     <ClCompile Include="DotaDebugHelpers.cpp" />
-    <ClCompile Include="DotaDreamConfig.cpp" />
-    <ClCompile Include="DotaDreamHUD.cpp" />
-    <ClCompile Include="DotaHelperOverlayNative.cpp" />
     <ClCompile Include="DotaErrorHandler.cpp" />
     <ClCompile Include="DotaFilesHelper.cpp" />
     <ClCompile Include="DotaFOVfix.cpp" />
@@ -159,8 +153,6 @@
     <ClCompile Include="DotaSystemInfo.cpp" />
     <ClCompile Include="DotaViewAllySkill.cpp" />
     <ClCompile Include="DotaWebHelper.cpp" />
-    <ClCompile Include="DoteNewDebugSystem.cpp" />
-    <ClCompile Include="DreamDotaUI.cpp" />
     <ClCompile Include="hash_64.cpp" />
     <ClCompile Include="IniReader.cpp" />
     <ClCompile Include="IniWriter.cpp" />
@@ -177,8 +169,6 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="Crc32Dynamic.h" />
     <ClInclude Include="DotaClickHelper.h" />
-    <ClInclude Include="DotaDreamHUD.h" />
-    <ClInclude Include="DotaDreamRawImage.h" />
     <ClInclude Include="fnv.h" />
     <ClInclude Include="fp_call.h" />
     <ClInclude Include="FunctionTemplate.h" />
@@ -196,6 +186,9 @@
     <ClInclude Include="ViewAllySkill.h" />
     <ClInclude Include="WarcraftFrameHelper.h" />
     <ClInclude Include="WinHttpClient.h" />
+    <ClInclude Include="StructHelper.h" />
+    <ClInclude Include="BaseStructs.h" />
+    <ClInclude Include="UIStructs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

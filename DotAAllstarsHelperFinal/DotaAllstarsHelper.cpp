@@ -11,17 +11,9 @@
 #include "DotaClickHelper.h"
 
 
-#include <Tools.h>
-#include <EventData.h>
-#include <Game.h>
-#include <War3Window.h>
-#include <Timer.h>
-#include <Input.h>
-#include "DotaDreamRawImage.h"
-
-
-
 #include "RawImageApi.h"
+
+#include "UIStructs.h"
 
 
 int FileExist(const char* name)
@@ -30,6 +22,7 @@ int FileExist(const char* name)
 	return f.good();
 }
 
+bool DEBUG_FULL = false;
 
 //unsigned long GameDllsz = 0;
 //unsigned long StormDLLsz = 0;
@@ -129,10 +122,25 @@ unsigned char* GetGlobalClassAddr()
 	return *(unsigned char**)pW3XGlobalClass;
 }
 
+war3::CGameUI* GameUIObjectGet() {
+	if (pW3XGlobalClass && *(unsigned char**)pW3XGlobalClass)
+	{
+		return *reinterpret_cast<war3::CGameUI**>(pW3XGlobalClass);
+	}
+	return NULL;
+}
 
+void ShowConfigEditButton()
+{
+
+}
 
 int ChatEditBoxVtable = 0;
-
+bool isChatBoxOn() {
+	if (GameUIObjectGet() && GameUIObjectGet()->chatEditBar)
+		return GameUIObjectGet()->chatEditBar->visible == 1;
+	return false;
+}
 
 int IsChatActive()
 {
@@ -142,8 +150,6 @@ int IsChatActive()
 
 int IsGameFrameActive()
 {
-
-
 	if (IsChatActive())
 	{
 		return false;
@@ -260,7 +266,7 @@ unsigned char** GetW3TlsForIndex(unsigned long index)
 					LDT_ENTRY ldt;
 					GetThreadContext(hThread, &ctx);
 					GetThreadSelectorEntry(hThread, ctx.SegFs, &ldt);
-					unsigned char* dwThreadBase = (unsigned char* )(ldt.BaseLow | (ldt.HighWord.Bytes.BaseMid <<
+					unsigned char* dwThreadBase = (unsigned char*)(ldt.BaseLow | (ldt.HighWord.Bytes.BaseMid <<
 						16u) | (ldt.HighWord.Bytes.BaseHi << 24u));
 					CloseHandle(hThread);
 					if (dwThreadBase == NULL)
@@ -307,15 +313,6 @@ void __stdcall UnloadAllOldHelpers(int)
 }
 
 
-int ForceGameStart = false;
-
-void SetGameFound(const Event*)
-{
-	//MessageBoxA(0, "Force game start", "", 0);
-	ForceGameStart = true;
-}
-
-
 #pragma optimize("",off)
 
 typedef void(WINAPI* PSleep)(unsigned long ms);
@@ -333,7 +330,7 @@ typedef struct _DLLUNLOADINFO {
 unsigned long WINAPI DllUnloadThreadProc(LPVOID lParam)
 {
 	PDLLUNLOADINFO pDllUnloadInfo = (PDLLUNLOADINFO)lParam;
-	(pDllUnloadInfo->m_fpSleep)(5000);
+	(pDllUnloadInfo->m_fpSleep)(100);
 	(pDllUnloadInfo->m_fpFreeLibrary)((HMODULE)pDllUnloadInfo->m_hFreeModule);
 	pDllUnloadInfo->m_fpExitThread(0);
 	return 0;
@@ -353,8 +350,8 @@ VOID DllSelfUnloading(_In_ void* hModule)
 			((PDLLUNLOADINFO)(((unsigned char*)pMemory) + 0x500))->m_fpExitThread = ExitThread;
 			((PDLLUNLOADINFO)(((unsigned char*)pMemory) + 0x500))->m_hFreeModule = hModule;
 
-			CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)pMemory,
-				(PVOID)(((unsigned char*)pMemory) + 0x500), 0, 0);
+			CloseHandle(CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)pMemory,
+				(PVOID)(((unsigned char*)pMemory) + 0x500), 0, 0));
 		}
 	}
 }
@@ -362,49 +359,76 @@ VOID DllSelfUnloading(_In_ void* hModule)
 
 
 
-
-
+void* ThreadWatcherID = NULL;
 
 int SELF_UNLOAD_DLL_AFTER_GAME_END = false;
+
+unsigned long __stdcall UNLOAD_WATCHER(void*)
+{
+	while (true)
+	{
+		while (!GameDll)
+		{
+			Sleep(20);
+		}
+
+		while (!IsGame())
+		{
+			Sleep(20);
+		}
+
+		while (IsGame())
+		{
+			Sleep(20);
+		}
+
+		DisableAllHooks();
+
+		if (SELF_UNLOAD_DLL_AFTER_GAME_END)
+		{
+			DllSelfUnloading(GetCurrentModule);
+			ThreadWatcherID = NULL;
+			ExitThread(0);
+		}
+	}
+	ExitThread(0);
+	return 0;
+}
+
 
 void __stdcall SET_SELF_UNLOAD_DLL_AFTER_GAME_END(int unload)
 {
 	SELF_UNLOAD_DLL_AFTER_GAME_END = unload;
 }
 
-void SetGameEnd(const Event*)
-{
-	//MessageBoxA(0, "Force game end","", 0);
-	if (ForceGameStart)
-	{
-		DisableAllHooks();
-		if (SELF_UNLOAD_DLL_AFTER_GAME_END)
-			DllSelfUnloading(GetCurrentModule);
-	}
-
-	ForceGameStart = false;
-}
-
-
+//void SetGameEnd(const Event*)
+//{
+//	if (ForceGameStart)
+//	{
+//		DisableAllHooks();
+//		if (SELF_UNLOAD_DLL_AFTER_GAME_END)
+//			DllSelfUnloading(GetCurrentModule);
+//	}
+//
+//	ForceGameStart = false;
+//}
 
 int IsGame()
 {
-	return ForceGameStart /*&& GameUIObjectGet( ) != NULL*/;
+	return/* ForceGameStart != 0 &&*/ GameDll && InGame && *InGame > 0;
 }
 
 pConvertStrToJassStr str2jstr;
 
-
-
 pGame_Wc3MessageBox Game_Wc3MessageBox;
-
-
 
 // Warning = 0
 // Error = 1
 // Question = 2
 int __stdcall Wc3MessageBox(const char* message, int type)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	if (!InitFunctionCalled)
 		return 0;
 	Game_Wc3MessageBox(type, message, 0, 0, 0, 0, 0);
@@ -452,6 +476,8 @@ pLoadFrameDefList LoadFrameDefList;
 
 int __stdcall SetMainFuncWork(int state)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	MainFuncWork = state;
 	return 0;
 }
@@ -577,6 +603,8 @@ unsigned char* unlimunitaddr = 0;
 
 int __stdcall SetUnitForUnlimiteDraw(unsigned char* unitaddr)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	unlimunitaddr = unitaddr;
 	return 0;
 }
@@ -700,8 +728,7 @@ void InitHook()
 	//MH_CreateHook( Wc3DrawStage_org, &Wc3DrawStage_my, reinterpret_cast< void** >( &Wc3DrawStage_ptr ) );
 	//MH_EnableHook( Wc3DrawStage_org );
 
-	GetTimer(0.20, PressKeyWithDelay_timed, true, TimeType::TimeGame)->start();
-
+	//GetTimer(0.20, PressKeyWithDelay_timed, true, TimeType::TimeGame)->start();
 }
 
 void UninitializeHook()
@@ -928,7 +955,7 @@ void __stdcall AddSpellBonusItem(int id, int pc)
 	}
 }
 
-int magicampval = 16;
+int magicampval = 0;
 
 void __stdcall SetMagicCampValue(int value)
 {
@@ -938,6 +965,8 @@ void __stdcall SetMagicCampValue(int value)
 // Функция принимает данные о скорости атаки (и о увеличении урона от способностей) и сохраняет в буфер который будет использоваться при отрисовке
 int __stdcall PrintAttackSpeedAndOtherInfo(unsigned char* addr, float* attackspeed, float* BAT, unsigned char** unitaddr)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	int retval = 0;
 	__asm mov retval, eax;
 	if (unitaddr)
@@ -968,38 +997,54 @@ int __stdcall PrintAttackSpeedAndOtherInfo(unsigned char* addr, float* attackspe
 					realBAT = 0.0001f;
 				}*/
 
-			int magicamp = GetHeroInt(*unitaddr, 0, true) / magicampval;
-
-
-			int magicampbonus = 0;
-
-			for (int i = 0; i < 6; i++)
+			if (magicampval > 0)
 			{
-				int item = GetItemTypeInSlot(*unitaddr, i);
-				for (auto const& s : SpellBonusItemList)
+				int magicamp = GetHeroInt(*unitaddr, 0, true) / magicampval;
+
+
+				int magicampbonus = 0;
+
+				for (int i = 0; i < 6; i++)
 				{
-					if (IsClassEqual(item, s.id))
+					int item = GetItemTypeInSlot(*unitaddr, i);
+					for (auto const& s : SpellBonusItemList)
 					{
-						magicampbonus += s.pc;
+						if (IsClassEqual(item, s.id))
+						{
+							magicampbonus += s.pc;
+						}
 					}
 				}
+
+				float AttacksPerSec = 0.0f;
+
+				float AttackReload = 0.0f;
+				if (fixedattackspeed != 0.0f && realBAT != 0.0f)
+				{
+					AttacksPerSec = fixedattackspeed / realBAT;
+					AttackReload = 1.0f / (fixedattackspeed / realBAT);
+				}
+				float AttackSpeedBonus = realattackspeed * 100.0f - 100.0f;
+
+				if (magicampbonus)
+					sprintf_s(buffer, sizeof(buffer), "%.1f/sec (Reload: %.2f sec)|nAttack speed bonus: %.0f|nSpell Damage: %i%% (|cFF20FF20+%i%%|r)|n", AttacksPerSec, AttackReload, AttackSpeedBonus, magicamp, magicampbonus);
+				else
+					sprintf_s(buffer, sizeof(buffer), "%.1f/sec (Reload: %.2f sec)|nAttack speed bonus: %.0f|nSpell Damage: %i%% (0%%)|n", AttacksPerSec, AttackReload, AttackSpeedBonus, magicamp);
 			}
-
-			float AttacksPerSec = 0.0f;
-
-			float AttackReload = 0.0f;
-			if (fixedattackspeed != 0.0f && realBAT != 0.0f)
-			{
-				AttacksPerSec = fixedattackspeed / realBAT;
-				AttackReload = 1.0f / (fixedattackspeed / realBAT);
-			}
-			float AttackSpeedBonus = realattackspeed * 100.0f - 100.0f;
-
-			if (magicampbonus)
-				sprintf_s(buffer, sizeof(buffer), "%.1f/sec (Reload: %.2f sec)|nAttack speed bonus: %.0f|nSpell Damage: %i%% (|cFF20FF20+%i%%|r)|n", AttacksPerSec, AttackReload, AttackSpeedBonus, magicamp, magicampbonus);
 			else
-				sprintf_s(buffer, sizeof(buffer), "%.1f/sec (Reload: %.2f sec)|nAttack speed bonus: %.0f|nSpell Damage: %i%% (0%%)|n", AttacksPerSec, AttackReload, AttackSpeedBonus, magicamp);
+			{
+				float AttacksPerSec = 0.0f;
 
+				float AttackReload = 0.0f;
+				if (fixedattackspeed != 0.0f && realBAT != 0.0f)
+				{
+					AttacksPerSec = fixedattackspeed / realBAT;
+					AttackReload = 1.0f / (fixedattackspeed / realBAT);
+				}
+				float AttackSpeedBonus = realattackspeed * 100.0f - 100.0f;
+
+				sprintf_s(buffer, sizeof(buffer), "%.1f/sec (Reload: %.2f sec)|nAttack speed bonus: %.0f|n", AttacksPerSec, AttackReload, AttackSpeedBonus);
+			}
 			if (fixedattackspeed > *(float*)(GameDll + pAttackSpeedLimit))
 				fixedattackspeed = *(float*)(GameDll + pAttackSpeedLimit);
 
@@ -1099,11 +1144,9 @@ void __declspec(naked)  PrintAttackSpeedAndOtherInfoHook127a()
 
 float __stdcall GetMagicProtectionForHero_org(unsigned char* UnitAddr)
 {
-	float indmg = 100.0;
+	float indmg = 100.0f;
 	if (IsNotBadUnit(UnitAddr))
 	{
-
-
 		unsigned int abilscount = 0;
 		unsigned char** abils = FindUnitAbils(UnitAddr, &abilscount, 0, 'AIdd');
 		for (unsigned int i = 0; i < abilscount; i++)
@@ -1120,20 +1163,22 @@ float __stdcall GetMagicProtectionForHero_org(unsigned char* UnitAddr)
 		// new 
 		if (*(int*)(UnitAddr + 0x158))
 		{
-			indmg *= 1.4;
+			indmg *= 1.4f;
 		}
 
 
 
 	}
 
-	return (float)(100.0 - indmg);
+	return (float)(100.0f - indmg);
 }
 
 
 // Only for game. Int retval = fix missing eax
 int __stdcall GetMagicProtectionForHero(unsigned char* UnitAddr)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	float retval = GetMagicProtectionForHero_org(UnitAddr);
 	return *(int*)&retval;
 }
@@ -1149,6 +1194,8 @@ float __stdcall GetMagicProtectionForHero_by_abiladdr(unsigned char* abil_addr)
 
 int __stdcall PrintMoveSpeed(unsigned char* addr, float* movespeed, unsigned char* AmovAddr)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	int retval = 0;
 	__asm mov retval, eax;
 	if (AmovAddr)
@@ -1266,7 +1313,7 @@ const char* GetPlayerColorString2(int player)
 
 
 
-unsigned char* __stdcall SaveStringsForPrintItem(unsigned char * itemaddr)
+unsigned char* __stdcall SaveStringsForPrintItem(unsigned char* itemaddr)
 {
 	if (itemaddr)
 	{
@@ -1293,6 +1340,8 @@ int NeedDrawRegen = false;
 
 int __stdcall DrawRegenAllways(int enabled)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	NeedDrawRegen = enabled;
 	return enabled;
 }
@@ -1640,7 +1689,7 @@ void __declspec(naked) HookPrint4_127a()
 
 void __stdcall SetCdForAddr(unsigned char* cd_addr)
 {
-	if ((long long )cd_addr > 0xb0 /*eax */)
+	if ((long long)cd_addr > 0xb0 /*eax */)
 	{
 		unsigned char* abiladdr = cd_addr - 0xb0;
 		unsigned char* pData = *(unsigned char**)(abiladdr + 0xDC);
@@ -1724,6 +1773,8 @@ void __declspec(naked) HookSetCD_1000s_127a()
 std::vector<waroffsetdata> offsetslist;
 int __stdcall AddNewOffset_(unsigned char* address, int data, unsigned int FeatureFlag = 0)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	for (unsigned int i = 0; i < offsetslist.size(); i++)
 	{
 		if (offsetslist[i].offaddr == address)
@@ -1744,6 +1795,8 @@ int __stdcall AddNewOffset_(unsigned char* address, int data, unsigned int Featu
 
 int __stdcall UpdateNewDataOffest(unsigned char* address)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	for (auto& offdata : offsetslist)
 	{
 		if (offdata.offaddr == address)
@@ -1759,12 +1812,16 @@ int __stdcall UpdateNewDataOffest(unsigned char* address)
 
 int __stdcall AddNewOffset(unsigned char* address, int data)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	AddNewOffset_(address, data);
 	return 0;
 }
 
 int __stdcall RemoveOffset(unsigned char* address)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	for (unsigned int i = 0; i < offsetslist.size(); i++)
 	{
 		if (offsetslist[i].offaddr == address)
@@ -1780,6 +1837,8 @@ std::vector<LPVOID> FreeExecutableMemoryList;
 
 int __stdcall FreeExecutableMemory(void* addr)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	FreeExecutableMemoryList.push_back(addr);
 	return 0;
 }
@@ -1860,6 +1919,8 @@ void __stdcall RestoreAllOffsets()
 
 int __stdcall DisableFeatures(unsigned int Flags)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	if (!InitFunctionCalled)
 		return 0;
 	RestoreFeatureOffsets(Flags);
@@ -1942,10 +2003,10 @@ int __stdcall DisableFeatures(unsigned int Flags)
 	return 0;
 }
 
-
-int __stdcall InitHpBar(int);
 int __stdcall EnableFeatures(unsigned int Flags)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	if (!InitFunctionCalled)
 		return 0;
 
@@ -2151,16 +2212,24 @@ void __stdcall DisableAllHooks()
 
 	LatestDownloadedString = "";
 
-	UninitializeDreamDotaAPI();
+	//UninitializeDreamDotaAPI();
 	//	UninitializeVoiceClient( );
-
-	magicampval = 16;
 
 	//UnInitDreamRawImages();
 
-
 	MH_DisableHook(MH_ALL_HOOKS);
 	MH_Uninitialize();
+
+	EmulateKeyInputForHWND = false;
+	ShiftPressed = 0;
+	SkipSingleShift = false;
+	SingleShift = 0;
+	SkipAllMessages = false;
+
+	CustomFovFix = 1.0f;
+
+	NewCallBackTriggerHandle = 0;
+	LastEventId = 0;
 }
 
 void PatchOffset(void* addr, void* lpbuffer, unsigned int size)
@@ -2179,6 +2248,8 @@ void PatchOffset(void* addr, void* lpbuffer, unsigned int size)
 
 int __stdcall _FlushInstructionCache(unsigned char* addr, unsigned int size)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	return FlushInstructionCache(GetCurrentProcess(), (void*)addr, size);
 }
 
@@ -2244,6 +2315,8 @@ unsigned long __stdcall GetFileCrc32(char* file)
 
 int __stdcall DeleteFileByName(char* file)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	return DeleteFileA(file);
 }
 
@@ -2251,6 +2324,8 @@ int __stdcall DeleteFileByName(char* file)
 
 int __stdcall InitHpBar(int)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	unsigned char* pHPBARHELPER = GameDll + 0x364beb;
 	AddNewOffset_(pHPBARHELPER, *(int*)pHPBARHELPER, Feature_HPBAR);
 	AddNewOffset_(pHPBARHELPER + 3, *(int*)(pHPBARHELPER + 3), Feature_HPBAR);
@@ -2262,7 +2337,8 @@ int __stdcall InitHpBar(int)
 
 int __stdcall InitOverlay(int)
 {
-
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	Initd3d8Hook();
 	InitOpenglHook();
 
@@ -2338,6 +2414,8 @@ int InitializedDream = false;
 
 unsigned int __stdcall InitDotaHelper(int)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	UnloadAllOldHelpers(0);
 
 	MH_Initialize();
@@ -2400,7 +2478,13 @@ unsigned int __stdcall InitDotaHelper(int)
 	ShowSkillPanelOnlyForHeroes = true;
 	FPSfix1Enabled = false;
 	GlobalRawImageCallbackData = NULL;
-	SetCustomFovFix(1.0f);
+
+	EmulateKeyInputForHWND = false;
+	ShiftPressed = 0;
+	SkipSingleShift = false;
+	SingleShift = 0;
+	SkipAllMessages = false;
+
 	ScanId = 0;
 	NeedReleaseUnusedMemory = false;
 	PlayerEnemyCache.clear();
@@ -2437,7 +2521,7 @@ unsigned int __stdcall InitDotaHelper(int)
 	Storm_503 = (pStorm_503)(*(int*)(GameDll + 0x86D584));
 	_GlobalGlueObj = GameDll + 0xACE66C;
 	_GameUI = GameDll + 0x93631C;
-	InGame = (int*)(_GlobalGlueObj);
+	InGame = (int*)(GameDll + 0xAB62A4);
 	_EventVtable = GameDll + 0xA9ACB0;
 	_ChatSendEvent = GameDll + 0x2FC700;
 	GetItemInSlotAddr = GameDll + 0x3C7730 + 0xA;
@@ -2753,7 +2837,7 @@ unsigned int __stdcall InitDotaHelper(int)
 
 	ChatEditBoxVtable = 0x93A7A4;
 
-	SelectUnitReal = (void(__thiscall*)(int pPlayerSelectData, unsigned char * pUnit, int id, int unk1, int unk2, int unk3))(GameDll + 0x424B80);
+	SelectUnitReal = (void(__thiscall*)(int pPlayerSelectData, unsigned char* pUnit, int id, int unk1, int unk2, int unk3))(GameDll + 0x424B80);
 	UpdatePlayerSelection = (void(__thiscall*)(int pPlayerSelectData, int unk))(GameDll + 0x425490);
 	ClearSelection = (int(__cdecl*)(void))(GameDll + 0x3BBAA0);
 
@@ -2791,10 +2875,7 @@ unsigned int __stdcall InitDotaHelper(int)
 
 	InitializePacketHandler();
 
-	InitializeDreamDotaAPI(true, GameDllModule, Warcraft3Window);
-
-	MainDispatcher()->listen(EVENT_GAME_START, SetGameFound);
-	MainDispatcher()->listen(EVENT_GAME_END, SetGameEnd);
+	//InitializeDreamDotaAPI(true, GameDllModule, Warcraft3Window);
 
 	//InitDreamRawImages( );
 
@@ -2805,17 +2886,17 @@ unsigned int __stdcall InitDotaHelper(int)
 
 int __stdcall UpdatePlayerCache(int)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	for (int i = 0; i < 16; i++)
 	{
 		playercache[i] = _Player(i);
 	}
 
-
 	for (int i = 0; i < 16; i++)
 	{
 		player_real_cache[i] = _GetPlayerByNumber(i);
 	}
-
 
 	for (int i = 0; i < 16; i++)
 	{
@@ -2823,10 +2904,7 @@ int __stdcall UpdatePlayerCache(int)
 	}
 
 
-
 	player_local_id = _GetLocalPlayerId();
-
-
 
 	PlayerEnemyCache.clear();
 
@@ -2839,9 +2917,12 @@ const char* StormDllName = "Storm.dll";
 
 int __stdcall SetCustomGameDllandStormDLL(const char* _GameDllName, const char* _StormDllName)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	GameDllModule = GetModuleHandleA(_GameDllName);
 	if (!GameDllModule)
 		return false;
+
 	GameDll = (unsigned char*)GameDllModule;
 
 	StormDllModule = GetModuleHandleA(_StormDllName);
@@ -2857,8 +2938,14 @@ int __stdcall SetCustomGameDllandStormDLL(const char* _GameDllName, const char* 
 
 int __stdcall SetGameDllAddr(void* GameDllmdl)
 {
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
 	GameDllModule = GameDllmdl;
 	GameDll = (unsigned char*)GameDllModule;
+
+	if (StormDllModule)
+		Storm::Init(StormDllModule);
+
 	return 0;
 }
 
@@ -2867,12 +2954,28 @@ int TerminateStarted = false;
 
 int TestModeActivated = false;
 
+int __stdcall SLOW_DEBUG_INIT(int)
+{
+	DEBUG_FULL = true;
+	FILE* f;
+
+	fopen_s(&f, "DotaAllstarsDataTrace.txt", "w");
+	if (f)
+	{
+		fclose(f);
+		f = NULL;
+		freopen_s(&f, "DotaAllstarsDataTrace.txt", "w", stdout);
+		f = NULL;
+	}
+	return 0;
+}
+
 #pragma region Main
 int __stdcall DllMain(HINSTANCE Module, unsigned int reason, LPVOID)
 {
-	GetCurrentModule = Module;
 	if (reason == DLL_PROCESS_ATTACH)
 	{
+		GetCurrentModule = Module;
 		/*std::streambuf *coutbuf = std::cout.rdbuf( );
 		std::ofstream out( "debug.log" );
 		std::cout.rdbuf( out.rdbuf( ) );
@@ -2899,22 +3002,33 @@ int __stdcall DllMain(HINSTANCE Module, unsigned int reason, LPVOID)
 
 	//cerr << "Dota Helper Error Log out:" << endl;
 	//cout << "Dota Helper Debug Log out" << endl;
-
 		DisableThreadLibraryCalls(Module);
+
 
 		GameDllModule = GetModuleHandleA(GameDllName);
 		GameDll = (unsigned char*)GameDllModule;
 		StormDllModule = GetModuleHandleA(StormDllName);
 		StormDll = (unsigned char*)StormDllModule;
-		Storm::Init(StormDllModule);
+
+		_W3XTlsIndex = 0xAB7BF4 + GameDll;
 
 		Warcraft3_Process = GetCurrentProcess();
+
+		if (StormDllModule)
+			Storm::Init(StormDllModule);
+
 		// NEXT LINES ONLY FOR TEST !!!
-		 //TestModeActivated = true;
-		 //InitDotaHelper( 0x27a );
-		 ////DisableFeatures( 0xEFFF );
-		 //MainFuncWork = true;
-		// EnableErrorHandler( 0);
+		// 
+		//ForceGameStart = true;
+		// 	SetTlsForMe();
+		// Storm::Init(StormDllModule);
+		//TestModeActivated = true;
+		//InitDotaHelper(0x26a);
+		//EnableFeatures(0xFFFFFFFF);
+		//MainFuncWork = true;
+		//EnableErrorHandler(0);
+
+		CloseHandle(ThreadWatcherID = CreateThread(0, 0, UNLOAD_WATCHER, 0, 0, 0));
 	}
 	else if (reason == DLL_PROCESS_DETACH)
 	{
