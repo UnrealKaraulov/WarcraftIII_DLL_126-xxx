@@ -66,9 +66,11 @@ void __stdcall EnableVsync(int enable)
 	}
 
 
+
 	PatchOffsetValue1((void*)(GameDll + 0x62D7FB), enable ? 0xFB : 0xFF);
 
 	InitD3DVSync(enable);
+
 }
 
 

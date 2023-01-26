@@ -119,6 +119,8 @@ int __stdcall FileHelperReleaseStorm(int enabled)
 GameGetFile GameGetFile_org = NULL;
 GameGetFile GameGetFile_ptr;
 
+int idddd = 0;
+
 void ApplyTerrainFilter(std::string filename, int* OutDataPointer, size_t* OutSize, int IsTga)
 {
 	char* originfiledata = (char*)(int)*OutDataPointer;
@@ -519,6 +521,9 @@ int FixDisabledIconPath(std::string _filename, int* OutDataPointer, size_t* OutS
 	return result;
 }
 
+
+
+
 std::vector<ModelCollisionFixStruct> ModelCollisionFixList;
 std::vector<ModelTextureFixStruct> ModelTextureFixList;
 std::vector<ModelPatchStruct> ModelPatchList;
@@ -702,7 +707,6 @@ unsigned char HelperBytesPart1[] = {
 							0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
 							0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
 							0x00,0x00 };
-
 unsigned char HelperBytesPart2[] = { 0xFF,0xFF,0xFF,0xFF,0x00,0x01,0x00,0x00,0x4B,
 							0x47,0x53,0x43,0x01,0x00,0x00,0x00,0x00,0x00,0x00,
 							0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };

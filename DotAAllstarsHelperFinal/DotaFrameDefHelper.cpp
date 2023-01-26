@@ -27,6 +27,9 @@ void DotaHelperEventEndCallback()
 jRCString NewCallBackFuncName = jRCString();
 
 int NewCallBackTriggerHandle = 0;
+
+
+
 int LastEventId = 0;
 
 

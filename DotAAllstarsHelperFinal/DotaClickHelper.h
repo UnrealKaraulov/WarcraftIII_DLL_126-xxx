@@ -1,5 +1,7 @@
 #pragma once
 #include "Main.h"
+#include <Tools.h>
+#include <Timer.h>
 
 extern std::vector<int> doubleclickSkillIDs;
 extern std::vector<int> WhiteListForTeleport;
@@ -46,11 +48,4 @@ extern std::vector< int > InfoWhitelistedObj;
 unsigned int CovertStringToKeyCode(std::string code);
 std::string CovertKeyCodeToString(unsigned int val);
 unsigned int BuildKeyCode();
-void PressKeyWithDelay_timed();
-
-
-extern int EmulateKeyInputForHWND;
-extern int ShiftPressed;
-extern unsigned long SkipSingleShift;
-extern unsigned long SingleShift;
-extern int SkipAllMessages;
+void PressKeyWithDelay_timed(Timer* tm);
