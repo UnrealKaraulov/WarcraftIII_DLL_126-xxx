@@ -86,9 +86,6 @@
     <ClCompile Include="MegaPacketHandler.cpp">
       <Filter>Src</Filter>
     </ClCompile>
-    <ClCompile Include="quantizer.cpp">
-      <Filter>Src</Filter>
-    </ClCompile>
     <ClCompile Include="Storm.cpp">
       <Filter>Src</Filter>
     </ClCompile>
@@ -108,6 +105,9 @@
       <Filter>Src</Filter>
     </ClCompile>
     <ClCompile Include="IniWriter.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
+    <ClCompile Include="quantizer.cpp">
       <Filter>Src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -148,9 +148,6 @@
     <ClInclude Include="MegaPacketHandler.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="quantizer.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="RawImageApi.h">
       <Filter>Headers</Filter>
     </ClInclude>
@@ -188,6 +185,9 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="UIStructs.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="quantizer.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

@@ -119,16 +119,16 @@ int __stdcall FileHelperReleaseStorm(int enabled)
 GameGetFile GameGetFile_org = NULL;
 GameGetFile GameGetFile_ptr;
 
-void ApplyTerrainFilter(std::string filename, int* OutDataPointer, size_t* OutSize, int IsTga)
+void ApplyTerrainFilter(std::string filename, unsigned char** OutDataPointer, size_t* OutSize, int IsTga)
 {
-	char* originfiledata = (char*)(int)*OutDataPointer;
+	unsigned char* originfiledata = *OutDataPointer;
 	size_t sz = *OutSize;
 
 
 	int w = 0, h = 0, bpp = 0, mipmaps = 0, alphaflag = 8, compress = 1, alphaenconding = 5;
 	unsigned long rawImageSize = 0;
 	StormBuffer InBuffer;
-	InBuffer.buf = (char*)originfiledata;
+	InBuffer.buf = originfiledata;
 	InBuffer.length = sz;
 	StormBuffer OutBuffer;
 	if (IsTga)
@@ -137,7 +137,7 @@ void ApplyTerrainFilter(std::string filename, int* OutDataPointer, size_t* OutSi
 		rawImageSize = Blp2Raw(InBuffer, OutBuffer, w, h, bpp, mipmaps, alphaflag, compress, alphaenconding, filename.c_str());
 	if (rawImageSize > 0)
 	{
-		BGRAPix* OutImage = (BGRAPix*)OutBuffer.buf;
+		COLOR4* OutImage = (COLOR4*)OutBuffer.buf;
 		for (unsigned long i = 0; i < OutBuffer.length / 4; i++)
 		{
 			if ( /*OutImage[ i ].A == 0xFF && */(OutImage[i].G > 40 || OutImage[i].B > 40 || OutImage[i].R > 40))
@@ -192,7 +192,7 @@ void ApplyTerrainFilter(std::string filename, int* OutDataPointer, size_t* OutSi
 			ICONMDLCACHELIST.push_back(tmpih);/*
 			if ( !IsMemInCache( *OutDataPointer ) && NeedReleaseUnusedMemory )
 				Storm::MemFree( ( void* )*OutDataPointer );*/
-			*OutDataPointer = (int)tmpih.buf;
+			*OutDataPointer = tmpih.buf;
 			*OutSize = tmpih.size;
 		}
 	}
@@ -201,23 +201,23 @@ void ApplyTerrainFilter(std::string filename, int* OutDataPointer, size_t* OutSi
 
 
 
-int __stdcall ApplyTerrainFilterDirectly(char* filename, int* OutDataPointer, size_t* OutSize, int IsTga)
+int __stdcall ApplyTerrainFilterDirectly(char* filename, unsigned char** OutDataPointer, size_t* OutSize, int IsTga)
 {
 	ApplyTerrainFilter(filename, OutDataPointer, OutSize, IsTga);
 	return 0;
 }
 
 
-void ApplyIconFilter(std::string filename, int* OutDataPointer, size_t* OutSize)
+void ApplyIconFilter(std::string filename, unsigned char ** OutDataPointer, size_t* OutSize)
 {
-	char* originfiledata = (char*)(int)*OutDataPointer;
+	unsigned char* originfiledata = *OutDataPointer;
 	size_t sz = *OutSize;
 
 
 	int w = 0, h = 0, bpp = 0, mipmaps = 0, alphaflag = 0, compress = 0, alphaenconding = 0;
 	unsigned long rawImageSize = 0;
 	StormBuffer InBuffer;
-	InBuffer.buf = (char*)originfiledata;
+	InBuffer.buf = originfiledata;
 	InBuffer.length = sz;
 	StormBuffer OutBuffer;
 	rawImageSize = Blp2Raw(InBuffer, OutBuffer, w, h, bpp, mipmaps, alphaflag, compress, alphaenconding, filename.c_str());
@@ -225,8 +225,8 @@ void ApplyIconFilter(std::string filename, int* OutDataPointer, size_t* OutSize)
 	if (rawImageSize > 0 && OutBuffer.buf && OutBuffer.length && w == 64 && h == 64)
 	{
 		//MessageBoxA( 0, "CreateFilterImage", " ", 0 );
-		BGRAPix* OutImage = (BGRAPix*)OutBuffer.buf;
-		BGRAPix BlackPix;
+		COLOR4* OutImage = (COLOR4*)OutBuffer.buf;
+		COLOR4 BlackPix;
 
 		BlackPix.A = 0xFF;
 		BlackPix.R = 0;
@@ -296,7 +296,7 @@ void ApplyIconFilter(std::string filename, int* OutDataPointer, size_t* OutSize)
 			ICONMDLCACHELIST.push_back(tmpih);
 			/*if ( !IsMemInCache( *OutDataPointer ) && NeedReleaseUnusedMemory )
 				Storm::MemFree( ( void* )*OutDataPointer );*/
-			*OutDataPointer = (int)tmpih.buf;
+			*OutDataPointer = tmpih.buf;
 			*OutSize = tmpih.size;
 
 			if (NeedDumpFilesToDisk)
@@ -329,28 +329,28 @@ void ApplyIconFilter(std::string filename, int* OutDataPointer, size_t* OutSize)
 void ApplyIconFrameFilter(std::string filename, int* OutDataPointer, size_t* OutSize);
 
 
-void ApplyTestFilter(std::string filename, int* OutDataPointer, size_t* OutSize)
+void ApplyTestFilter(std::string filename, unsigned char ** OutDataPointer, size_t* OutSize)
 {
 
 	ICONMDLCACHE tmpih;
 
 
-	char* originfiledata = (char*)(int)*OutDataPointer;
+	unsigned char* originfiledata = *OutDataPointer;
 	size_t sz = *OutSize;
 
 
 	int w = 0, h = 0, bpp = 0, mipmaps = 0, alphaflag = 0, compress = 0, alphaenconding = 0;
 	unsigned long rawImageSize = 0;
 	StormBuffer InBuffer;
-	InBuffer.buf = (char*)originfiledata;
+	InBuffer.buf = originfiledata;
 	InBuffer.length = sz;
 	StormBuffer OutBuffer;
 
 	rawImageSize = Blp2Raw(InBuffer, OutBuffer, w, h, bpp, mipmaps, alphaflag, compress, alphaenconding, filename.c_str());
 	if (rawImageSize > 0 && w > 9 && h > 9)
 	{
-		BGRAPix* OutImage = (BGRAPix*)OutBuffer.buf;
-		BGRAPix BlackPix;
+		COLOR4* OutImage = (COLOR4*)OutBuffer.buf;
+		COLOR4 BlackPix;
 
 		BlackPix.A = 0xFF;
 		BlackPix.R = 70;
@@ -360,11 +360,11 @@ void ApplyTestFilter(std::string filename, int* OutDataPointer, size_t* OutSize)
 		int FoundTransparentTexture = false;
 
 		int id = 0;
-		std::vector<BGRAPix> BGRAPixList;
+		std::vector<COLOR4> BGRAPixList;
 		BGRAPixList.assign(&OutImage[0], &OutImage[w * h - 1]);
 
 
-		for (BGRAPix& pix : BGRAPixList)
+		for (COLOR4& pix : BGRAPixList)
 		{
 			int R = pix.R;
 			int G = pix.G;
@@ -442,7 +442,7 @@ void ApplyTestFilter(std::string filename, int* OutDataPointer, size_t* OutSize)
 			ICONMDLCACHELIST.push_back(tmpih);
 			/*	if ( !IsMemInCache( *OutDataPointer ) && NeedReleaseUnusedMemory )
 					Storm::MemFree( ( void* )*OutDataPointer );*/
-			*OutDataPointer = (int)tmpih.buf;
+			*OutDataPointer = tmpih.buf;
 			*OutSize = tmpih.size;
 		}
 	}
@@ -455,7 +455,7 @@ const char* DisabledIconSignature2 = "Disabled\\DISDIS";
 const char* CommandButtonsDisabledIconSignature = "CommandButtonsDisabled\\DIS";
 
 
-int FixDisabledIconPath(std::string _filename, int* OutDataPointer, size_t* OutSize, int unknown)
+int FixDisabledIconPath(std::string _filename, unsigned char ** OutDataPointer, size_t* OutSize, int unknown)
 {
 	std::string filename = _filename;
 
@@ -712,9 +712,9 @@ unsigned char HelperBytesPart3[] = { 0xFF,0xFF,0xFF,0xFF,
 };
 
 
-void ProcessMdx(std::string filename, int* OutDataPointer, size_t* OutSize, int unknown)
+void ProcessMdx(std::string filename, unsigned char** OutDataPointer, size_t* OutSize, int unknown)
 {
-	unsigned char* ModelBytes = (unsigned char*)*OutDataPointer;
+	unsigned char* ModelBytes = *OutDataPointer;
 	size_t sz = *OutSize;
 
 
@@ -1525,7 +1525,7 @@ void ProcessMdx(std::string filename, int* OutDataPointer, size_t* OutSize, int 
 
 			ICONMDLCACHE* tmpih = Storm::MemAllocStruct<ICONMDLCACHE>();
 			StormBuffer ResultBuffer;
-			ResultBuffer.buf = (char*)Storm::MemAlloc(FullPatchData.size());
+			ResultBuffer.buf = (unsigned char*)Storm::MemAlloc(FullPatchData.size());
 			ResultBuffer.length = FullPatchData.size();
 			std::memcpy(&ResultBuffer.buf[0], &FullPatchData[0], FullPatchData.size());
 
@@ -1538,7 +1538,7 @@ void ProcessMdx(std::string filename, int* OutDataPointer, size_t* OutSize, int 
 			if (NeedReleaseUnusedMemory)
 				Storm::MemFree((void*)*OutDataPointer);
 
-			*OutDataPointer = (int)tmpih->buf;
+			*OutDataPointer = tmpih->buf;
 			*OutSize = tmpih->size;
 
 			ModelBytes = (unsigned char*)tmpih->buf;
@@ -1558,7 +1558,7 @@ void ProcessMdx(std::string filename, int* OutDataPointer, size_t* OutSize, int 
 		ModelPatchStruct mdlfix = ModelPatchList[i];
 		if (filename == mdlfix.FilePath)
 		{
-			int PatchFileData;
+			unsigned char * PatchFileData;
 			size_t PatchFileSize;
 
 			if (GameGetFile_ptr(mdlfix.patchPath.c_str(), &PatchFileData, &PatchFileSize, unknown))
@@ -1582,7 +1582,7 @@ void ProcessMdx(std::string filename, int* OutDataPointer, size_t* OutSize, int 
 		if (FoundOldHelper)
 		{
 			StormBuffer ResultBuffer;
-			ResultBuffer.buf = (char*)Storm::MemAlloc(tmpih->size + FullPatchData.size());
+			ResultBuffer.buf = (unsigned char*)Storm::MemAlloc(tmpih->size + FullPatchData.size());
 
 			ResultBuffer.length = tmpih->size + FullPatchData.size();
 
@@ -1593,13 +1593,13 @@ void ProcessMdx(std::string filename, int* OutDataPointer, size_t* OutSize, int 
 			Storm::MemFree(tmpih->buf);
 			tmpih->buf = ResultBuffer.buf;
 			tmpih->size = ResultBuffer.length;
-			*OutDataPointer = (int)tmpih->buf;
+			*OutDataPointer = tmpih->buf;
 			*OutSize = tmpih->size;
 		}
 		else
 		{
 			StormBuffer ResultBuffer;
-			ResultBuffer.buf = (char*)Storm::MemAlloc(sz + FullPatchData.size());
+			ResultBuffer.buf = (unsigned char*)Storm::MemAlloc(sz + FullPatchData.size());
 			ResultBuffer.length = sz + FullPatchData.size();
 			std::memcpy(&ResultBuffer.buf[0], ModelBytes, sz);
 			std::memcpy(&ResultBuffer.buf[sz], &FullPatchData[0], FullPatchData.size());
@@ -1615,7 +1615,7 @@ void ProcessMdx(std::string filename, int* OutDataPointer, size_t* OutSize, int 
 				Storm::MemFree((void*)*OutDataPointer);
 
 
-			*OutDataPointer = (int)tmpih->buf;
+			*OutDataPointer = tmpih->buf;
 			*OutSize = tmpih->size;
 
 			ModelBytes = (unsigned char*)tmpih->buf;
@@ -1775,12 +1775,12 @@ void PrintLog(const char* str)
 }
 
 
-int ProcessFile(std::string filename, int* OutDataPointer, size_t* OutSize, int unknown, int IsFileExistOld)
+int ProcessFile(const char * filename, unsigned char ** OutDataPointer, size_t* OutSize, int unknown, int IsFileExistOld)
 {
 	//PrintLog( filename.c_str( ) );
 	int IsFileExist = IsFileExistOld;
 
-	if (!OutDataPointer || !OutSize || filename.length() < 3)
+	if (!OutDataPointer || !OutSize || !filename)
 	{
 		return IsFileExist;
 	}
@@ -1789,7 +1789,7 @@ int ProcessFile(std::string filename, int* OutDataPointer, size_t* OutSize, int 
 	int FoundOldHelper = GetFromIconMdlCache(filename, &tmpih);
 	if (FoundOldHelper)
 	{
-		*OutDataPointer = (int)tmpih.buf;
+		*OutDataPointer = tmpih.buf;
 		*OutSize = tmpih.size;
 		return true;
 	}
@@ -1798,9 +1798,9 @@ int ProcessFile(std::string filename, int* OutDataPointer, size_t* OutSize, int 
 	{
 		if (s.ingame)
 		{
-			if (ToLower(filename) == ToLower(s.filename))
+			if (_stricmp(filename,s.filename) == 0)
 			{
-				*OutDataPointer = (int)s.ingamebuffer.buf;
+				*OutDataPointer = s.ingamebuffer.buf;
 				*OutSize = s.ingamebuffer.length;
 				return true;
 			}
@@ -1852,11 +1852,11 @@ int ProcessFile(std::string filename, int* OutDataPointer, size_t* OutSize, int 
 			IsFileExist = GameGetFile_ptr(DotaRedirectHelp.RealFilePath.c_str(), OutDataPointer, OutSize, unknown);
 			if (IsFileExist)
 			{
-				char* DataPointer = (char*)*OutDataPointer;
+				unsigned char* DataPointer = *OutDataPointer;
 				size_t DataSize = *OutSize;
 
 				StormBuffer ResultBuffer;
-				ResultBuffer.buf = (char*)Storm::MemAlloc(DataSize);
+				ResultBuffer.buf = (unsigned char*)Storm::MemAlloc(DataSize);
 				ResultBuffer.length = DataSize;
 				std::memcpy(&ResultBuffer.buf[0], DataPointer, DataSize);
 
@@ -1868,7 +1868,7 @@ int ProcessFile(std::string filename, int* OutDataPointer, size_t* OutSize, int 
 
 				ICONMDLCACHELIST.push_back(tmpih2);
 
-				*OutDataPointer = (int)tmpih2.buf;
+				*OutDataPointer = tmpih2.buf;
 				*OutSize = tmpih2.size;
 
 
@@ -1987,7 +1987,7 @@ void AddNewFakeFile(char* filename, unsigned char* buffer, size_t FileSize)
 //	return SFileReadFile_ptr( file_handle, buffer, size, size_ptr, unk );
 //}
 
-int __fastcall GameGetFile_my(const char* filename, int* OutDataPointer, unsigned int* OutSize, int unknown)
+int __fastcall GameGetFile_my(const char* filename, unsigned char** OutDataPointer, unsigned int* OutSize, int unknown)
 {
 	int IsFileExist = GameGetFile_ptr(filename, OutDataPointer, OutSize, unknown);
 
@@ -2026,7 +2026,7 @@ int __fastcall GameGetFile_my(const char* filename, int* OutDataPointer, unsigne
 	{
 		if (_stricmp(filename, fs.filename) == 0)
 		{
-			*OutDataPointer = (int)fs.buffer;
+			*OutDataPointer = fs.buffer;
 			*OutSize = fs.size;
 			return true;
 		}

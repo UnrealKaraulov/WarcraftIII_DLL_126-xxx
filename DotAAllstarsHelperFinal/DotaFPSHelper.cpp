@@ -43,7 +43,6 @@ bool WGLExtensionSupported(const char* extension_name)
 
 void __stdcall EnableVsync(int enable)
 {
-	return;
 	PFNWGLSWAPINTERVALEXTPROC       wglSwapIntervalEXT = NULL;
 	PFNWGLGETSWAPINTERVALEXTPROC    wglGetSwapIntervalEXT = NULL;
 
@@ -61,16 +60,15 @@ void __stdcall EnableVsync(int enable)
 			{
 				PrintText("CHANGE VSYNC STATE OPENGL!");
 			}
+
 			wglSwapIntervalEXT(enable);
+
+			PatchOffsetValue1((void*)(GameDll + 0x62D7FB), enable ? 0xFB : 0xFF);
+
+			InitD3DVSync(enable);
 		}
 	}
-
-
-	PatchOffsetValue1((void*)(GameDll + 0x62D7FB), enable ? 0xFB : 0xFF);
-
-	InitD3DVSync(enable);
 }
-
 
 
 void InitThreadCpuUsage() {

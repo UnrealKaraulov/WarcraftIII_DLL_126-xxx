@@ -2,29 +2,17 @@
 
 unsigned char FixBounds(int i)
 {
-	if (i > 0xFF)
-		return 0xFF;
-	else if (i < 0x00)
-		return 0x00;
-	return (unsigned char)i;
+	return i & 0xFF;
 }
 
 unsigned char FixBounds(float i)
 {
-	if (i > (double)0xFF)
-		return 0xFF;
-	else if (i < (double)0x00)
-		return 0x00;
-	return (unsigned char)i;
+	return ((int)i) & 0xFF;
 }
 
 unsigned char FixBounds(double i)
 {
-	if (i > (double)0xFF)
-		return 0xFF;
-	else if (i < (double)0x00)
-		return 0x00;
-	return (unsigned char)i;
+	return ((int)i) & 0xFF;
 }
 
 CQuantizer::CQuantizer(unsigned int nMaxColors, unsigned int nColorBits)
@@ -50,7 +38,7 @@ int CQuantizer::ProcessImage(unsigned char* image, unsigned long size, unsigned 
 {
 	for (unsigned long i = 0; i < size; i++)
 	{
-		BGRAPix* pix = (BGRAPix*)(image + i * bytespp);
+		COLOR4* pix = (COLOR4*)(image + i * bytespp);
 		AddColor(&m_pTree, pix->R, pix->G, pix->B, 0, m_nColorBits, 0, &m_nLeafCount, m_pReducibleNodes);
 		//if ( pix->A != alpha )
 		m_needsAlpha = true;
@@ -63,7 +51,7 @@ int CQuantizer::ProcessImage(unsigned char* image, unsigned long size, unsigned 
 	return true;
 }
 
-void CQuantizer::FloydSteinbergDither(unsigned char* image, long width, long height, unsigned char bytespp, unsigned char* target, BGRAPix* pal)
+void CQuantizer::FloydSteinbergDither(unsigned char* image, long width, long height, unsigned char bytespp, unsigned char* target, COLOR4* pal)
 {
 	for (long y = 0; y < height; y++)
 	{
@@ -73,7 +61,7 @@ void CQuantizer::FloydSteinbergDither(unsigned char* image, long width, long hei
 			{
 				int i = width * (height - y - 1) + x;
 				int j = (width * y + x) * bytespp;
-				unsigned char k = GetNearestIndexFast((BGRAPix*)(image + j), pal);
+				unsigned char k = GetNearestIndexFast((COLOR4*)(image + j), pal);
 				int diff[3];
 				target[i] = k;
 				diff[0] = image[j] - pal[k].B;
@@ -103,7 +91,7 @@ void CQuantizer::FloydSteinbergDither(unsigned char* image, long width, long hei
 			{
 				int i = width * (height - y - 1) + x;
 				int j = (width * y + x) * bytespp;
-				unsigned char k = GetNearestIndexFast((BGRAPix*)(image + j), pal);
+				unsigned char k = GetNearestIndexFast((COLOR4*)(image + j), pal);
 				int diff[3];
 				target[i] = k;
 				diff[0] = image[j] - pal[k].B;
@@ -214,7 +202,7 @@ void CQuantizer::DeleteTree(Node** ppNode)
 	*ppNode = 0;
 }
 
-void CQuantizer::GetPaletteColors(Node* pTree, BGRAPix* prgb, unsigned int* pIndex, unsigned int* pSum)
+void CQuantizer::GetPaletteColors(Node* pTree, COLOR4* prgb, unsigned int* pIndex, unsigned int* pSum)
 {
 	if (pTree)
 	{
@@ -262,7 +250,7 @@ unsigned int CQuantizer::GetLeafCount(Node* pTree)
 	return 0;
 }
 
-unsigned char CQuantizer::GetNextBestLeaf(Node** pTree, unsigned int nLevel, BGRAPix* c, BGRAPix* pal)
+unsigned char CQuantizer::GetNextBestLeaf(Node** pTree, unsigned int nLevel, COLOR4* c, COLOR4* pal)
 {
 	if ((*pTree)->bIsLeaf)
 	{
@@ -285,13 +273,13 @@ unsigned int CQuantizer::GetColorCount()
 	return m_nLeafCount;
 }
 
-void CQuantizer::SetColorTable(BGRAPix* prgb)
+void CQuantizer::SetColorTable(COLOR4* prgb)
 {
 	unsigned int nIndex = 0;
 	if (m_nOutputMaxColors<16 && m_nLeafCount>m_nOutputMaxColors)
 	{
 		unsigned int nSum[16];
-		BGRAPix tmppal[16];
+		COLOR4 tmppal[16];
 		GetPaletteColors(m_pTree, tmppal, &nIndex, nSum);
 		unsigned int j, k, nr, ng, nb, na, ns, a, b;
 		for (j = 0; j < m_nOutputMaxColors; j++)
@@ -319,12 +307,12 @@ void CQuantizer::SetColorTable(BGRAPix* prgb)
 	}
 }
 
-int CQuantizer::ColorsAreEqual(BGRAPix* a, BGRAPix* b)
+int CQuantizer::ColorsAreEqual(COLOR4* a, COLOR4* b)
 {
 	return (a->B == b->B && a->G == b->G && a->R == b->R && a->A == b->A);
 }
 
-unsigned char CQuantizer::GetNearestIndex(BGRAPix* c, BGRAPix* pal)
+unsigned char CQuantizer::GetNearestIndex(COLOR4* c, COLOR4* pal)
 {
 	if (!c || !pal) return 0;
 	if (ColorsAreEqual(c, &pal[m_lastIndex]))
@@ -348,7 +336,7 @@ unsigned char CQuantizer::GetNearestIndex(BGRAPix* c, BGRAPix* pal)
 	return m_lastIndex;
 }
 
-unsigned char CQuantizer::GetNearestIndexFast(BGRAPix* c, BGRAPix* pal)
+unsigned char CQuantizer::GetNearestIndexFast(COLOR4* c, COLOR4* pal)
 {
 	if (m_nOutputMaxColors<16 && m_nLeafCount>m_nOutputMaxColors)
 		return GetNearestIndex(c, pal);

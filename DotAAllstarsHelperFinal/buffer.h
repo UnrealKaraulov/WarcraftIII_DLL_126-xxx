@@ -24,64 +24,57 @@ class StormBuffer
 private:
 
 public:
-	char* buf;
+	unsigned char* buf;
 	unsigned long length;
 	bool NeedClear = false;
-	/*~StormBuffer( )
+	~StormBuffer( )
 	{
-	Clear( );
-	}*/
+		Clear( );
+	}
 	StormBuffer()
 	{
-
 		buf = 0;
 		length = 0;
 	}
 	StormBuffer(unsigned long l)
 	{
-
 		//	memoryleakcheck++;
 		length = l;
-		buf = (char*)Storm::MemAlloc(l + 1);
+		buf = (unsigned char*)Storm::MemAlloc(l);
 		NeedClear = true;
 		buf[l] = '\0';
 	}
-	StormBuffer(char* b, unsigned long l)
+	StormBuffer(unsigned char* b, unsigned long l)
 	{
-
 		buf = b;
 		length = l;
 	}
+
 	void Resize(unsigned long l)
 	{
-
 		Clear();
-		buf = (char*)Storm::MemAlloc(l + 1);
+		buf = (unsigned char*)Storm::MemAlloc(l);
 		NeedClear = true;
 		buf[l] = '\0';
 		length = l;
-
 	}
 
-	char* GetData()
+	unsigned char* GetData()
 	{
 		return buf;
 	}
-	char* GetData(int offset)
+	unsigned char* GetData(int offset)
 	{
-
 		return buf + offset;
 	}
 
 	unsigned long GetSize()
 	{
-
 		return length;
 	}
 
 	void Clear()
 	{
-
 		//	memoryleakcheck--;
 		length = 0;
 		if (buf != NULL)
@@ -90,11 +83,11 @@ public:
 				Storm::MemFree(buf);
 		}
 		buf = NULL;
+		NeedClear = false;
 	}
 
 	StormBuffer& copy_to_new(const StormBuffer& CopyObject)
 	{
-
 		Resize(CopyObject.length);
 		std::memcpy(buf, CopyObject.buf, length);
 		return (*this);
@@ -102,7 +95,7 @@ public:
 
 	StormBuffer& operator =(const StormBuffer& CopyObject)
 	{
-
+		Clear();
 		/*Resize( CopyObject.length );
 		std::memcpy( buf, CopyObject.GetData( ), length );*/
 		length = CopyObject.length;
@@ -111,19 +104,15 @@ public:
 	}
 	StormBuffer& operator =(const std::string& CopyString)
 	{
-
 		Resize(static_cast<int>(CopyString.size()));
 		std::memcpy(buf, CopyString.c_str(), length);
 		return (*this);
 	}
 
-	CHAR& operator [](int Index)
+	unsigned char& operator [](int Index)
 	{
-
 		return buf[Index];
 	}
-
-
 };
 
 typedef struct StormBufferList
@@ -138,7 +127,6 @@ typedef struct StormBufferList
 	}
 	StormBufferList(unsigned long l)
 	{
-
 		buf = (char**)Storm::MemAlloc(l);
 		length = l;
 	}

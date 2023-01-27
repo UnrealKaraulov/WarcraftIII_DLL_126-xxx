@@ -28,7 +28,7 @@ bool DEBUG_FULL = false;
 //unsigned long StormDLLsz = 0;
 
 
-int SetInfoObjDebugVal = true;
+int SetInfoObjDebugVal = false;
 
 #pragma region All Offsets Here
 
@@ -112,7 +112,7 @@ unsigned char* DrawUnitBarOffset = 0;
 void __stdcall DisableAllHooks();
 #pragma endregion
 
-int MainFuncWork = false;
+bool MainFuncWork = false;
 
 unsigned char* GetGlobalClassAddr()
 {
@@ -363,36 +363,48 @@ void* ThreadWatcherID = NULL;
 
 int SELF_UNLOAD_DLL_AFTER_GAME_END = false;
 
+bool IsGameDllFound()
+{
+	return GameDll != NULL;
+}
+
 unsigned long __stdcall UNLOAD_WATCHER(void*)
 {
+	bool tls_setup = false;
 	while (true)
 	{
-		while (!GameDll)
+		while (!IsGameDllFound())
 		{
 			Sleep(20);
 		}
 
-		while (!IsGame())
+		if (IsGameDllFound())
 		{
-			Sleep(20);
-		}
+			if (!tls_setup)
+				SetTlsForMe();
+			tls_setup = true;
 
-		while (IsGame())
-		{
-			Sleep(20);
-		}
+			while (!IsGame())
+			{
+				Sleep(20);
+			}
 
-		DisableAllHooks();
+			while (IsGame())
+			{
+				Sleep(20);
+			}
 
-		if (SELF_UNLOAD_DLL_AFTER_GAME_END)
-		{
-			DllSelfUnloading(GetCurrentModule);
-			ThreadWatcherID = NULL;
-			ExitThread(0);
+			DisableAllHooks();
+
+			if (SELF_UNLOAD_DLL_AFTER_GAME_END)
+			{
+				DllSelfUnloading(GetCurrentModule);
+				ThreadWatcherID = NULL;
+				ExitThread(0);
+			}
 		}
 	}
 	ExitThread(0);
-	return 0;
 }
 
 
@@ -484,9 +496,9 @@ int __stdcall SetMainFuncWork(int state)
 
 
 
-int BlockKeyAndMouseEmulation = false;
-int EnableSelectHelper = false;
-int DoubleClickHelper = false;
+bool BlockKeyAndMouseEmulation = false;
+bool EnableSelectHelper = false;
+bool DoubleClickHelper = false;
 
 
 
@@ -552,12 +564,14 @@ const char* __stdcall GetCurrentMapPath(int)
 	return CurrentMapPath;
 }
 
-int OverlayDrawed = false;
+bool OverlayDrawed = false;
 int WriteAccessStatus = -1;
 
 typedef int(__fastcall* DrawInterface_p)(int, int);
 DrawInterface_p DrawInterface_org;
 DrawInterface_p DrawInterface_ptr;
+
+unsigned long DELAYKEY = 0;
 
 int __fastcall DrawInterface_my(int arg1, int arg2)
 {
@@ -569,11 +583,17 @@ int __fastcall DrawInterface_my(int arg1, int arg2)
 		//}
 
 
+		if (GetTickCount() - DELAYKEY > 20)
+		{
+			PressKeyWithDelay_timed();
+			DELAYKEY = GetTickCount();
+		}
+
+
 		DrawOverlayDx8();
 		DrawOverlayGl();
+
 		OverlayDrawed = true;
-
-
 	}
 
 	return DrawInterface_ptr(arg1, arg2);
@@ -856,7 +876,7 @@ int PlantDetourJMP(unsigned char* source, const unsigned char* destination, size
 {
 
 	unsigned long oldProtection;
-	int bRet = VirtualProtect(source, length, PAGE_EXECUTE_READWRITE, &oldProtection);
+	bool bRet = VirtualProtect(source, length, PAGE_EXECUTE_READWRITE, &oldProtection);
 
 	if (bRet == false)
 		return false;
@@ -1335,7 +1355,7 @@ unsigned char* __stdcall SaveStringsForPrintItem(unsigned char* itemaddr)
 }
 
 
-int NeedDrawRegen = false;
+bool NeedDrawRegen = false;
 
 
 int __stdcall DrawRegenAllways(int enabled)
@@ -2341,7 +2361,6 @@ int __stdcall InitOverlay(int)
 		std::cout << __func__ << std::endl;
 	Initd3d8Hook();
 	InitOpenglHook();
-
 
 	return 0;
 }

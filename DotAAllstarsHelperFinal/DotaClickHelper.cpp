@@ -18,19 +18,19 @@ LPARAM lpAltScanKeyDOWN = (LPARAM)(0x00000001 | (LPARAM)(MapVirtualKey(VK_MENU, 
 LPARAM lpCtrlScanKeyUP = (LPARAM)(0xC0000001 | (LPARAM)(MapVirtualKey(VK_CONTROL, 0) << 16));
 LPARAM lpCtrlScanKeyDOWN = (LPARAM)(0x00000001 | (LPARAM)(MapVirtualKey(VK_CONTROL, 0) << 16));
 
-int EmulateKeyInputForHWND = false;
+bool EmulateKeyInputForHWND = false;
 
 
 int ShiftPressed = 0;
 unsigned long SkipSingleShift = 0;
 unsigned long SingleShift = 0;
 
-int SkipAllMessages = false;
+bool SkipAllMessages = false;
 
 
 void PressKeyboard(int VK)
 {
-	int PressedKey = false;
+	bool PressedKey = false;
 	INPUT Input = { 0 };
 	Input.type = INPUT_KEYBOARD;
 	Input.ki.wScan = (WORD)MapVirtualKey((unsigned int)VK, 0);
@@ -123,20 +123,18 @@ int __stdcall AddDoubleClickSkillID(int skillID)
 float HeroPortX = 0.318f;
 float HeroPortY = 0.888f;
 
-int ScreenToClientReplace = false;
+bool ScreenToClientReplace = false;
 
 POINT ScreenToClientReplacedPoint;
 
 
-int ClientToScreenReplace = false;
+bool ClientToScreenReplace = false;
 
 POINT ClientToScreenReplacedPoint;
 
 LPARAM oldlParam = 0;
 
-
-
-int BLOCKMOUSEMOVING = false;
+bool BLOCKMOUSEMOVING = false;
 
 float HeroFrameX = 0.256f;
 float HeroFrameY = 0.0666f;
@@ -235,7 +233,7 @@ void MouseClick(int toX, int toY)
 
 void JustClickMouse()
 {
-	int ButtonDown = false;
+	bool ButtonDown = false;
 	if (IsKeyPressed(VK_LBUTTON))
 	{
 		ButtonDown = true;
@@ -429,7 +427,7 @@ void __stdcall EnableReplaceHotkeyFlag(int enabled)
 
 std::vector<KeySelectActionStruct> KeySelectActionList;
 
-int __stdcall AddKeySelectAction(int KeyCode, int GroupHandle)
+int __stdcall AddKeySelectAction(unsigned int KeyCode, int GroupHandle)
 {
 	if (DEBUG_FULL)
 		std::cout << __func__ << std::endl;
@@ -442,15 +440,15 @@ int __stdcall AddKeySelectAction(int KeyCode, int GroupHandle)
 
 	KeySelectActionStruct tmpstr;
 	tmpstr.VK = KeyCode & 0xFF;
-	tmpstr.IsAlt = KeyCode & 0x10000;
-	tmpstr.IsCtrl = KeyCode & 0x20000;
-	tmpstr.IsShift = KeyCode & 0x40000;
+	tmpstr.IsAlt = (KeyCode & 0x10000) > 0;
+	tmpstr.IsCtrl = (KeyCode & 0x20000) > 0;
+	tmpstr.IsShift = (KeyCode & 0x40000) > 0;
 	tmpstr.GroupHandle = GroupHandle;
 	tmpstr.units = GetUnitsFromGroup(GroupHandle);
 	//reverse( tmpstr.units.begin( ), tmpstr.units.end( ) );
 
 
-	if (!EnabledReplaceHotkeyFlag || KeyCode & 0x100000)
+	if (!EnabledReplaceHotkeyFlag || (KeyCode & 0x100000) > 0)
 	{
 		for (KeySelectActionStruct& curstr : KeySelectActionList)
 		{
@@ -490,7 +488,7 @@ int __stdcall AddKeySelectAction(int KeyCode, int GroupHandle)
 
 std::vector<KeyChatActionStruct> KeyChatActionList;
 
-int __stdcall AddKeyChatAction(int KeyCode, const char* str, int SendToAll)
+int __stdcall AddKeyChatAction(unsigned int KeyCode, const char* str, int SendToAll)
 {
 	if (DEBUG_FULL)
 		std::cout << __func__ << std::endl;
@@ -503,13 +501,13 @@ int __stdcall AddKeyChatAction(int KeyCode, const char* str, int SendToAll)
 
 	KeyChatActionStruct tmpstr;
 	tmpstr.VK = KeyCode & 0xFF;
-	tmpstr.IsAlt = KeyCode & 0x10000;
-	tmpstr.IsCtrl = KeyCode & 0x20000;
-	tmpstr.IsShift = KeyCode & 0x40000;
+	tmpstr.IsAlt = (KeyCode & 0x10000) > 0;
+	tmpstr.IsCtrl = (KeyCode & 0x20000) > 0;
+	tmpstr.IsShift = (KeyCode & 0x40000) > 0;
 	tmpstr.SendToAll = SendToAll;
 	tmpstr.Message = str && strlen(str) < 127 ? str : "Bad message length";
 
-	if (!EnabledReplaceHotkeyFlag || KeyCode & 0x100000)
+	if (!EnabledReplaceHotkeyFlag || (KeyCode & 0x100000) > 0)
 	{
 		for (KeyChatActionStruct& curstr : KeyChatActionList)
 		{
@@ -543,7 +541,7 @@ int __stdcall AddKeyChatAction(int KeyCode, const char* str, int SendToAll)
 
 std::vector<KeyCalbackActionStruct> KeyCalbackActionList;
 
-int __stdcall AddKeyCalbackAction(int KeyCode, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8)
+int __stdcall AddKeyCalbackAction(unsigned int KeyCode, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8)
 {
 	if (DEBUG_FULL)
 		std::cout << __func__ << std::endl;
@@ -556,9 +554,9 @@ int __stdcall AddKeyCalbackAction(int KeyCode, int arg2, int arg3, int arg4, int
 
 	KeyCalbackActionStruct tmpstr;
 	tmpstr.VK = KeyCode & 0xFF;
-	tmpstr.IsAlt = KeyCode & 0x10000;
-	tmpstr.IsCtrl = KeyCode & 0x20000;
-	tmpstr.IsShift = KeyCode & 0x40000;
+	tmpstr.IsAlt = (KeyCode & 0x10000) > 0;
+	tmpstr.IsCtrl = (KeyCode & 0x20000) > 0;
+	tmpstr.IsShift = (KeyCode & 0x40000) > 0;
 	// save args safe
 	tmpstr.args[0] = arg2;
 	tmpstr.args[1] = arg3;
@@ -568,7 +566,7 @@ int __stdcall AddKeyCalbackAction(int KeyCode, int arg2, int arg3, int arg4, int
 	tmpstr.args[5] = arg7;
 	tmpstr.args[6] = arg8;
 
-	if (!EnabledReplaceHotkeyFlag || KeyCode & 0x100000)
+	if (!EnabledReplaceHotkeyFlag || (KeyCode & 0x100000) > 0)
 	{
 		for (KeyCalbackActionStruct& curstr : KeyCalbackActionList)
 		{
@@ -609,7 +607,7 @@ int __stdcall AddKeyCalbackAction(int KeyCode, int arg2, int arg3, int arg4, int
 }
 
 
-int __stdcall AddKeyButtonAction(int KeyCode, int btnID, int IsSkill)
+int __stdcall AddKeyButtonAction(unsigned int KeyCode, int btnID, int IsSkill)
 {
 	if (DEBUG_FULL)
 		std::cout << __func__ << std::endl;
@@ -630,13 +628,13 @@ int __stdcall AddKeyButtonAction(int KeyCode, int btnID, int IsSkill)
 	else
 		tmpstr.altbtnID = 0;
 
-	tmpstr.IsAlt = KeyCode & 0x10000;
-	tmpstr.IsCtrl = KeyCode & 0x20000;
-	tmpstr.IsShift = KeyCode & 0x40000;
-	tmpstr.IsRightClick = KeyCode & 0x80000;
-	tmpstr.IsQuickCast = KeyCode & 0x200000;
+	tmpstr.IsAlt = (KeyCode & 0x10000) > 0;
+	tmpstr.IsCtrl = (KeyCode & 0x20000) > 0;
+	tmpstr.IsShift = (KeyCode & 0x40000) > 0;
+	tmpstr.IsRightClick = (KeyCode & 0x80000) > 0;
+	tmpstr.IsQuickCast = (KeyCode & 0x200000) > 0;
 
-	if (!EnabledReplaceHotkeyFlag || KeyCode & 0x100000)
+	if (!EnabledReplaceHotkeyFlag || (KeyCode & 0x100000) > 0)
 	{
 		for (KeyActionStruct& curstr : KeyActionList)
 		{
@@ -859,7 +857,7 @@ int CheckBtnForClickPortrain(unsigned char* pButton)
 						{
 							if (tmpClick.checkforcd)
 							{
-								if (*(unsigned int*)(pAbil + 0x20) & 0x200)
+								if ((*(unsigned int*)(pAbil + 0x20) & 0x200) > 0)
 									return 2;
 							}
 							//		PrintText( "OK! Need click!" );
@@ -1028,7 +1026,7 @@ std::vector<unsigned char> SendKeyEvent;
 
 auto t_start = std::chrono::high_resolution_clock::now();
 
-int LOCK_MOUSE_IN_WINDOW = false;
+bool LOCK_MOUSE_IN_WINDOW = false;
 
 int __stdcall LockMouseInWindow(int enable)
 {
@@ -1043,7 +1041,7 @@ int __stdcall LockMouseInWindow(int enable)
 }
 
 
-int BlockKeyboardAndMouseWhenTeleport = false;
+bool BlockKeyboardAndMouseWhenTeleport = false;
 
 int __stdcall TeleportHelper(int enabled)
 {
@@ -1056,7 +1054,7 @@ int __stdcall TeleportHelper(int enabled)
 std::vector<int> WhiteListForTeleport;
 
 
-int TeleportShiftPress = false;
+bool TeleportShiftPress = false;
 
 int __stdcall TeleportShiftKey(int enabled)
 {
@@ -1076,7 +1074,7 @@ int __stdcall TeleportWhiteListKey(int VK)
 	return VK;
 }
 
-int ShopHelperEnabled = false;
+bool ShopHelperEnabled = false;
 
 int __stdcall ShopHelper(int enable)
 {
@@ -1085,7 +1083,7 @@ int __stdcall ShopHelper(int enable)
 	ShopHelperEnabled = enable;
 	return enable;
 }
-int rawimage_skipmouseevent = true;
+bool rawimage_skipmouseevent = true;
 
 int __stdcall RawImage_SkipMouseClick(int enabled)
 {
@@ -1095,7 +1093,7 @@ int __stdcall RawImage_SkipMouseClick(int enabled)
 	return rawimage_skipmouseevent;
 }
 
-int AutoSelectHero = false;
+bool AutoSelectHero = false;
 
 int __stdcall SetAutoSelectHero(int enabled)
 {
@@ -1226,13 +1224,13 @@ void PressKeyWithDelay_timed( )
 										int unitowner = GetUnitOwnerSlot(selectedunit);
 										if (unitowner != 15)
 										{
-											int PressedButton = false;
+											bool PressedButton = false;
 
 											if (IsNULLButtonFound(GetSkillPanelButton(11)))
 											{
 												if (keyAction.altbtnID >= 0)
 												{
-													if (!(DelayedPressList[i].NeedPresslParam & 0x40000000))
+													if (!((DelayedPressList[i].NeedPresslParam & 0x40000000) > 0))
 													{
 														if (keyAction.IsSkill)
 															PressedButton = PressSkillPanelButton(keyAction.altbtnID, keyAction.IsRightClick);
@@ -1244,7 +1242,7 @@ void PressKeyWithDelay_timed( )
 											}
 											else
 											{
-												if (!(DelayedPressList[i].NeedPresslParam & 0x40000000))
+												if (!((DelayedPressList[i].NeedPresslParam & 0x40000000) > 0))
 												{
 													if (keyAction.IsSkill)
 														PressedButton = PressSkillPanelButton(keyAction.btnID, keyAction.IsRightClick);
@@ -1493,9 +1491,9 @@ unsigned int __stdcall GetTestValue(int id)
 	return 0;
 }
 
-int ForceLvl1 = false;
-int ForceLvl2 = false;
-int ForceLvl3 = false;
+bool ForceLvl1 = false;
+bool ForceLvl2 = false;
+bool ForceLvl3 = false;
 
 void __stdcall SetForceHotkeyProcess(int lvl1, int lvl2, int lvl3)
 {
@@ -1916,7 +1914,7 @@ int __fastcall SimpleButtonPreClickEvent_my(unsigned char* pButton, int unused, 
 			if (AbilName.length() > 1 &&
 				(pItemUnitID == 0xD0142
 					||
-					((pBtnFlag != 2 && (pObjId != 'AHer' || pObjId_1 != 0)) && (pAbil || pObjId || (pAbilTitle[0] != '\0' && localplayeridslot != unitownerslot)))
+					((pBtnFlag != 2 && (pObjId != 'AHer' || pObjId_1 != 0)) && (pAbil || pObjId || (pAbilTitle && pAbilTitle[0] != '\0' && localplayeridslot != unitownerslot)))
 					||
 					(std::find(InfoWhitelistedObj.begin(), InfoWhitelistedObj.end(), pObjId) != InfoWhitelistedObj.end())))
 			{
@@ -2138,8 +2136,8 @@ float __fastcall GetCameraHeight_my(unsigned int a1)
 unsigned long GroupSelectLastTime = GetTickCount();
 int LastSelectedGroupHandle = 0;
 
-int ProcessHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam, int& _IsAltPressed,
-	int& _IsCtrlPressed, int& _IsShiftPressed, int& itempressed, int& ClickHelperWork, int WithModifiers)
+int ProcessHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam, bool& _IsAltPressed,
+	bool& _IsCtrlPressed, bool& _IsShiftPressed, bool& itempressed, bool& ClickHelperWork, int WithModifiers)
 {
 	for (KeyActionStruct& keyAction : KeyActionList)
 	{
@@ -2160,7 +2158,7 @@ int ProcessHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam
 					|| (keyAction.IsShift && _IsShiftPressed)))
 				)
 			{
-				int DoubleClicked = false;
+				bool DoubleClicked = false;
 
 
 				if (!keyAction.IsQuickCast)
@@ -2274,7 +2272,7 @@ int ProcessHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam
 								}
 							}
 
-							int PressedButton = false;
+							bool PressedButton = false;
 
 							if (IsNULLButtonFound(GetSkillPanelButton(11)))
 							{
@@ -2437,8 +2435,8 @@ int ProcessHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam
 
 	return false;
 }
-int ProcessSelectActionHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam, int& _IsAltPressed,
-	int& _IsCtrlPressed, int& _IsShiftPressed, int WithModifiers)
+int ProcessSelectActionHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam, bool& _IsAltPressed,
+	bool& _IsCtrlPressed, bool& _IsShiftPressed, int WithModifiers)
 {
 	for (auto keyAction : KeySelectActionList)
 	{
@@ -2529,8 +2527,8 @@ int ProcessSelectActionHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LP
 	}
 	return false;
 }
-int ProcessCallbackHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam, int& _IsAltPressed,
-	int& _IsCtrlPressed, int& _IsShiftPressed, int WithModifiers)
+int ProcessCallbackHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam, bool& _IsAltPressed,
+	bool& _IsCtrlPressed, bool& _IsShiftPressed, int WithModifiers)
 {
 	int selectedunits = GetSelectedUnitCountBigger(GetLocalPlayerId());
 
@@ -2597,8 +2595,8 @@ int ProcessCallbackHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM
 	}
 	return false;
 }
-int ProcessChatHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam, int& _IsAltPressed,
-	int& _IsCtrlPressed, int& _IsShiftPressed, int WithModifiers)
+int ProcessChatHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam, bool& _IsAltPressed,
+	bool& _IsCtrlPressed, bool& _IsShiftPressed, int WithModifiers)
 {
 	for (auto keyAction : KeyChatActionList)
 	{
@@ -2738,7 +2736,7 @@ int SkipKeyboardAndMouseWhenTeleport(HWND& hWnd, unsigned int& Msg, WPARAM& wPar
 
 			if ((wParam >= 0x41 && wParam <= 0x5A) || (wParam >= VK_NUMPAD1 && wParam <= VK_NUMPAD8))
 			{
-				int NeedSkipForTP = true;
+				bool NeedSkipForTP = true;
 
 				for (int& VK : WhiteListForTeleport)
 				{
@@ -2936,7 +2934,7 @@ int ProcessRegisteredHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPAR
 	return false;
 }
 
-int FixNumpad(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, WPARAM& _wParam, LPARAM& lParam, int& _IsShiftPressed)
+int FixNumpad(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, WPARAM& _wParam, LPARAM& lParam, bool& _IsShiftPressed)
 {
 	// SHIFT+NUMPAD TRICK
 	if (IsGameFrameActive() && (Msg == WM_KEYDOWN || Msg == WM_KEYUP) && (
@@ -2979,7 +2977,7 @@ int FixNumpad(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, WPARAM& _wParam, LP
 			{
 				if (!_IsShiftPressed)
 				{
-					int NumLock = (((unsigned short)GetKeyState(VK_NUMLOCK)) & 0xffff) != 0;
+					bool NumLock = (((unsigned short)GetKeyState(VK_NUMLOCK)) & 0xffff) > 0;
 					if (NumLock)
 						ShiftPressed = 0x1;
 					else
@@ -3046,12 +3044,12 @@ int FixNumpad(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, WPARAM& _wParam, LP
 
 LRESULT __fastcall WarcraftWindowProcHooked(HWND hWnd, unsigned int _Msg, WPARAM _wParam, LPARAM lParam)
 {
+
 	if (Warcraft3Window != hWnd && hWnd != NULL)
 	{
 		Warcraft3Window = hWnd;
 		//SetWar3Window(hWnd);
 	}
-
 	//DreamUI_WarWindow3Proc(hWnd, _Msg, _wParam, lParam);
 
 	if (!InitTestValues)
@@ -3063,12 +3061,12 @@ LRESULT __fastcall WarcraftWindowProcHooked(HWND hWnd, unsigned int _Msg, WPARAM
 
 
 	unsigned int Msg = _Msg;
-	int ClickHelperWork = false;
+	bool ClickHelperWork = false;
 	WPARAM wParam = _wParam;
 
-	int _IsCtrlPressed = IsKeyPressed(VK_CONTROL);
-	int _IsShiftPressed = IsKeyPressed(VK_SHIFT);
-	int _IsAltPressed = IsKeyPressed(VK_MENU);
+	bool _IsCtrlPressed = IsKeyPressed(VK_CONTROL);
+	bool _IsShiftPressed = IsKeyPressed(VK_SHIFT);
+	bool _IsAltPressed = IsKeyPressed(VK_MENU);
 
 	if (_Msg == WM_KEYDOWN)
 	{
@@ -3255,7 +3253,7 @@ LRESULT __fastcall WarcraftWindowProcHooked(HWND hWnd, unsigned int _Msg, WPARAM
 	//}
 
 
-	if ((lParam & 0x40000000) && Msg == WM_KEYDOWN && !*(int*)ChatFound)
+	if ((lParam & 0x40000000) > 0 && Msg == WM_KEYDOWN && !*(int*)ChatFound)
 	{
 		if (SetInfoObjDebugVal)
 		{
@@ -3494,7 +3492,7 @@ LRESULT __fastcall WarcraftWindowProcHooked(HWND hWnd, unsigned int _Msg, WPARAM
 			if (Msg == WM_KEYDOWN || Msg == WM_XBUTTONDOWN || Msg == WM_MBUTTONDOWN ||
 				Msg == WM_SYSKEYDOWN)
 			{
-				int itempressed = false;
+				bool itempressed = false;
 
 				if (_Msg == WM_XBUTTONDOWN)
 				{

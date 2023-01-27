@@ -134,16 +134,16 @@ extern pLoadFrameDefList LoadFrameDefList;
 
 inline std::string ToLower(std::string str)
 {
-	std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::tolower(c); });
+	std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return (char)std::tolower(c); });
 	return str;
 }
 inline std::string ToUpper(std::string str)
 {
-	std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::toupper(c); });
+	std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return  (char)std::toupper(c); });
 	return str;
 }
 
-extern int MainFuncWork;
+extern bool MainFuncWork;
 
 extern int ChatEditBoxVtable;
 int IsChatActive();
@@ -207,7 +207,7 @@ void SelectUnit(unsigned char* unit);
 std::vector< unsigned char*> GetUnitsFromGroup(int groupid);
 unsigned char** FindUnitAbils(unsigned char* unitaddr, unsigned int* count, int abilcode = 0, int abilbasecode = 0);
 int __stdcall GetUnitOwnerSlot(unsigned char* unitaddr);
-int __stdcall IsEnemy( unsigned char * UnitAddr);
+int __stdcall IsEnemy(unsigned char * UnitAddr);
 int __stdcall IsHero(unsigned char* unitaddr);
 int __stdcall IsTower(unsigned char* unitaddr);
 int __stdcall IsNotBadUnit(unsigned char* unitaddr, int onlymem = false);
@@ -343,8 +343,8 @@ extern std::vector<ModelScaleStruct> ModelScaleList;
 extern std::vector<ICONMDLCACHE> ICONMDLCACHELIST;
 
 extern std::vector<FileRedirectStruct> FileRedirectList;
-typedef int(__fastcall* GameGetFile)(const char* filename, int* OutDataPointer, size_t* OutSize, int unknown);
-int __fastcall GameGetFile_my(const char* filename, int* OutDataPointer, unsigned int* OutSize, int unknown);
+typedef int(__fastcall* GameGetFile)(const char* filename, unsigned char ** OutDataPointer, size_t* OutSize, int unknown);
+int __fastcall GameGetFile_my(const char* filename, unsigned char ** OutDataPointer, unsigned int* OutSize, int unknown);
 extern GameGetFile GameGetFile_org, GameGetFile_ptr;
 
 //
@@ -485,7 +485,7 @@ void DrawOverlayGl();
 void SetNewLightDx8(int id);
 void SetOldLightDx8(int id);
 
-extern int OverlayDrawed;
+extern bool OverlayDrawed;
 
 void InitD3DVSync(int enabled);
 

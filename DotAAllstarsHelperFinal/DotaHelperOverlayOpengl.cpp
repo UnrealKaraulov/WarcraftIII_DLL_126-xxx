@@ -184,8 +184,6 @@ void DrawOverlayGl()
 	DrawAllRawImages();
 
 	wglMakeCurrent(GlobalDc, oldcontext);
-
-
 }
 
 
@@ -239,7 +237,6 @@ void InitOpenglHook()
 			MH_CreateHook(wglSwapLayerBuffers_org, &wglSwapLayerBuffers_my, reinterpret_cast<void**>(&wglSwapLayerBuffers_ptr));
 			MH_EnableHook(wglSwapLayerBuffers_org);
 		}
-
 	}
 }
 

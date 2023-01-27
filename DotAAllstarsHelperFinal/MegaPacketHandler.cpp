@@ -191,15 +191,15 @@ int __stdcall CallTrigger(int TriggerHandle)
 	return 0;
 }
 
-int Handle_Jass_Packet(unsigned char* packetraw, size_t packetsize, int pid)
+int Handle_Jass_Packet(unsigned char* packetraw, size_t _packetsize, int pid)
 {
-	if (!packetsize || !packetraw)
+	if (!_packetsize || !packetraw)
 		return 0;
 
 	int readdata = 1;
 	PacketTriggerPlayerId = pid;
 	BytesToRecv.clear();
-	BytesToRecv.assign(packetraw, packetraw + packetsize);
+	BytesToRecv.assign(packetraw, packetraw + _packetsize);
 
 	if (BytesToRecv.size() >= 6 && *(unsigned short*)&BytesToRecv[0] == 0xFF50)
 	{

@@ -160,7 +160,7 @@ int __stdcall IsUnitInvulnerable(unsigned char* unitaddr)
 
 int __stdcall IsUnitIllusion(unsigned char* unitaddr)
 {
-	return (*(unsigned int*)(unitaddr + 0x5C) & 0x40000000);
+	return (*(unsigned int*)(unitaddr + 0x5C) & 0x40000000) > 0;
 }
 
 // Проверяет юнит или не юнит
@@ -218,7 +218,7 @@ int __stdcall IsNotBadUnit(unsigned char* unitaddr, int onlymem)
 			return false;
 		}
 
-		if (unitflag2 & 0x100u)
+		if ((unitflag2 & 0x100u) > 0)
 		{
 			if (SetInfoObjDebugVal)
 			{

@@ -42,7 +42,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
@@ -100,7 +100,8 @@
       </IgnoreAllDefaultLibraries>
       <MergeSections>
       </MergeSections>
-      <SectionAlignment>4096</SectionAlignment>
+      <SectionAlignment>
+      </SectionAlignment>
       <GenerateMapFile>false</GenerateMapFile>
       <AssemblyDebug>
       </AssemblyDebug>
