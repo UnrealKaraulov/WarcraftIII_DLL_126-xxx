@@ -11,7 +11,7 @@ double pDistance(int x1, int y1, int x2, int y2)
 	return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
-int __stdcall ClearRawImage(unsigned int RawImage, RGBAPix FillByte)
+int __stdcall ClearRawImage(unsigned int RawImage, COLOR4 FillByte)
 {
 	if (!InitFunctionCalled)
 		return 0;
@@ -22,7 +22,7 @@ int __stdcall ClearRawImage(unsigned int RawImage, RGBAPix FillByte)
 
 	RawImageStruct& tmpRawImage = ListOfRawImages[RawImage];
 #ifdef OLD_CODE
-	RGBAPix* RawImageData = (RGBAPix*)tmpRawImage.img.buf;
+	COLOR4* RawImageData = (COLOR4*)tmpRawImage.img.buf;
 	for (unsigned int i = 0; i < tmpRawImage.width * tmpRawImage.height; i++)
 	{
 		RawImageData[i] = FillByte;
@@ -50,7 +50,7 @@ int __stdcall BackupRawImage(unsigned int RawImage)
 	}
 
 #ifdef OLD_CODE
-	tmpRawImage.backup_img = new char[tmpRawImage.img.length];
+	tmpRawImage.backup_img = new unsigned char[tmpRawImage.img.length];
 	std::memcpy(tmpRawImage.backup_img, tmpRawImage.img.buf, tmpRawImage.img.length);
 #else 
 
@@ -87,7 +87,7 @@ int __stdcall RestoreRawImage(unsigned int RawImage)
 }
 
 // Создает RawImage (RGBA) с указанным цветом
-int __stdcall CreateRawImage(int width, int height, RGBAPix defaultcolor)
+int __stdcall CreateRawImage(int width, int height, COLOR4 defaultcolor)
 {
 	if (!InitFunctionCalled)
 		return 0;
@@ -101,11 +101,18 @@ int __stdcall CreateRawImage(int width, int height, RGBAPix defaultcolor)
 #ifdef OLD_CODE
 	StormBuffer tmpRawImageBuffer = StormBuffer();
 	tmpRawImageBuffer.Resize(width * height * 4);
-	for (int i = 0; i < width * height; i++)
-	{
-		*(RGBAPix*)&tmpRawImageBuffer[i * 4] = defaultcolor;
-	}
 
+	if (defaultcolor.R == defaultcolor.G == defaultcolor.B == defaultcolor.A)
+	{
+		memset(tmpRawImageBuffer.buf, defaultcolor.R, width * height * 4);
+	}
+	else
+	{
+		for (int i = 0; i < width * height; i++)
+		{
+			*(COLOR4*)&tmpRawImageBuffer[i * 4] = defaultcolor;
+		}
+	}
 	tmpRawImage.img = tmpRawImageBuffer;
 
 #else 
@@ -116,7 +123,7 @@ int __stdcall CreateRawImage(int width, int height, RGBAPix defaultcolor)
 
 	tmpRawImage.width = width;
 	tmpRawImage.height = height;
-	tmpRawImage.filename = std::string();
+	tmpRawImage.filename[0] = '\0';
 	tmpRawImage.RawImage = resultid;
 	tmpRawImage.Flipped = false;
 	tmpRawImage.needResetTexture = true;
@@ -135,7 +142,7 @@ int __stdcall LoadRawImage(const char* filename)
 	int filenamelen = strlen(filename);
 
 
-	int PatchFileData = 0;
+	unsigned char * PatchFileData = 0;
 	size_t PatchFileSize = 0;
 	GameGetFile_org(filename, &PatchFileData, &PatchFileSize, true);
 	if (PatchFileData == 0 || PatchFileSize == 0)
@@ -175,12 +182,12 @@ int __stdcall LoadRawImage(const char* filename)
 	}
 	if (PatchFileData != 0 || PatchFileSize != 0)
 	{
-		int IsBlp = memcmp((LPCVOID)PatchFileData, "BLP1", 4) == 0;
+		bool IsBlp = memcmp((LPCVOID)PatchFileData, "BLP1", 4) == 0;
 		int w = 0, h = 0, bpp = 0, mipmaps = 0, alphaflag = 8, compress = 1, alphaenconding = 5;
 		unsigned long rawImageSize = 0;
 
 		StormBuffer OutBuffer = StormBuffer();
-		StormBuffer InBuffer((char*)PatchFileData, PatchFileSize);
+		StormBuffer InBuffer(PatchFileData, PatchFileSize);
 
 		if (!IsBlp)
 			rawImageSize = (unsigned long)TGA2Raw(InBuffer, OutBuffer, w, h, bpp, filename);
@@ -197,7 +204,7 @@ int __stdcall LoadRawImage(const char* filename)
 #endif
 			tmpRawImage.width = w;
 			tmpRawImage.height = h;
-			tmpRawImage.filename = filename;
+			strcpy_s(tmpRawImage.filename, filename);
 			tmpRawImage.RawImage = resultid;
 			tmpRawImage.Flipped = false;
 
@@ -224,7 +231,7 @@ int __stdcall LoadRawImage(const char* filename)
 #endif
 				tmpRawImage.width = w;
 				tmpRawImage.height = h;
-				tmpRawImage.filename = filename;
+				strcpy_s(tmpRawImage.filename, filename);
 				tmpRawImage.RawImage = resultid;
 				tmpRawImage.Flipped = false;
 
@@ -278,15 +285,19 @@ int __stdcall RawImage_DrawImg(unsigned int RawImage, unsigned int RawImage2, in
 	RawImageStruct& tmpRawImage2 = ListOfRawImages[RawImage2];
 
 #ifdef OLD_CODE
-	RGBAPix* RawImageData = (RGBAPix*)tmpRawImage.img.buf;
-	RGBAPix* RawImageData2 = (RGBAPix*)tmpRawImage2.img.buf;
+	COLOR4* RawImageData = (COLOR4*)tmpRawImage.img.buf;
+	COLOR4* RawImageData2 = (COLOR4*)tmpRawImage2.img.buf;
 
 	for (unsigned int x = drawx, x2 = 0; x < tmpRawImage.width && x2 < tmpRawImage2.width; x++, x2++)
 	{
 		for (unsigned int y = drawy, y2 = 0; y < tmpRawImage.height && y2 < tmpRawImage2.height; y++, y2++)
 		{
 			if (blendmode == BlendModes::BlendNormal)
-				RawImageData[ArrayXYtoId(tmpRawImage.width, x, y)] = RawImageData2[ArrayXYtoId(tmpRawImage2.width, x2, y2)];
+			{
+				memcpy(&RawImageData[ArrayXYtoId(tmpRawImage.width, x, y)], &RawImageData2[ArrayXYtoId(tmpRawImage2.width, x2, y2)], tmpRawImage2.height * sizeof(COLOR4));
+				break;
+				//RawImageData[ArrayXYtoId(tmpRawImage.width, x, y)] = RawImageData2[ArrayXYtoId(tmpRawImage2.width, x2, y2)];
+			}
 			else if (blendmode == BlendModes::BlendAdd)
 				RawImageData[ArrayXYtoId(tmpRawImage.width, x, y)] =
 				RawImageData[ArrayXYtoId(tmpRawImage.width, x, y)] + RawImageData2[ArrayXYtoId(tmpRawImage2.width, x2, y2)];
@@ -313,7 +324,7 @@ int __stdcall RawImage_DrawImg(unsigned int RawImage, unsigned int RawImage2, in
 }
 
 // Заполняет выбранный пиксель указанным цветом
-int __stdcall RawImage_DrawPixel(unsigned int RawImage, unsigned int x, unsigned int y, RGBAPix color)//RGBAPix = unsigned int
+int __stdcall RawImage_DrawPixel(unsigned int RawImage, unsigned int x, unsigned int y, COLOR4 color)//COLOR4 = unsigned int
 {
 	if (!InitFunctionCalled)
 		return 0;
@@ -325,7 +336,7 @@ int __stdcall RawImage_DrawPixel(unsigned int RawImage, unsigned int x, unsigned
 
 	RawImageStruct& tmpRawImage = ListOfRawImages[RawImage];
 #ifdef OLD_CODE
-	RGBAPix* RawImageData = (RGBAPix*)tmpRawImage.img.buf;
+	COLOR4* RawImageData = (COLOR4*)tmpRawImage.img.buf;
 	if (x >= 0 && y >= 0 && x < tmpRawImage.width && y < tmpRawImage.height)
 	{
 		RawImageData[ArrayXYtoId(tmpRawImage.width, x, y)] = color;
@@ -342,7 +353,7 @@ int __stdcall RawImage_DrawPixel(unsigned int RawImage, unsigned int x, unsigned
 }
 
 
-int __stdcall RawImage_FillRectangle(unsigned int RawImage, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, RGBAPix color)
+int __stdcall RawImage_FillRectangle(unsigned int RawImage, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, COLOR4 color)
 {
 	if (!InitFunctionCalled)
 		return 0;
@@ -352,7 +363,7 @@ int __stdcall RawImage_FillRectangle(unsigned int RawImage, unsigned int x1, uns
 	}
 	RawImageStruct& tmpRawImage = ListOfRawImages[RawImage];
 #ifdef OLD_CODE
-	RGBAPix* RawImageData = (RGBAPix*)tmpRawImage.img.buf;
+	COLOR4* RawImageData = (COLOR4*)tmpRawImage.img.buf;
 
 	for (unsigned int xsize = 0; xsize < x2; xsize++)
 	{
@@ -374,7 +385,7 @@ int __stdcall RawImage_FillRectangle(unsigned int RawImage, unsigned int x1, uns
 
 
 // Рисует прямоугольник с указанным цветом и размером
-int __stdcall RawImage_DrawRect(unsigned int RawImage, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned int size, RGBAPix color)
+int __stdcall RawImage_DrawRect(unsigned int RawImage, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned int size, COLOR4 color)
 {
 	if (!InitFunctionCalled)
 		return 0;
@@ -417,9 +428,9 @@ int __stdcall RawImage_DrawRect(unsigned int RawImage, unsigned int x1, unsigned
 #define LINE_THICKNESS_DRAW_CLOCKWISE 1         // Start point is on the counter clockwise border line
 #define LINE_THICKNESS_DRAW_COUNTERCLOCKWISE 2  // Start point is on the clockwise border line
 
-void drawLineOverlap(unsigned int RawImage, int aXStart, int aYStart, int aXEnd, int aYEnd, uint8_t aOverlap,
-	RGBAPix aColor) {
-	int16_t tDeltaX, tDeltaY, tDeltaXTimes2, tDeltaYTimes2, tError, tStepX, tStepY;
+void drawLineOverlap(unsigned int RawImage, int aXStart, int aYStart, int aXEnd, int aYEnd, unsigned int aOverlap,
+	COLOR4 aColor) {
+	int tDeltaX, tDeltaY, tDeltaXTimes2, tDeltaYTimes2, tError, tStepX, tStepY;
 	RawImageStruct& tmpRawImage = ListOfRawImages[RawImage];
 	int maxwidth = tmpRawImage.width;
 	int maxheight = tmpRawImage.height;
@@ -540,8 +551,8 @@ void drawLineOverlap(unsigned int RawImage, int aXStart, int aYStart, int aXEnd,
 * no pixel missed and every pixel only drawn once!
 */
 void drawThickLine(unsigned int RawImage, int aXStart, int aYStart, int aXEnd, int aYEnd, int aThickness,
-	uint8_t aThicknessMode, RGBAPix aColor) {
-	int16_t i, tDeltaX, tDeltaY, tDeltaXTimes2, tDeltaYTimes2, tError, tStepX, tStepY;
+	unsigned int aThicknessMode, COLOR4 aColor) {
+	int i, tDeltaX, tDeltaY, tDeltaXTimes2, tDeltaYTimes2, tError, tStepX, tStepY;
 	RawImageStruct& tmpRawImage = ListOfRawImages[RawImage];
 	int maxwidth = tmpRawImage.width;
 	int maxheight = tmpRawImage.height;
@@ -586,7 +597,7 @@ void drawThickLine(unsigned int RawImage, int aXStart, int aYStart, int aXEnd, i
 	tDeltaY = aXEnd - aXStart;
 	tDeltaX = aYEnd - aYStart;
 	// mirror 4 quadrants to one and adjust deltas and stepping direction
-	int tSwap = true; // count effective mirroring
+	bool tSwap = true; // count effective mirroring
 	if (tDeltaX < 0) {
 		tDeltaX = -tDeltaX;
 		tStepX = -1;
@@ -605,7 +616,7 @@ void drawThickLine(unsigned int RawImage, int aXStart, int aYStart, int aXEnd, i
 	}
 	tDeltaXTimes2 = tDeltaX << 1;
 	tDeltaYTimes2 = tDeltaY << 1;
-	int tOverlap;
+	unsigned int tOverlap;
 	// adjust for right direction of thickness from line origin
 	int tDrawStartAdjustCount = aThickness / 2;
 	if (aThicknessMode == LINE_THICKNESS_DRAW_COUNTERCLOCKWISE) {
@@ -725,7 +736,7 @@ void drawThickLine(unsigned int RawImage, int aXStart, int aYStart, int aXEnd, i
 
 // Рисует линию с указанным цветом и размером
 int __stdcall RawImage_DrawLine(unsigned int RawImage, unsigned int x1, unsigned int y1, unsigned int x2
-	, unsigned int y2, unsigned int size, RGBAPix color)
+	, unsigned int y2, unsigned int size, COLOR4 color)
 {
 	if (!InitFunctionCalled)
 		return 0;
@@ -745,7 +756,7 @@ int __stdcall RawImage_DrawLine(unsigned int RawImage, unsigned int x1, unsigned
 
 // Рисует круг с указанным радиусом и толщиной
 int __stdcall RawImage_DrawCircle(unsigned int RawImage, unsigned int x, unsigned int y, unsigned int radius,
-	unsigned int size, RGBAPix color)
+	unsigned int size, COLOR4 color)
 {
 	if (!InitFunctionCalled)
 		return 0;
@@ -759,7 +770,7 @@ int __stdcall RawImage_DrawCircle(unsigned int RawImage, unsigned int x, unsigne
 	RawImageStruct& tmpRawImage = ListOfRawImages[RawImage];
 
 #ifdef OLD_CODE
-	RGBAPix* RawImageData = (RGBAPix*)tmpRawImage.img.buf;
+	COLOR4* RawImageData = (COLOR4*)tmpRawImage.img.buf;
 	for (unsigned int x2 = 0; x2 < tmpRawImage.width; x2++)
 	{
 		for (unsigned int y2 = 0; y2 < tmpRawImage.height; y2++)
@@ -788,7 +799,7 @@ int __stdcall RawImage_DrawCircle(unsigned int RawImage, unsigned int x, unsigne
 
 
 // Заполняет круг указанным цветом
-int __stdcall RawImage_FillCircle(unsigned int RawImage, unsigned int x, unsigned int y, unsigned int radius, RGBAPix color)
+int __stdcall RawImage_FillCircle(unsigned int RawImage, unsigned int x, unsigned int y, unsigned int radius, COLOR4 color)
 {
 	if (!InitFunctionCalled)
 		return 0;
@@ -800,7 +811,7 @@ int __stdcall RawImage_FillCircle(unsigned int RawImage, unsigned int x, unsigne
 
 
 #ifdef OLD_CODE
-	RGBAPix* RawImageData = (RGBAPix*)tmpRawImage.img.buf;
+	COLOR4* RawImageData = (COLOR4*)tmpRawImage.img.buf;
 
 
 
@@ -837,7 +848,7 @@ int __stdcall RawImage_EraseCircle(unsigned int RawImage, unsigned int x, unsign
 	}
 	RawImageStruct& tmpRawImage = ListOfRawImages[RawImage];
 
-	RGBAPix tmpPix = RGBAPix();
+	COLOR4 tmpPix = COLOR4();
 
 	if (!inverse)
 	{
@@ -846,7 +857,7 @@ int __stdcall RawImage_EraseCircle(unsigned int RawImage, unsigned int x, unsign
 
 #ifdef OLD_CODE
 
-	RGBAPix* RawImageData = (RGBAPix*)tmpRawImage.img.buf;
+	COLOR4* RawImageData = (COLOR4*)tmpRawImage.img.buf;
 
 	for (unsigned int x2 = 0; x2 < tmpRawImage.width; x2++)
 	{
@@ -870,7 +881,7 @@ int __stdcall RawImage_EraseCircle(unsigned int RawImage, unsigned int x, unsign
 }
 
 // Делает пиксели с цветом color - прозрачными, power от 0 до 255
-int __stdcall RawImage_EraseColor(unsigned int RawImage, RGBAPix color, int power)
+int __stdcall RawImage_EraseColor(unsigned int RawImage, COLOR4 color, int power)
 {
 	if (!InitFunctionCalled)
 		return 0;
@@ -882,11 +893,11 @@ int __stdcall RawImage_EraseColor(unsigned int RawImage, RGBAPix color, int powe
 	RawImageStruct& tmpRawImage = ListOfRawImages[RawImage];
 
 #ifdef OLD_CODE
-	RGBAPix* RawImageData = (RGBAPix*)tmpRawImage.img.buf;
+	COLOR4* RawImageData = (COLOR4*)tmpRawImage.img.buf;
 #else 
 
 #endif
-	RGBAPix tmpPix = RGBAPix();
+	COLOR4 tmpPix = COLOR4();
 	unsigned char// A = color.A,
 		R = color.R,
 		G = color.G,
@@ -930,11 +941,11 @@ int __stdcall RawImage_LoadFontFromResource(const char* filepath)
 	if (!InitFunctionCalled)
 		return 0;
 
-	int PatchFileData = 0;
+	unsigned char * PatchFileData = 0;
 	size_t PatchFileSize = 0;
 	GameGetFile_ptr(filepath, &PatchFileData, &PatchFileSize, true);
 	unsigned long Font = NULL;//Globals, this is the Font in the RAM
-	AddFontMemResourceEx((void*)PatchFileData, PatchFileSize, NULL, &Font);
+	AddFontMemResourceEx(PatchFileData, PatchFileSize, NULL, &Font);
 
 	return true;
 }
@@ -950,7 +961,7 @@ int __stdcall RawImage_SetFontSettings(const char* fontname, int fontsize, unsig
 }
 
 // Пишет текст в указанных координатах с указанными цветом и настройками шрифта RawImage_SetFontSettings
-int __stdcall RawImage_DrawText(unsigned int RawImage, const char* text, unsigned int x, unsigned int y, RGBAPix color)
+int __stdcall RawImage_DrawText(unsigned int RawImage, const char* text, unsigned int x, unsigned int y, COLOR4 color)
 {
 	if (!InitFunctionCalled)
 		return 0;
@@ -963,7 +974,7 @@ int __stdcall RawImage_DrawText(unsigned int RawImage, const char* text, unsigne
 
 #ifdef OLD_CODE
 
-	RGBAPix* RawImageData = (RGBAPix*)tmpRawImage.img.buf;
+	COLOR4* RawImageData = (COLOR4*)tmpRawImage.img.buf;
 	HDC hDC = CreateCompatibleDC(NULL);
 	char* pSrcData = 0;
 	BITMAPINFO bmi = { sizeof(BITMAPINFOHEADER), (LONG)tmpRawImage.width,  (LONG)tmpRawImage.height, 1, 24, BI_RGB, 0, 0, 0, 0, 0 };
@@ -986,7 +997,7 @@ int __stdcall RawImage_DrawText(unsigned int RawImage, const char* text, unsigne
 	unsigned int oldcolor = color.ToUINT();
 
 
-	RGBAPix tmpPix = RGBAPix();
+	COLOR4 tmpPix = COLOR4();
 
 
 	SetBkColor(hDC, 0x00000000);
@@ -1141,7 +1152,7 @@ int __stdcall RawImage_DrawText(unsigned int RawImage, const char* text, unsigne
 	GdiFlush();
 	ReleaseDC(NULL, hDC);
 
-	RGBPix* tmpBitmapPixList = (RGBPix*)pSrcData;
+	COLOR3* tmpBitmapPixList = (COLOR3*)pSrcData;
 
 
 	for (unsigned int x0 = 0; x0 < tmpRawImage.width; x0++)
@@ -1150,7 +1161,8 @@ int __stdcall RawImage_DrawText(unsigned int RawImage, const char* text, unsigne
 		{
 			if (tmpBitmapPixList[ArrayXYtoId(tmpRawImage.width, x0, y0)].ToUINT() != 0)
 			{
-				RawImageData[ArrayXYtoId(tmpRawImage.width, x0, y0)] = tmpBitmapPixList[ArrayXYtoId(tmpRawImage.width, x0, y0)].ToRGBAPix();
+				COLOR3 tmpColor = tmpBitmapPixList[ArrayXYtoId(tmpRawImage.width, x0, y0)];
+				RawImageData[ArrayXYtoId(tmpRawImage.width, x0, y0)] = COLOR4(tmpColor.R, tmpColor.G, tmpColor.B, 0xFF);
 			}
 		}
 	}
@@ -1182,7 +1194,7 @@ int __stdcall SaveRawImageToGameFile(unsigned int RawImage, const char* filename
 
 
 	RawImageStruct& tmpRawImage = ListOfRawImages[RawImage];
-	tmpRawImage.filename = filename;
+	strcpy_s(tmpRawImage.filename, filename);
 
 	StormBuffer inbuffer = tmpRawImage.img;
 	StormBuffer ResultBuffer = StormBuffer();
@@ -1248,7 +1260,7 @@ int __stdcall GetRawImageByFile(const char* filename)
 	int id = 0;
 	for (RawImageStruct& s : ListOfRawImages)
 	{
-		if (ToLower(s.filename) == ToLower(filename))
+		if (_stricmp(s.filename, filename) == 0)
 			return id;
 		id++;
 	}
@@ -1317,7 +1329,7 @@ int __stdcall RawImage_Resize(unsigned int RawImage, unsigned int newwidth, unsi
 
 
 
-int PowerOfTwo(int Value)
+unsigned int PowerOfTwo(int Value)
 {
 	int InitValue = 1;
 	while (InitValue < Value)
@@ -1348,7 +1360,7 @@ int __stdcall RawImage_DrawOverlay(unsigned int RawImage, int enabled, float xpo
 			tmpRawImage.width = PowerOfTwo(tmpRawImage.width);
 			tmpRawImage.height = PowerOfTwo(tmpRawImage.height);
 #ifdef OLD_CODE
-			char* newimage = (char*)Scale_WithoutResize((unsigned char*)tmpRawImage.img.buf, oldwidth, oldheight,
+			unsigned char* newimage = Scale_WithoutResize(tmpRawImage.img.buf, oldwidth, oldheight,
 				tmpRawImage.width, tmpRawImage.height, 4);
 			tmpRawImage.img.buf = newimage;
 			tmpRawImage.img.length = tmpRawImage.width * tmpRawImage.height * 4;
@@ -1496,7 +1508,7 @@ int __stdcall RawImage_IsBtn(unsigned int RawImage, int enabled)
 	}
 
 	RawImageStruct& tmpRawImage = ListOfRawImages[RawImage];
-	tmpRawImage.button = enabled;
+	tmpRawImage.IsButton = enabled;
 	return true;
 }
 
@@ -1577,7 +1589,7 @@ int RawImageGlobalCallbackFunc(RawImageEventType callbacktype, float mousex, flo
 	{
 		int NeedSkipEvent = rawimage_skipmouseevent;
 #ifdef OLD_CODE
-		RGBAPix* RawImageData = (RGBAPix*)img.img.buf;
+		COLOR4* RawImageData = (COLOR4*)img.img.buf;
 #else 
 
 
@@ -1585,14 +1597,14 @@ int RawImageGlobalCallbackFunc(RawImageEventType callbacktype, float mousex, flo
 
 		if (img.used_for_overlay &&
 			img.MouseCallback &&
-			((img.events & (unsigned int)callbacktype) > 0 || (callbacktype == RawImageEventType::MouseDown && img.button)))
+			((img.events & (unsigned int)callbacktype) > 0 || (callbacktype == RawImageEventType::MouseDown && img.IsButton)))
 		{
 			if (SetInfoObjDebugVal)
 			{
 				PrintText("Callback need!");
 			}
 
-			if (img.button)
+			if (img.IsButton)
 			{
 				if (SetInfoObjDebugVal)
 				{
@@ -1655,8 +1667,7 @@ int RawImageGlobalCallbackFunc(RawImageEventType callbacktype, float mousex, flo
 					PrintText("Image click x/y:" + std::to_string(img_x) + "/" + std::to_string(img_y));
 				}
 #ifdef OLD_CODE
-				RGBAPix* RawImageData = (RGBAPix*)img.img.buf;
-				RGBAPix eventpix = RawImageData[ArrayXYtoId(img.width, (int)img_x, img.height - (int)img_y)];
+				COLOR4 eventpix = RawImageData[ArrayXYtoId(img.width, (int)img_x, img.height - (int)img_y)];
 #else 
 
 #endif
@@ -1712,7 +1723,7 @@ int RawImageGlobalCallbackFunc(RawImageEventType callbacktype, float mousex, flo
 						if (!NeedSkipEvent && img.PacketCallback)
 							SendRawImagePacket(GlobalRawImageCallbackData);
 					}
-					return !NeedSkipEvent && (rawimage_skipmouseevent || img.button);
+					return !NeedSkipEvent && (rawimage_skipmouseevent || img.IsButton);
 				}
 				break;
 			case RawImageEventType::MouseDown:
@@ -1737,7 +1748,7 @@ int RawImageGlobalCallbackFunc(RawImageEventType callbacktype, float mousex, flo
 						if (!NeedSkipEvent && img.PacketCallback)
 							SendRawImagePacket(GlobalRawImageCallbackData);
 					}
-					return !NeedSkipEvent && (rawimage_skipmouseevent || img.button);
+					return !NeedSkipEvent && (rawimage_skipmouseevent || img.IsButton);
 				}
 				break;
 			case RawImageEventType::MouseClick:
@@ -1851,16 +1862,16 @@ int RawImageGlobalCallbackFunc(RawImageEventType callbacktype, float mousex, flo
 //
 //void ApplyIconFrameFilter2( std::string filename, int * OutDataPointer, size_t * OutSize )
 //{
-//	int RawImage = CreateRawImage( 128, 128, RGBAPix( ) );
+//	int RawImage = CreateRawImage( 128, 128, COLOR4( ) );
 //	//RawImage_Resize( RawImage, 128, 128 );
 //	int RawImage2 = LoadRawImage( filename.c_str( ) );
 //	RawImage_DrawImg( RawImage, RawImage2, 32, 32 );
-//	RGBAPix tmppix = RGBAPix( );
+//	COLOR4 tmppix = COLOR4( );
 //	RawImage_EraseCircle( RawImage, 64, 64, 29, true );
-//	RawImage_DrawCircle( RawImage, 64, 64, 35, 6, tmppix.RGBAPixWar3( 0, 255, 0, 255 ) );
+//	RawImage_DrawCircle( RawImage, 64, 64, 35, 6, tmppix.COLOR4War3( 0, 255, 0, 255 ) );
 //
 //
-//	RawImage_DrawText( RawImage, "|C00FF0000RED|r |CFF00FF00GREEN|r |CFF0000FFBLUE|r", 10, 10, tmppix.RGBAPixWar3( 255, 0, 0, 0 ) );
+//	RawImage_DrawText( RawImage, "|C00FF0000RED|r |CFF00FF00GREEN|r |CFF0000FFBLUE|r", 10, 10, tmppix.COLOR4War3( 255, 0, 0, 0 ) );
 //
 //	SaveRawImageToGameFile( RawImage, ( filename + "_frame.blp" ).c_str( ), false, true );
 //	DumpRawImageToFile( RawImage, "temp.tga" );
@@ -1873,10 +1884,10 @@ int RawImageGlobalCallbackFunc(RawImageEventType callbacktype, float mousex, flo
 
 void ApplyIconFrameFilter(std::string filename, int* OutDataPointer, size_t* OutSize)
 {
-	int RawImage = CreateRawImage(128, 128, RGBAPix());
+	int RawImage = CreateRawImage(128, 128, COLOR4());
 	int RawImage2 = LoadRawImage(filename.c_str());
 	RawImage_DrawImg(RawImage, RawImage2, 32, 32, 0);
-	RGBAPix tmppix = RGBAPix();
+	COLOR4 tmppix = COLOR4();
 	SaveRawImageToGameFile(RawImage, (filename + "_frame.blp").c_str(), false, true);
 }
 
@@ -1905,17 +1916,13 @@ void ClearAllRawImages()
 
 		if (s.backup_img)
 			delete[] s.backup_img;
-
-		if (s.DreamTexture)
-			UISimpleTexture::Destroy(s.DreamTexture);
-
 	}
 	ListOfRawImages.clear();
 
 	ListOfRawImages.reserve(MAX_IMAGES_COUNT); // reserve 15MB for RawImageStruct
 
-	RGBAPix tmppix = RGBAPix();
-	CreateRawImage(64, 64, tmppix.RGBAPixWar3(0, 255, 0, 255));
+	COLOR4 tmppix = COLOR4();
+	CreateRawImage(64, 64, tmppix.COLOR4War3(0, 255, 0, 255));
 }
 
 

@@ -2,13 +2,8 @@
 
 #include "Main.h"
 #include "DotaClickHelper.h"
-#include <Timer.h>
-#include <Input.h>
 #include "buffer.h"
 #include "Structures.h"
-#include <UIObject.h>
-#include <SimpleTexture.h>
-#include <UISimpleTexture.h>
 
 using namespace Storm;
 #define OLD_CODE
@@ -32,9 +27,9 @@ struct RawImageCallbackData
 	RawImageEventType EventType;
 	float mousex;
 	float mousey;
-	int IsAltPressed;
-	int IsCtrlPressed;
-	int IsLeftButton;
+	bool IsAltPressed;
+	bool IsCtrlPressed;
+	bool IsLeftButton;
 	int offsetx;
 	int offsety;
 	int RawImageCustomId;
@@ -53,23 +48,23 @@ struct RawImageStruct
 	StormBuffer ingamebuffer;
 
 	int ingame;
-	std::string filename;
-	int used_for_overlay;
+	char filename[512];
+	bool used_for_overlay;
 	float overlay_x; // 0.0 1.0 
 	float overlay_y; // 0.0 1.0
-	int button;
+	bool IsButton;
 	void* textureaddr;
-	int needResetTexture;
+	bool needResetTexture;
 
 	int MouseCallback;
 
-	int	MouserExecuteFuncCallback;
-	int	PacketCallback;
+	bool MouserExecuteFuncCallback;
+	bool PacketCallback;
 	jRCString MouseActionCallback;
 
 
-	int IsMouseDown;
-	int IsMouseEntered;
+	bool IsMouseDown;
+	bool IsMouseEntered;
 	unsigned int events;
 	float overlay_x2;
 	float overlay_y2;
@@ -82,16 +77,14 @@ struct RawImageStruct
 
 	int RawImageCustomId;
 
-	char* backup_img;
+	unsigned char* backup_img;
 	unsigned int backup_width;
 	unsigned int backup_height;
 
 	int drawdevice;
 
-	int UseImageCoords;
-	int Flipped;
-
-	UISimpleTexture* DreamTexture;
+	bool UseImageCoords;
+	bool Flipped;
 
 	RawImageStruct()
 	{
@@ -107,7 +100,7 @@ struct RawImageStruct
 		ingamebuffer = StormBuffer();
 		imgFlipped = StormBuffer();
 		ingame = false;
-		filename = std::string();
+		filename[0] = '\0';
 		used_for_overlay = false;
 		overlay_x = overlay_y = overlay_x0 = overlay_y0 = overlay_y2 = overlay_x2 = 0.0f;
 		textureaddr = NULL;
@@ -120,33 +113,32 @@ struct RawImageStruct
 		MouseActionCallback = jRCString();
 		MouserExecuteFuncCallback = false;
 		PacketCallback = false;
-		button = false;
+		IsButton = false;
 		MoveTime1 = 0;
 		MoveTime2 = 0;
 		SleepTime = 0;
 		StartTimer = 0;
 		Flipped = false;
-		DreamTexture = NULL;
 	}
 };
 
-int __stdcall ClearRawImage(unsigned int RawImage, RGBAPix FillByte);
+int __stdcall ClearRawImage(unsigned int RawImage, COLOR4 FillByte);
 int __stdcall BackupRawImage(unsigned int RawImage);
 int __stdcall RestoreRawImage(unsigned int RawImage);
-int __stdcall CreateRawImage(int width, int height, RGBAPix defaultcolor);
+int __stdcall CreateRawImage(int width, int height, COLOR4 defaultcolor);
 int __stdcall LoadRawImage(const char* filename);
 int __stdcall RawImage_EnableAutoFix(int enable);
 int __stdcall RawImage_DrawImg(unsigned int RawImage, unsigned int RawImage2, int drawx, int drawy, int blendmode);
-int __stdcall RawImage_DrawPixel(unsigned int RawImage, unsigned int x, unsigned int y, RGBAPix color);
-int __stdcall RawImage_FillRectangle(unsigned int RawImage, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, RGBAPix color);
-int __stdcall RawImage_DrawRect(unsigned int RawImage, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned int size, RGBAPix color);
-int __stdcall RawImage_DrawLine(unsigned int RawImage, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned int size, RGBAPix color);
-int __stdcall RawImage_DrawCircle(unsigned int RawImage, unsigned int x, unsigned int y, unsigned int radius, unsigned int size, RGBAPix color);
-int __stdcall RawImage_FillCircle(unsigned int RawImage, unsigned int x, unsigned int y, unsigned int radius, RGBAPix color);
+int __stdcall RawImage_DrawPixel(unsigned int RawImage, unsigned int x, unsigned int y, COLOR4 color);
+int __stdcall RawImage_FillRectangle(unsigned int RawImage, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, COLOR4 color);
+int __stdcall RawImage_DrawRect(unsigned int RawImage, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned int size, COLOR4 color);
+int __stdcall RawImage_DrawLine(unsigned int RawImage, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned int size, COLOR4 color);
+int __stdcall RawImage_DrawCircle(unsigned int RawImage, unsigned int x, unsigned int y, unsigned int radius, unsigned int size, COLOR4 color);
+int __stdcall RawImage_FillCircle(unsigned int RawImage, unsigned int x, unsigned int y, unsigned int radius, COLOR4 color);
 int __stdcall RawImage_EraseCircle(unsigned int RawImage, unsigned int x, unsigned int y, unsigned int radius, int inverse);
 int __stdcall RawImage_LoadFontFromResource(const char* filepath);
 int __stdcall RawImage_SetFontSettings(const char* fontname, int fontsize, unsigned int flags);
-int __stdcall RawImage_DrawText(unsigned int RawImage, const char* text, unsigned int x, unsigned int y, RGBAPix color);
+int __stdcall RawImage_DrawText(unsigned int RawImage, const char* text, unsigned int x, unsigned int y, COLOR4 color);
 int __stdcall SaveRawImageToGameFile(unsigned int RawImage, const char* filename, int IsTga, int enabled);
 int __stdcall DumpRawImageToFile(unsigned int RawImage, const char* filename);
 int __stdcall GetRawImageByFile(const char* filename);

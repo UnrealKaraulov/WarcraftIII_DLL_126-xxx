@@ -8,7 +8,7 @@ struct ClickPortrainForId
 {
 	int abilid;
 	int keycode;
-	int checkforcd;
+	bool checkforcd;
 };
 
 
@@ -32,9 +32,9 @@ struct ObjInfoAction
 struct KeyChatActionStruct
 {
 	int VK;
-	int IsShift;
-	int IsCtrl;
-	int IsAlt;
+	bool IsShift;
+	bool IsCtrl;
+	bool IsAlt;
 	int SendToAll;
 	std::string Message;
 };
@@ -43,9 +43,9 @@ struct KeyChatActionStruct
 struct KeySelectActionStruct
 {
 	int VK;
-	int IsShift;
-	int IsCtrl;
-	int IsAlt;
+	bool IsShift;
+	bool IsCtrl;
+	bool IsAlt;
 	int GroupHandle;
 	std::vector< unsigned char*> units;
 };
@@ -53,9 +53,9 @@ struct KeySelectActionStruct
 struct KeyCalbackActionStruct
 {
 	int VK;
-	int IsShift;
-	int IsCtrl;
-	int IsAlt;
+	bool IsShift;
+	bool IsCtrl;
+	bool IsAlt;
 	int args[8];
 };
 
@@ -314,7 +314,7 @@ struct ICONMDLCACHE
 {
 	uint64_t _hash;
 	size_t hashlen;
-	char* buf;
+	unsigned char* buf;
 	size_t size;
 };
 
@@ -361,7 +361,7 @@ struct FeatureRestorer
 struct Mdx_Texture        //NrOfTextures = ChunkSize / 268
 {
 	int ReplaceableId;
-	CHAR FileName[260];
+	char FileName[260];
 	unsigned int Flags;                       //#1 - WrapWidth
 	//#2 - WrapHeight
 };
@@ -375,7 +375,7 @@ struct Mdx_FLOAT3
 
 struct Mdx_Sequence      //NrOfSequences = ChunkSize / 132
 {
-	CHAR Name[80];
+	char Name[80];
 
 	int IntervalStart;
 	int IntervalEnd;
@@ -421,7 +421,7 @@ struct Mdx_Node
 {
 	unsigned int InclusiveSize;
 
-	CHAR Name[80];
+	char Name[80];
 
 	unsigned int ObjectId;
 	unsigned int ParentId;
@@ -471,11 +471,11 @@ struct DelayedPress
 	WPARAM NeedPresswParam;
 	LPARAM NeedPresslParam;
 	unsigned long TimeOut;
-	int ISNULL;
-	int IsAlt;
-	int IsCtrl;
-	int IsShift;
-	int IsCustom;
+	bool ISNULL;
+	bool IsAlt;
+	bool IsCtrl;
+	bool IsShift;
+	bool IsCustom;
 
 	int IsNull()
 	{
@@ -500,12 +500,12 @@ struct KeyActionStruct
 	int VK;
 	int btnID;
 	int altbtnID;
-	int IsSkill;
-	int IsShift;
-	int IsCtrl;
-	int IsAlt;
-	int IsRightClick;
-	int IsQuickCast;
+	bool IsSkill;
+	bool IsShift;
+	bool IsCtrl;
+	bool IsAlt;
+	bool IsRightClick;
+	bool IsQuickCast;
 	unsigned long LastPressTime;
 };
 

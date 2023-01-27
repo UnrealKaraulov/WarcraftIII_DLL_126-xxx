@@ -66,20 +66,20 @@ void DrawAllRawImages()
 			float lenx = abs(img.overlay_x - img.overlay_x2);
 			float leny = abs(img.overlay_y - img.overlay_y2);
 
-			if (lenx > 0.004)
+			if (lenx > 0.004f)
 			{
 				if (img.overlay_x > img.overlay_x2)
-					img.overlay_x -= 0.002;
+					img.overlay_x -= 0.002f;
 				else if (img.overlay_x < img.overlay_x2)
-					img.overlay_x += 0.002;
+					img.overlay_x += 0.002f;
 			}
 
-			if (leny > 0.004)
+			if (leny > 0.004f)
 			{
 				if (img.overlay_y > img.overlay_y2)
-					img.overlay_y -= 0.002;
+					img.overlay_y -= 0.002f;
 				else if (img.overlay_y < img.overlay_y2)
-					img.overlay_y += 0.002;
+					img.overlay_y += 0.002f;
 			}
 
 			unsigned long newTickImg = GetTickCount() - img.StartTimer;
@@ -106,20 +106,20 @@ void DrawAllRawImages()
 			float lenx = abs(img.overlay_x - img.overlay_x0);
 			float leny = abs(img.overlay_y - img.overlay_y0);
 
-			if (lenx > 0.004)
+			if (lenx > 0.004f)
 			{
 				if (img.overlay_x > img.overlay_x0)
-					img.overlay_x -= 0.002;
+					img.overlay_x -= 0.002f;
 				else if (img.overlay_x < img.overlay_x0)
-					img.overlay_x += 0.002;
+					img.overlay_x += 0.002f;
 			}
 
-			if (leny > 0.004)
+			if (leny > 0.004f)
 			{
 				if (img.overlay_y > img.overlay_y0)
-					img.overlay_y -= 0.002;
+					img.overlay_y -= 0.002f;
 				else if (img.overlay_y < img.overlay_y0)
-					img.overlay_y += 0.002;
+					img.overlay_y += 0.002f;
 			}
 
 
@@ -184,8 +184,6 @@ void DrawOverlayGl()
 	DrawAllRawImages();
 
 	wglMakeCurrent(GlobalDc, oldcontext);
-
-
 }
 
 
@@ -239,7 +237,6 @@ void InitOpenglHook()
 			MH_CreateHook(wglSwapLayerBuffers_org, &wglSwapLayerBuffers_my, reinterpret_cast<void**>(&wglSwapLayerBuffers_ptr));
 			MH_EnableHook(wglSwapLayerBuffers_org);
 		}
-
 	}
 }
 

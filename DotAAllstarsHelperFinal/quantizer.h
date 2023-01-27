@@ -5,27 +5,7 @@ unsigned char FixBounds(float i);
 unsigned char FixBounds(double i);
 
 
-union BGRAPix
-{
-	struct
-	{
-		unsigned char B;
-		unsigned char G;
-		unsigned char R;
-		unsigned char A;
-	};
-	unsigned long bgra;
-
-	BGRAPix(unsigned char B, unsigned char G, unsigned char R, unsigned char A)
-	{
-		this->bgra = (unsigned long)((A << 24) | (R << 16) | (G << 8) | B);
-	}
-	BGRAPix()
-	{
-		this->bgra = 0;
-	}
-};
-
+#include "BlpReadWrite.h"
 
 class CQuantizer
 {
@@ -56,12 +36,12 @@ public:
 	CQuantizer(unsigned int nMaxColors, unsigned int nColorBits);
 	virtual ~CQuantizer();
 	int ProcessImage(unsigned char* image, unsigned long size, unsigned char bytespp, unsigned char alpha);
-	void FloydSteinbergDither(unsigned char* image, long width, long height, unsigned char bytespp, unsigned char* target, BGRAPix* pal);
+	void FloydSteinbergDither(unsigned char* image, long width, long height, unsigned char bytespp, unsigned char* target, COLOR4* pal);
 	int NeedsAlphaChannel();
 	unsigned int GetColorCount();
-	void SetColorTable(BGRAPix* prgb);
-	unsigned char GetNearestIndex(BGRAPix* c, BGRAPix* pal);
-	unsigned char GetNearestIndexFast(BGRAPix* c, BGRAPix* pal);
+	void SetColorTable(COLOR4* prgb);
+	unsigned char GetNearestIndex(COLOR4* c, COLOR4* pal);
+	unsigned char GetNearestIndexFast(COLOR4* c, COLOR4* pal);
 
 protected:
 	unsigned int GetLeafCount(Node* pTree);
@@ -69,7 +49,7 @@ protected:
 	void* CreateNode(int nLevel, unsigned int nColorBits, unsigned int* pLeafCount, Node** pReducibleNodes);
 	void ReduceTree(unsigned int nColorBits, unsigned int* pLeafCount, Node** pReducibleNodes);
 	void DeleteTree(Node** ppNode);
-	void GetPaletteColors(Node* pTree, BGRAPix* prgb, unsigned int* pIndex, unsigned int* pSum);
-	unsigned char GetNextBestLeaf(Node** pTree, unsigned int nLevel, BGRAPix* c, BGRAPix* pal);
-	int ColorsAreEqual(BGRAPix* a, BGRAPix* b);
+	void GetPaletteColors(Node* pTree, COLOR4* prgb, unsigned int* pIndex, unsigned int* pSum);
+	unsigned char GetNextBestLeaf(Node** pTree, unsigned int nLevel, COLOR4* c, COLOR4* pal);
+	int ColorsAreEqual(COLOR4* a, COLOR4* b);
 };

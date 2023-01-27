@@ -10,8 +10,8 @@ IsDrawSkillPanel IsDrawSkillPanel_ptr;
 IsDrawSkillPanelOverlay IsDrawSkillPanelOverlay_org = NULL;
 IsDrawSkillPanelOverlay IsDrawSkillPanelOverlay_ptr;
 
-int ShowSkillPanelForObservers = false;
-int ShowSkillPanelOnlyForHeroes = true;
+bool ShowSkillPanelForObservers = false;
+bool ShowSkillPanelOnlyForHeroes = true;
 
 
 

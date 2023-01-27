@@ -468,8 +468,6 @@ namespace NWar3Frame
 		return 0;
 	}
 
-
-
 	void CWar3Frame::SetSkipAnotherCallback(bool skip)
 	{
 		SkipOtherEvents = skip;
@@ -494,9 +492,6 @@ namespace NWar3Frame
 		}
 		tmpframelist.clear();
 	}
-
-
-
 
 	void CWar3Frame::Init(unsigned char* GameDll)
 	{
@@ -862,7 +857,7 @@ namespace NWar3Frame
 			return false;
 		if (FrameType != CFrameType::FRAMETYPE_FRAME)
 		{
-			return (*(unsigned int*)(FrameAddr + 0x1D4) & 0x10);
+			return (*(unsigned int*)(FrameAddr + 0x1D4) & 0x10) > 0;
 		}
 		return false;
 	}
@@ -924,13 +919,13 @@ namespace NWar3Frame
 			Focused = focused;
 			if (focused)
 			{
-				if (!(*(unsigned int*)(FrameAddr + 0x1D4) & 0x10))
+				if (!((*(unsigned int*)(FrameAddr + 0x1D4) & 0x10) > 0))
 					*(unsigned int*)(FrameAddr + 0x1D4) += 0x10;
 
 			}
 			else
 			{
-				if ((*(unsigned int*)(FrameAddr + 0x1D4) & 0x10))
+				if ((*(unsigned int*)(FrameAddr + 0x1D4) & 0x10) > 0)
 					*(unsigned int*)(FrameAddr + 0x1D4) -= 0x10;
 			}
 			UpdateFlagsV2();
@@ -949,8 +944,8 @@ namespace NWar3Frame
 		if (FrameType != CFrameType::FRAMETYPE_FRAME)
 		{
 			if (FrameType == CFrameType::FRAMETYPE_EDITBOX)
-				return (*(unsigned int*)(FrameAddr + 0x1D4) & 0x8);
-			return (*(unsigned int*)(FrameAddr + 0x1D4) & 0x4);
+				return (*(unsigned int*)(FrameAddr + 0x1D4) & 0x8) > 0;
+			return (*(unsigned int*)(FrameAddr + 0x1D4) & 0x4) > 0;
 		}
 		return false;
 	}
@@ -964,7 +959,7 @@ namespace NWar3Frame
 			return false;
 		if (FrameType != CFrameType::FRAMETYPE_FRAME)
 		{
-			return (*(unsigned int*)(FrameAddr + 0x1D4) & 0x20);
+			return (*(unsigned int*)(FrameAddr + 0x1D4) & 0x20) > 0;
 
 		}
 		return false;
@@ -1016,12 +1011,12 @@ namespace NWar3Frame
 		{
 			if (checked)
 			{
-				if (!(*(unsigned int*)(FrameAddr + 0x1D4) & 0x20))
+				if (!((*(unsigned int*)(FrameAddr + 0x1D4) & 0x20) > 0))
 					*(unsigned int*)(FrameAddr + 0x1D4) += 0x20;
 			}
 			else
 			{
-				if ((*(unsigned int*)(FrameAddr + 0x1D4) & 0x20))
+				if ((*(unsigned int*)(FrameAddr + 0x1D4) & 0x20) > 0)
 					*(unsigned int*)(FrameAddr + 0x1D4) -= 0x20;
 			}
 			UpdateFlagsV2();
