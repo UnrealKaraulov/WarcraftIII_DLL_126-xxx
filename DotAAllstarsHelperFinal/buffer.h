@@ -38,14 +38,14 @@ public:
 	}
 	StormBuffer(unsigned long l)
 	{
-		//	memoryleakcheck++;
-		length = l;
+		Clear();
 		buf = (unsigned char*)Storm::MemAlloc(l);
 		NeedClear = true;
-		buf[l] = '\0';
+		length = l;
 	}
 	StormBuffer(unsigned char* b, unsigned long l)
 	{
+		Clear();
 		buf = b;
 		length = l;
 	}
@@ -55,7 +55,6 @@ public:
 		Clear();
 		buf = (unsigned char*)Storm::MemAlloc(l);
 		NeedClear = true;
-		buf[l] = '\0';
 		length = l;
 	}
 
@@ -65,7 +64,7 @@ public:
 	}
 	unsigned char* GetData(int offset)
 	{
-		return buf + offset;
+		return &buf[offset];
 	}
 
 	unsigned long GetSize()

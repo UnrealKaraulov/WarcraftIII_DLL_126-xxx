@@ -205,7 +205,7 @@ void Resize_HQ_4ch(unsigned char* src, int w1, int h1,
 					unsigned int* dsrc2 = &dsrc[y1c * w1 + x1c];
 
 					// PERFORM BILINEAR INTERPOLATION on 2x2 pixels
-					unsigned int r = 0, g = 0, b = 0, a = 0;
+					unsigned int r = 0, g = 0, b = 0/*, a = 0*/;
 					unsigned int weight_x = 256 - (x1a & 0xFF);
 					unsigned int weight_y = 256 - (y1a & 0xFF);
 					for (int y = 0; y < 2; y++)

@@ -142,7 +142,7 @@ int __stdcall LoadRawImage(const char* filename)
 	int filenamelen = strlen(filename);
 
 
-	unsigned char * PatchFileData = 0;
+	unsigned char* PatchFileData = 0;
 	size_t PatchFileSize = 0;
 	GameGetFile_org(filename, &PatchFileData, &PatchFileSize, true);
 	if (PatchFileData == 0 || PatchFileSize == 0)
@@ -363,7 +363,7 @@ int __stdcall RawImage_FillRectangle(unsigned int RawImage, unsigned int x1, uns
 	}
 	RawImageStruct& tmpRawImage = ListOfRawImages[RawImage];
 #ifdef OLD_CODE
-	COLOR4* RawImageData = (COLOR4*)tmpRawImage.img.buf;
+	/*COLOR4* RawImageData = (COLOR4*)tmpRawImage.img.buf;*/
 
 	for (unsigned int xsize = 0; xsize < x2; xsize++)
 	{
@@ -771,18 +771,21 @@ int __stdcall RawImage_DrawCircle(unsigned int RawImage, unsigned int x, unsigne
 
 #ifdef OLD_CODE
 	COLOR4* RawImageData = (COLOR4*)tmpRawImage.img.buf;
-	for (unsigned int x2 = 0; x2 < tmpRawImage.width; x2++)
+
+	if (RawImageData)
 	{
-		for (unsigned int y2 = 0; y2 < tmpRawImage.height; y2++)
+		for (unsigned int x2 = 0; x2 < tmpRawImage.width; x2++)
 		{
-			double dist = pDistance(x, y, x2, y2);
-			if (pDistance(x, y, x2, y2) >= radius - size && pDistance(x, y, x2, y2) <= radius + size)
+			for (unsigned int y2 = 0; y2 < tmpRawImage.height; y2++)
 			{
-				RawImageData[ArrayXYtoId(tmpRawImage.width, x2, y2)] = color;
+				double dist = pDistance(x, y, x2, y2);
+				if (dist >= radius - size && dist <= radius + size)
+				{
+					RawImageData[ArrayXYtoId(tmpRawImage.width, x2, y2)] = color;
+				}
+
 			}
-
 		}
-
 	}
 #else 
 
@@ -793,7 +796,7 @@ int __stdcall RawImage_DrawCircle(unsigned int RawImage, unsigned int x, unsigne
 	tmpRawImage.needResetTexture = true;
 	//	}
 	return true;
-}
+	}
 
 
 
@@ -878,7 +881,7 @@ int __stdcall RawImage_EraseCircle(unsigned int RawImage, unsigned int x, unsign
 	//	}
 
 	return true;
-}
+	}
 
 // Делает пиксели с цветом color - прозрачными, power от 0 до 255
 int __stdcall RawImage_EraseColor(unsigned int RawImage, COLOR4 color, int power)
@@ -941,7 +944,7 @@ int __stdcall RawImage_LoadFontFromResource(const char* filepath)
 	if (!InitFunctionCalled)
 		return 0;
 
-	unsigned char * PatchFileData = 0;
+	unsigned char* PatchFileData = 0;
 	size_t PatchFileSize = 0;
 	GameGetFile_ptr(filepath, &PatchFileData, &PatchFileSize, true);
 	unsigned long Font = NULL;//Globals, this is the Font in the RAM
@@ -1896,7 +1899,7 @@ void ApplyIconFrameFilter(std::string filename, int* OutDataPointer, size_t* Out
 
 void ClearAllRawImages()
 {
-	int i = sizeof(RawImageStruct);
+	//int i = sizeof(RawImageStruct);
 	AutoFixImagesSize = true;
 	for (RawImageStruct& s : ListOfRawImages)
 	{

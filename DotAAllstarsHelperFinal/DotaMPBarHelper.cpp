@@ -133,7 +133,7 @@ int __stdcall InMPBarWhiteList(unsigned char* unitaddr)
 
 int __stdcall  SetMPBarConfigForPlayer(unsigned char* unitaddr)
 {
-	int retval = 0;
+	/*int retval = 0;*/
 	if (!unitaddr || IsEnemy(unitaddr) || IsUnitIllusion(unitaddr))
 		return 0;
 	int unitslot = GetUnitOwnerSlot(unitaddr);

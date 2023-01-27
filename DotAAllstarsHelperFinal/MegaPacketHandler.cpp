@@ -203,7 +203,7 @@ int Handle_Jass_Packet(unsigned char* packetraw, size_t _packetsize, int pid)
 
 	if (BytesToRecv.size() >= 6 && *(unsigned short*)&BytesToRecv[0] == 0xFF50)
 	{
-		unsigned short header = *(unsigned short*)&BytesToRecv[0];
+		//unsigned short header = *(unsigned short*)&BytesToRecv[0];
 
 		BytesToRecv.erase(BytesToRecv.begin(), BytesToRecv.begin() + 2);
 

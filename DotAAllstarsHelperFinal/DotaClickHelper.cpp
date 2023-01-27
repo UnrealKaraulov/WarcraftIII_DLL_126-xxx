@@ -83,9 +83,13 @@ int IsCursorSelectTarget()
 int GetCursorSkillID()
 {
 	unsigned char* pOffset1 = GetGlobalClassAddr();
-	if (pOffset1 && (pOffset1 = *(unsigned char**)(pOffset1 + 0x1B4)))
+	if (pOffset1)
 	{
-		return *(int*)(pOffset1 + 0xC);
+		pOffset1 = *(unsigned char**)(pOffset1 + 0x1B4);
+		if (pOffset1)
+		{
+			return *(int*)(pOffset1 + 0xC);
+		}
 	}
 	return 0;
 }
@@ -93,9 +97,13 @@ int GetCursorSkillID()
 int GetCursorOrder()
 {
 	unsigned char* pOffset1 = GetGlobalClassAddr();
-	if (pOffset1 && (pOffset1 = *(unsigned char**)(pOffset1 + 0x1B4)))
+	if (pOffset1)
 	{
-		return *(int*)(pOffset1 + 0x10);
+		pOffset1 = *(unsigned char**)(pOffset1 + 0x1B4);
+		if (pOffset1)
+		{
+			return *(int*)(pOffset1 + 0x10);
+		}
 	}
 	return 0;
 }
@@ -1736,7 +1744,6 @@ pSimpleButtonPreClickEvent SimpleButtonPreClickEvent_org;
 pSimpleButtonPreClickEvent SimpleButtonPreClickEvent_ptr;
 int __fastcall SimpleButtonPreClickEvent_my(unsigned char* pButton, int unused, int a2)
 {
-
 	/*__try
 	{*/
 	bool incooldown = false;
@@ -1745,11 +1752,12 @@ int __fastcall SimpleButtonPreClickEvent_my(unsigned char* pButton, int unused, 
 	unsigned char* selectedunit = 0;
 	char PrintAbilState[2048];
 	PrintAbilState[0] = '\0';
-	if (pButton && (IsKeyPressed(VK_LMENU) || (IsKeyPressed(VK_LMENU) && IsKeyPressed(VK_LCONTROL))) && IsCommandButton(pButton) && (selectedunit = GetSelectedUnit(GetLocalPlayerId())))
+	if (pButton && (IsKeyPressed(VK_LMENU) || (IsKeyPressed(VK_LMENU) && IsKeyPressed(VK_LCONTROL))) && IsCommandButton(pButton))
 	{
-		int CommandButtonData = *(int*)(pButton + 0x190);
-		if (CommandButtonData)
+		selectedunit = GetSelectedUnit(GetLocalPlayerId());
+		if (selectedunit && *(int*)(pButton + 0x190))
 		{
+			int CommandButtonData = *(int*)(pButton + 0x190);
 			//CONSOLE_Print( "Command button" );
 			int pObjId = *(int*)(CommandButtonData + 4);
 			int pItemUnitID = *(int*)(CommandButtonData + 8);
@@ -1763,7 +1771,7 @@ int __fastcall SimpleButtonPreClickEvent_my(unsigned char* pButton, int unused, 
 			unsigned char * pAbil = *(unsigned char**)(CommandButtonData + 0x6D4);
 			//bool AbilFound = pAbil > 0 ;
 			int pObjId_1 = *(int*)(CommandButtonData + 0x6F8);
-			int pObjId_2 = *(int*)(CommandButtonData + 0x6FC);
+			/*int pObjId_2 = *(int*)(CommandButtonData + 0x6FC);*/
 			int pBtnFlag = *(int*)(CommandButtonData + 0x5BC);
 
 
@@ -2740,7 +2748,7 @@ int SkipKeyboardAndMouseWhenTeleport(HWND& hWnd, unsigned int& Msg, WPARAM& wPar
 
 				for (int& VK : WhiteListForTeleport)
 				{
-					if (wParam == VK)
+					if (wParam == (WPARAM) VK)
 					{
 						NeedSkipForTP = false;
 						break;
@@ -3444,7 +3452,7 @@ LRESULT __fastcall WarcraftWindowProcHooked(HWND hWnd, unsigned int _Msg, WPARAM
 				bool NotFoundInHotKeys = true;
 				for (KeyActionStruct& keyAction : KeyActionList)
 				{
-					if (keyAction.VK == wParam)
+					if (wParam == (WPARAM)keyAction.VK)
 					{
 						NotFoundInHotKeys = false;
 					}

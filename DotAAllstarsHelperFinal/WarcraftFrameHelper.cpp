@@ -493,43 +493,43 @@ namespace NWar3Frame
 		tmpframelist.clear();
 	}
 
-	void CWar3Frame::Init(unsigned char* GameDll)
+	void CWar3Frame::Init(unsigned char* _GameDll)
 	{
-		CStatusDefaultCStatus = GameDll + 0xA8C804;
-		CStatusLoadFramesVar1 = GameDll + 0xACD214;
-		CStatusLoadFramesVar2 = GameDll + 0xACD264;
-		FrameEventHandler = (int(__thiscall*)(unsigned char* frameaddr, unsigned int eventid))(GameDll + 0x62A580);
-		LoadFrameDefFile = (int(__fastcall*)(const char* filename, unsigned char* var1, unsigned char* var2, unsigned char* cstatus)) (GameDll + 0x5D8DE0);
-		CreateNewCFrame = (unsigned char* (__fastcall*) (const char* FrameName, unsigned char* rframeaddr, int UnkIdx, int UnkValue, int id))(GameDll + 0x5C9560);
-		SimulateFrameEvent = (int(__thiscall*)(unsigned char* FrameAddr, CFrameEventStruct * EventId))(GameDll + 0x370710);
-		SetAbsolutePosition = (void(__thiscall*)(unsigned char* FrameAddr180, CFramePosition orginPosition, float absoluteX, float absoluteY, unsigned int flag))(GameDll + 0x6061B0);
-		SetRelativePosition = (void(__thiscall*)(unsigned char* SrcFrameAddr, CFramePosition orginPosition, int DstFrameAddr, CFramePosition toPosition, float relativeX, float relativeY, unsigned int flag))(GameDll + 0x606770);
-		UpdatePosition = (unsigned int(__thiscall*)(unsigned char* FrameAddr /* or offset 180*/, unsigned int flag))(GameDll + 0x605CC0);
-		UpdateFlags = (unsigned int(__thiscall*)(unsigned char* FrameAddr, unsigned int flag))(GameDll + 0x602370);
-		DestroyCFrame = (unsigned int(__thiscall*)(unsigned char* FrameAddr, unsigned int flag))(GameDll + 0x606910);
-		SetFrameTexture = (unsigned int(__thiscall*)(unsigned char* FrameAddr, const char* texturepath, unsigned char flags/*border?*/, int tiled, const char* borderpath, int flag))(GameDll + 0x6212D0);
-		GetFrameItemAddr = (unsigned char* (__fastcall*)(const char* name, int id))(GameDll + 0x5FA970);
-		Wc3ChangeMenu = (void(__fastcall*)(int, int))(GameDll + 0x5934F0);
-		TextFrameSetText = (int(__thiscall*)(unsigned char* FrameAddr, const char* text))(GameDll + 0x611D40);
-		SoundPlay = (void(__fastcall*)(int, const char* name, int, int, int, int, int, int))(GameDll + 0x32F310);
-		EditboxSetMaxLen = (int(__thiscall*   /* sub_6F616250*/)(unsigned char* FrameAddr, unsigned int maxlen))(GameDll + 0x616250);
-		EditBoxFrameSetText = (int(__thiscall*)(unsigned char* frameaddr, const char* newtext, int unk))(GameDll + 0x615B50);
+		CStatusDefaultCStatus = _GameDll + 0xA8C804;
+		CStatusLoadFramesVar1 = _GameDll + 0xACD214;
+		CStatusLoadFramesVar2 = _GameDll + 0xACD264;
+		FrameEventHandler = (int(__thiscall*)(unsigned char* frameaddr, unsigned int eventid))(_GameDll + 0x62A580);
+		LoadFrameDefFile = (int(__fastcall*)(const char* filename, unsigned char* var1, unsigned char* var2, unsigned char* cstatus)) (_GameDll + 0x5D8DE0);
+		CreateNewCFrame = (unsigned char* (__fastcall*) (const char* FrameName, unsigned char* rframeaddr, int UnkIdx, int UnkValue, int id))(_GameDll + 0x5C9560);
+		SimulateFrameEvent = (int(__thiscall*)(unsigned char* FrameAddr, CFrameEventStruct * EventId))(_GameDll + 0x370710);
+		SetAbsolutePosition = (void(__thiscall*)(unsigned char* FrameAddr180, CFramePosition orginPosition, float absoluteX, float absoluteY, unsigned int flag))(_GameDll + 0x6061B0);
+		SetRelativePosition = (void(__thiscall*)(unsigned char* SrcFrameAddr, CFramePosition orginPosition, int DstFrameAddr, CFramePosition toPosition, float relativeX, float relativeY, unsigned int flag))(_GameDll + 0x606770);
+		UpdatePosition = (unsigned int(__thiscall*)(unsigned char* FrameAddr /* or offset 180*/, unsigned int flag))(_GameDll + 0x605CC0);
+		UpdateFlags = (unsigned int(__thiscall*)(unsigned char* FrameAddr, unsigned int flag))(_GameDll + 0x602370);
+		DestroyCFrame = (unsigned int(__thiscall*)(unsigned char* FrameAddr, unsigned int flag))(_GameDll + 0x606910);
+		SetFrameTexture = (unsigned int(__thiscall*)(unsigned char* FrameAddr, const char* texturepath, unsigned char flags/*border?*/, int tiled, const char* borderpath, int flag))(_GameDll + 0x6212D0);
+		GetFrameItemAddr = (unsigned char* (__fastcall*)(const char* name, int id))(_GameDll + 0x5FA970);
+		Wc3ChangeMenu = (void(__fastcall*)(int, int))(_GameDll + 0x5934F0);
+		TextFrameSetText = (int(__thiscall*)(unsigned char* FrameAddr, const char* text))(_GameDll + 0x611D40);
+		SoundPlay = (void(__fastcall*)(int, const char* name, int, int, int, int, int, int))(_GameDll + 0x32F310);
+		EditboxSetMaxLen = (int(__thiscall*   /* sub_6F616250*/)(unsigned char* FrameAddr, unsigned int maxlen))(_GameDll + 0x616250);
+		EditBoxFrameSetText = (int(__thiscall*)(unsigned char* frameaddr, const char* newtext, int unk))(_GameDll + 0x615B50);
 		//settextaddr =
-		PopupMenuAddItem = (int(__thiscall* /*sub_6F613260*/)(unsigned char* FrameAddr, const char* a2, int flag))(GameDll + 0x613260); //flag = -2
-		ClearPopupMenu = (int(__thiscall*)(unsigned char* FrameAddr))(GameDll + 0x334CF0);
-		//	FixFrameHookError1 = ( void( __stdcall * )( int a1 ) )( GameDll + 0x5F83F0 );
-		//	CFrameSetFocus = (int( __thiscall * )( unsigned char* FrameAddr, int flag ))( GameDll + 0x336C20 );
-		Wc3GetSkinItemPath = (const char* (__fastcall*)(const char* name, const char* theme))(GameDll + 0x31F530);
-		GlobalGlueObj = (CGlueMgr**)(GameDll + 0xACE66C);
-		//pGameGlobalUIaddr = ( GameDll + 0xAB4F80 );
-		GetCursorAddr = (int(__thiscall*)(int num))(GameDll + 0x4D9830);
-		Wc3SimulateClickEvent = (int(__thiscall*)(unsigned char* btnaddr, int unk)) (GameDll + 0x601F20);
-		StartSpriteModelAnimated = (int(__fastcall*)(int spritemodel, int unknown_or_anim_id, void(__fastcall * SetAnimOffset)(unsigned char* real_frame, float* a2, float unk_val), unsigned char* real_frame, float unk_or_start_off))(GameDll + 0x4E8720);
-		UpdateFrameScale = (void(__thiscall*)(unsigned char* FrameAddr))(GameDll + 0x605700);
-		SetFrameWidth = (void(__thiscall* /*sub_6F605D90*/)(unsigned char* FrameAddr, float x))(GameDll + 0x605D90);
-		SetFrameHeight = (void(__thiscall* /*sub_6F605DB0*/)(unsigned char* FrameAddr, float y)) (GameDll + 0x605DB0);
-		SetTextFrameFont = (int(__thiscall*)(unsigned char* FrameAddr, const char* font, float scale, int flag))(GameDll + 0x5FB960);
-		CurrentFrameFocusedAddr = GameDll + 0xACE67C;
+		PopupMenuAddItem = (int(__thiscall* /*sub_6F613260*/)(unsigned char* FrameAddr, const char* a2, int flag))(_GameDll + 0x613260); //flag = -2
+		ClearPopupMenu = (int(__thiscall*)(unsigned char* FrameAddr))(_GameDll + 0x334CF0);
+		//	FixFrameHookError1 = ( void( __stdcall * )( int a1 ) )( _GameDll + 0x5F83F0 );
+		//	CFrameSetFocus = (int( __thiscall * )( unsigned char* FrameAddr, int flag ))( _GameDll + 0x336C20 );
+		Wc3GetSkinItemPath = (const char* (__fastcall*)(const char* name, const char* theme))(_GameDll + 0x31F530);
+		GlobalGlueObj = (CGlueMgr**)(_GameDll + 0xACE66C);
+		//pGameGlobalUIaddr = ( _GameDll + 0xAB4F80 );
+		GetCursorAddr = (int(__thiscall*)(int num))(_GameDll + 0x4D9830);
+		Wc3SimulateClickEvent = (int(__thiscall*)(unsigned char* btnaddr, int unk)) (_GameDll + 0x601F20);
+		StartSpriteModelAnimated = (int(__fastcall*)(int spritemodel, int unknown_or_anim_id, void(__fastcall * SetAnimOffset)(unsigned char* real_frame, float* a2, float unk_val), unsigned char* real_frame, float unk_or_start_off))(_GameDll + 0x4E8720);
+		UpdateFrameScale = (void(__thiscall*)(unsigned char* FrameAddr))(_GameDll + 0x605700);
+		SetFrameWidth = (void(__thiscall* /*sub_6F605D90*/)(unsigned char* FrameAddr, float x))(_GameDll + 0x605D90);
+		SetFrameHeight = (void(__thiscall* /*sub_6F605DB0*/)(unsigned char* FrameAddr, float y)) (_GameDll + 0x605DB0);
+		SetTextFrameFont = (int(__thiscall*)(unsigned char* FrameAddr, const char* font, float scale, int flag))(_GameDll + 0x5FB960);
+		CurrentFrameFocusedAddr = _GameDll + 0xACE67C;
 		CFrameInitialized = true;
 
 	}
@@ -1530,7 +1530,7 @@ namespace NWar3Frame
 	}
 
 
-	unsigned char* CWar3Frame::CWar3FrameFromAddress(unsigned char* FrameAddr, bool show, bool showerror)
+	unsigned char* CWar3Frame::CWar3FrameFromAddress(unsigned char* _FrameAddr, bool show, bool showerror)
 	{
 		this->~CWar3Frame();
 
@@ -1543,7 +1543,7 @@ namespace NWar3Frame
 		FrameOk = false;
 		FramesCount++;
 		FrameId = 0;
-		this->FrameAddr = FrameAddr;
+		this->FrameAddr = _FrameAddr;
 		FrameType = CFrameType::FRAMETYPE_ITEM;
 		FrameName = "Frame_" + std::to_string(FrameId);
 		RegisteredEventId = std::vector<unsigned int>(100);

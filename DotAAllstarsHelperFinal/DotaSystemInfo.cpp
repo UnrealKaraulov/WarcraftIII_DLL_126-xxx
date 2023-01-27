@@ -80,7 +80,6 @@ std::string ProcNameRead(int id)
 {
 	char Buffer[_MAX_PATH];
 	unsigned long BufSize = _MAX_PATH;
-	unsigned long dwMHz = _MAX_PATH;
 	HKEY hKey;
 
 	// open the key where the proc speed is hidden:
@@ -107,7 +106,6 @@ std::string ProcVendorRead(int id)
 {
 	char Buffer[_MAX_PATH];
 	unsigned long BufSize = _MAX_PATH;
-	unsigned long dwMHz = _MAX_PATH;
 	HKEY hKey;
 
 	// open the key where the proc speed is hidden:
@@ -134,7 +132,6 @@ std::string MotherBoard_Manufactured()
 {
 	char Buffer[_MAX_PATH];
 	unsigned long BufSize = _MAX_PATH;
-	unsigned long dwMHz = _MAX_PATH;
 	HKEY hKey;
 
 	// open the key where the proc speed is hidden:
@@ -161,7 +158,6 @@ std::string MotherBoard_Model()
 {
 	char Buffer[_MAX_PATH];
 	unsigned long BufSize = _MAX_PATH;
-	unsigned long dwMHz = _MAX_PATH;
 	HKEY hKey;
 
 	// open the key where the proc speed is hidden:
@@ -194,7 +190,6 @@ std::string BIOS_Vendor()
 {
 	char Buffer[_MAX_PATH];
 	unsigned long BufSize = _MAX_PATH;
-	unsigned long dwMHz = _MAX_PATH;
 	HKEY hKey;
 
 	// open the key where the proc speed is hidden:
@@ -214,7 +209,7 @@ std::string BIOS_Vendor()
 
 	RegQueryValueExA(hKey, "BIOSVendor", NULL, &dwType, (LPBYTE)Buffer, &BufSize);
 
-	return Buffer;
+	return std::string(Buffer);
 }
 
 
@@ -222,7 +217,6 @@ std::string BIOS_ReleaseData()
 {
 	char Buffer[_MAX_PATH];
 	unsigned long BufSize = _MAX_PATH;
-	unsigned long dwMHz = _MAX_PATH;
 	HKEY hKey;
 
 	// open the key where the proc speed is hidden:
@@ -242,7 +236,7 @@ std::string BIOS_ReleaseData()
 
 	RegQueryValueExA(hKey, "BIOSReleaseDate", NULL, &dwType, (LPBYTE)Buffer, &BufSize);
 
-	return Buffer;
+	return  std::string(Buffer);
 }
 
 
@@ -250,7 +244,6 @@ std::string BIOS_Version()
 {
 	char Buffer[_MAX_PATH];
 	unsigned long BufSize = _MAX_PATH;
-	unsigned long dwMHz = _MAX_PATH;
 	HKEY hKey;
 
 	// open the key where the proc speed is hidden:
@@ -270,7 +263,7 @@ std::string BIOS_Version()
 
 	RegQueryValueExA(hKey, "BIOSVersion", NULL, &dwType, (LPBYTE)Buffer, &BufSize);
 
-	return Buffer;
+	return  std::string(Buffer);
 }
 
 std::string GetBiosInfo()
@@ -282,7 +275,6 @@ std::string GetOSversion()
 {
 	char Buffer[_MAX_PATH];
 	unsigned long BufSize = _MAX_PATH;
-	unsigned long dwMHz = _MAX_PATH;
 	HKEY hKey;
 
 	// open the key where the proc speed is hidden:
@@ -302,7 +294,7 @@ std::string GetOSversion()
 
 	RegQueryValueExA(hKey, "CurrentVersion", NULL, &dwType, (LPBYTE)Buffer, &BufSize);
 
-	return Buffer;
+	return  std::string(Buffer);
 }
 
 
@@ -310,7 +302,6 @@ std::string GetOSname()
 {
 	char Buffer[_MAX_PATH];
 	unsigned long BufSize = _MAX_PATH;
-	unsigned long dwMHz = _MAX_PATH;
 	HKEY hKey;
 
 	// open the key where the proc speed is hidden:
@@ -330,7 +321,7 @@ std::string GetOSname()
 
 	RegQueryValueExA(hKey, "ProductName", NULL, &dwType, (LPBYTE)Buffer, &BufSize);
 
-	return Buffer;
+	return  std::string(Buffer);
 }
 
 char GlobalBuf[1024];

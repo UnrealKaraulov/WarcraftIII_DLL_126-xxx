@@ -55,7 +55,7 @@ int __stdcall ScanJassStringForErrors(int dump)
 	int memsize = 0x100;
 	int i = 0;
 	int stringcount = 0;
-	FILE* f;
+	FILE* f = NULL;
 
 	if (dump)
 		fopen_s(&f, "dumpallbadstr.txt", "w");
@@ -93,7 +93,9 @@ int __stdcall ScanJassStringForErrors(int dump)
 						if (strhash != curstr->hash)
 						{
 							if (dump && f)
+							{
 								fprintf_s(f, "Found bad std::string[#1-%X]:%s\n", (unsigned int)curstr, curstr->text);
+							}
 							stringcount++;
 						}
 
@@ -159,7 +161,7 @@ int __stdcall GetJassStringCount(int dump)
 	int memsize = 0x100;
 	int i = 0;
 	int stringcount = 0;
-	FILE* f;
+	FILE* f = NULL;
 
 	if (dump)
 		fopen_s(&f, "dumpallstr.txt", "w");
@@ -193,7 +195,9 @@ int __stdcall GetJassStringCount(int dump)
 					while ((unsigned char*)curstr->vtable == strrepvtable && (int)curstr->next > 0)
 					{
 						if (dump && f)
+						{
 							fprintf_s(f, "%s\n", curstr->text);
+						}
 						stringcount++;
 						curstr = curstr->next;
 					}

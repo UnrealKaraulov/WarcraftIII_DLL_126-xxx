@@ -728,12 +728,12 @@ void Uninitd3d8Hook(int cleartextures)
 
 void Initd3d8Hook()
 {
-	if (!DirectxHookInitialized)
+	if (!DirectxHookInitialized && GameDll)
 	{
 		DirectxHookInitialized = true;
 		deviceglobal = NULL;
 		EndScene_org = (EndScene_p)(GameDll + 0x52F270);
-		MH_STATUS s = MH_CreateHook(EndScene_org, &EndScene_my, reinterpret_cast<void**>(&EndScene_ptr));
+		/*MH_STATUS s = */MH_CreateHook(EndScene_org, &EndScene_my, reinterpret_cast<void**>(&EndScene_ptr));
 
 
 		/*if ( MH_STATUS::MH_OK != s && s != MH_STATUS::MH_ERROR_ALREADY_CREATED )

@@ -357,7 +357,7 @@ void ApplyTestFilter(std::string filename, unsigned char ** OutDataPointer, size
 		BlackPix.G = 70;
 		BlackPix.B = 70;
 
-		int FoundTransparentTexture = false;
+		//int FoundTransparentTexture = false;
 
 		int id = 0;
 		std::vector<COLOR4> BGRAPixList;
@@ -459,7 +459,7 @@ int FixDisabledIconPath(std::string _filename, unsigned char ** OutDataPointer, 
 {
 	std::string filename = _filename;
 
-	int CreateDarkIcon = false;
+	//int CreateDarkIcon = false;
 	int result = false;
 
 

@@ -44,7 +44,7 @@ bool WGLExtensionSupported(const char* extension_name)
 void __stdcall EnableVsync(int enable)
 {
 	PFNWGLSWAPINTERVALEXTPROC       wglSwapIntervalEXT = NULL;
-	PFNWGLGETSWAPINTERVALEXTPROC    wglGetSwapIntervalEXT = NULL;
+	//PFNWGLGETSWAPINTERVALEXTPROC    wglGetSwapIntervalEXT = NULL;
 
 	if (WGLExtensionSupported("WGL_EXT_swap_control"))
 	{
