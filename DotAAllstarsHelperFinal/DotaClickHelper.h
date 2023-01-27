@@ -1,22 +1,24 @@
 #pragma once
 #include "Main.h"
+#include <Tools.h>
+#include <Timer.h>
 
 extern std::vector<int> doubleclickSkillIDs;
 extern std::vector<int> WhiteListForTeleport;
-extern bool ShopHelperEnabled;
-extern bool TeleportShiftPress;
-extern bool BlockKeyAndMouseEmulation;
-extern bool EnableSelectHelper;
-extern bool DoubleClickHelper;
-extern bool AutoSelectHero;
-extern bool LOCK_MOUSE_IN_WINDOW;
-extern bool BlockKeyboardAndMouseWhenTeleport;
-extern bool rawimage_skipmouseevent;
+extern int ShopHelperEnabled;
+extern int TeleportShiftPress;
+extern int BlockKeyAndMouseEmulation;
+extern int EnableSelectHelper;
+extern int DoubleClickHelper;
+extern int AutoSelectHero;
+extern int LOCK_MOUSE_IN_WINDOW;
+extern int BlockKeyboardAndMouseWhenTeleport;
+extern int rawimage_skipmouseevent;
 typedef LRESULT(__fastcall* WarcraftRealWNDProc)(HWND hWnd, unsigned int Msg, WPARAM wParam, LPARAM lParam);
 extern WarcraftRealWNDProc WarcraftRealWNDProc_org, WarcraftRealWNDProc_ptr;
 LRESULT __fastcall WarcraftWindowProcHooked(HWND hWnd, unsigned int Msg, WPARAM _wParam, LPARAM lParam);
 extern int ShiftPressed;
-extern bool SkipAllMessages;
+extern int SkipAllMessages;
 extern int IssueWithoutTargetOrderOffset;
 extern int IssueTargetOrPointOrder2Offset;
 extern int sub_6F339D50Offset;
@@ -46,9 +48,4 @@ extern std::vector< int > InfoWhitelistedObj;
 unsigned int CovertStringToKeyCode(std::string code);
 std::string CovertKeyCodeToString(unsigned int val);
 unsigned int BuildKeyCode();
-void PressKeyWithDelay_timed();
-
-
-extern bool EmulateKeyInputForHWND;
-extern unsigned long SkipSingleShift;
-extern unsigned long SingleShift;
+void PressKeyWithDelay_timed(Timer* tm);

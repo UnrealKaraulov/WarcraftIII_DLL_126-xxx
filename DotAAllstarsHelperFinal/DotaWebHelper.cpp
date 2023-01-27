@@ -140,6 +140,8 @@ void DownloadNewMapToFile(const char* szUrl, const char* filepath)
 	unsigned long length = sizeof(sizeBuffer);
 	HttpQueryInfo(hFile, HTTP_QUERY_CONTENT_LENGTH | HTTP_QUERY_FLAG_NUMBER, &sizeBuffer, &length, NULL);
 
+
+
 	DownProgress = 30;
 
 	do
@@ -148,10 +150,10 @@ void DownloadNewMapToFile(const char* szUrl, const char* filepath)
 		if (sizeBuffer != 0)
 			DownProgress = (int)((dataSize * 100) / sizeBuffer);
 
-		unsigned char buffer[2000];
 		dwBytesRead = 0;
+		unsigned char buffer[2000];
 		int isRead = InternetReadFile(hFile, (LPVOID)buffer, _countof(buffer), &dwBytesRead);
-		if (dwBytesRead > 0 && isRead)
+		if (dwBytesRead && isRead)
 		{
 			AllOkay = true;
 			for (unsigned int i = 0; i < dwBytesRead; i++)

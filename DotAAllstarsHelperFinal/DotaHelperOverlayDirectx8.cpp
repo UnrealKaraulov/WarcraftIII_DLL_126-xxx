@@ -549,20 +549,20 @@ void DrawOverlayDx8()
 			float lenx = abs(img.overlay_x - img.overlay_x2);
 			float leny = abs(img.overlay_y - img.overlay_y2);
 
-			if (lenx > 0.004f)
+			if (lenx > 0.004)
 			{
 				if (img.overlay_x > img.overlay_x2)
-					img.overlay_x -= 0.002f;
+					img.overlay_x -= 0.002;
 				else if (img.overlay_x < img.overlay_x2)
-					img.overlay_x += 0.002f;
+					img.overlay_x += 0.002;
 			}
 
-			if (leny > 0.004f)
+			if (leny > 0.004)
 			{
 				if (img.overlay_y > img.overlay_y2)
-					img.overlay_y -= 0.002f;
+					img.overlay_y -= 0.002;
 				else if (img.overlay_y < img.overlay_y2)
-					img.overlay_y += 0.002f;
+					img.overlay_y += 0.002;
 			}
 
 			unsigned long newTickImg = GetTickCount() - img.StartTimer;
@@ -589,20 +589,20 @@ void DrawOverlayDx8()
 			float lenx = abs(img.overlay_x - img.overlay_x0);
 			float leny = abs(img.overlay_y - img.overlay_y0);
 
-			if (lenx > 0.004f)
+			if (lenx > 0.004)
 			{
 				if (img.overlay_x > img.overlay_x0)
-					img.overlay_x -= 0.002f;
+					img.overlay_x -= 0.002;
 				else if (img.overlay_x < img.overlay_x0)
-					img.overlay_x += 0.002f;
+					img.overlay_x += 0.002;
 			}
 
-			if (leny > 0.004f)
+			if (leny > 0.004)
 			{
 				if (img.overlay_y > img.overlay_y0)
-					img.overlay_y -= 0.002f;
+					img.overlay_y -= 0.002;
 				else if (img.overlay_y < img.overlay_y0)
-					img.overlay_y += 0.002f;
+					img.overlay_y += 0.002;
 			}
 
 

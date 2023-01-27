@@ -62,6 +62,7 @@ namespace Storm {
 		StormAvailable = true;
 	}
 
+
 	//294	SFileGetLocale() 
 	unsigned short FileGetLocale() {
 
@@ -71,30 +72,34 @@ namespace Storm {
 	//TODO Debug版本加上调试信息
 	void* MemAlloc(unsigned int size) {
 		auto retaddr = _ReturnAddress();
-		
+		StormLeakHelper tmpleak = StormLeakHelper();
+		tmpleak.retaddr = (int)retaddr;
+
+		if (size == 0 || size > 1073741824)
+		{
+			char templog[256];
+			sprintf_s(templog, 256, "Error Alloc: %X %X", (unsigned int)retaddr, size);
+			MessageBoxA(0, templog, "Error1", 0);
+			return 0;
+		}
+
 		if (!StormAvailable)
 			MessageBoxA(0, "Storm not initialized", "Error1", 0);
 
 		void* retval = aero::generic_std_call<void*>(
 			AddrMemAlloc,
-			size + 4,
+			size,
 			"DotaMem",
 			1,
 			0
 			);
-
 		if (!retval)
 			MessageBoxA(0, "Storm error. No memory!", "Fatal error", 0);
 
-		if (SetInfoObjDebugVal)
-		{
-			AllocationCount++;
-			StormLeakHelper tmpleak = StormLeakHelper();
-			tmpleak.retaddr = (int)retaddr;
 
-			tmpleak.memaddr = retval;
-			LeakHelperList.push_back(tmpleak);
-		}
+		tmpleak.memaddr = retval;
+		LeakHelperList.push_back(tmpleak);
+
 		return retval;
 	}
 
@@ -116,32 +121,31 @@ namespace Storm {
 		if (!addr || !NeedReleaseUnusedMemory)
 			return 0;
 
-		if (SetInfoObjDebugVal)
+		AllocationCount--;
+
+		bool FounMem = false;
+
+		for (unsigned int i = 0; i < LeakHelperList.size(); i++)
 		{
-			AllocationCount--;
-
-			bool FounMem = false;
-
-			for (unsigned int i = 0; i < LeakHelperList.size(); i++)
+			if (LeakHelperList[i].memaddr == addr)
 			{
-				if (LeakHelperList[i].memaddr == addr)
-				{
-					LeakHelperList.erase(LeakHelperList.begin() + i);
-					FounMem = true;
-					break;
-				}
+				LeakHelperList.erase(LeakHelperList.begin() + i);
+				FounMem = true;
+				break;
 			}
+		}
 
-			if (!FounMem)
+
+
+		if (!FounMem)
+		{
+			if (SetInfoObjDebugVal)
 			{
-				if (SetInfoObjDebugVal)
-				{
-					//MessageBoxA( 0, " Tried to free unknown memory!", "Fatal4ik error!", 0 );
-					throw std::exception("Fatal Error! Tried to free unknown memory!");
-				}
-				//
-				return 0;
+				//MessageBoxA( 0, " Tried to free unknown memory!", "Fatal4ik error!", 0 );
+				throw std::exception("Fatal Error! Tried to free unknown memory!");
 			}
+			//
+			return 0;
 		}
 
 		if (!addr)
@@ -171,7 +175,7 @@ namespace Storm {
 	void* MemReAlloc(void* addr, unsigned int size) {
 		auto retaddr = _ReturnAddress();
 
-		if (!addr || size > 1073741824)
+		if (!addr || !size || size > 1073741824)
 		{
 			char templog[256];
 			sprintf_s(templog, 256, "Error ReAlloc: %X %X %X", (unsigned int)retaddr, size, (unsigned int)addr);
@@ -195,7 +199,7 @@ namespace Storm {
 		void* retval = aero::generic_std_call<void*>(
 			AddrMemReAlloc,
 			addr,
-			size + 4,
+			size,
 			"DotaMem",
 			4,
 			0

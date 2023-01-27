@@ -76,7 +76,7 @@ namespace fs = std::filesystem;
 
 #pragma endregion
 
-extern bool DEBUG_FULL;
+
 
 #pragma comment(lib,"legacy_stdio_definitions.lib")
 #pragma comment(lib,"Psapi.lib")
@@ -97,11 +97,6 @@ extern int IsVEHex;
 extern int TestModeActivated;
 
 extern const char* configfilename;
-
-extern float CustomFovFix;
-
-extern int NewCallBackTriggerHandle;
-extern int LastEventId;
 
 void FrameDefHelperUninitialize();
 void FrameDefHelperInitialize();
@@ -134,16 +129,16 @@ extern pLoadFrameDefList LoadFrameDefList;
 
 inline std::string ToLower(std::string str)
 {
-	std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+	std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::tolower(c); });
 	return str;
 }
 inline std::string ToUpper(std::string str)
 {
-	std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return  (char)std::toupper(c); });
+	std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::toupper(c); });
 	return str;
 }
 
-extern bool MainFuncWork;
+extern int MainFuncWork;
 
 extern int ChatEditBoxVtable;
 int IsChatActive();
@@ -195,8 +190,8 @@ extern pOnChatMessage pOnChatMessage_org, pOnChatMessage_ptr;
 int IsPlayerObserver(int pid);
 int _IsPlayerObserver(int pid);
 int IsLocalPlayerObserver();
-extern bool ShowSkillPanelForObservers;
-extern bool ShowSkillPanelOnlyForHeroes;
+extern int ShowSkillPanelForObservers;
+extern int ShowSkillPanelOnlyForHeroes;
 #pragma endregion
 
 #pragma region UnitAndItem.cpp
@@ -207,7 +202,7 @@ void SelectUnit(unsigned char* unit);
 std::vector< unsigned char*> GetUnitsFromGroup(int groupid);
 unsigned char** FindUnitAbils(unsigned char* unitaddr, unsigned int* count, int abilcode = 0, int abilbasecode = 0);
 int __stdcall GetUnitOwnerSlot(unsigned char* unitaddr);
-int __stdcall IsEnemy(unsigned char * UnitAddr);
+int __stdcall IsEnemy( unsigned char * UnitAddr);
 int __stdcall IsHero(unsigned char* unitaddr);
 int __stdcall IsTower(unsigned char* unitaddr);
 int __stdcall IsNotBadUnit(unsigned char* unitaddr, int onlymem = false);
@@ -343,8 +338,8 @@ extern std::vector<ModelScaleStruct> ModelScaleList;
 extern std::vector<ICONMDLCACHE> ICONMDLCACHELIST;
 
 extern std::vector<FileRedirectStruct> FileRedirectList;
-typedef int(__fastcall* GameGetFile)(const char* filename, unsigned char ** OutDataPointer, size_t* OutSize, int unknown);
-int __fastcall GameGetFile_my(const char* filename, unsigned char ** OutDataPointer, unsigned int* OutSize, int unknown);
+typedef int(__fastcall* GameGetFile)(const char* filename, int* OutDataPointer, size_t* OutSize, int unknown);
+int __fastcall GameGetFile_my(const char* filename, int* OutDataPointer, unsigned int* OutSize, int unknown);
 extern GameGetFile GameGetFile_org, GameGetFile_ptr;
 
 //
@@ -485,7 +480,7 @@ void DrawOverlayGl();
 void SetNewLightDx8(int id);
 void SetOldLightDx8(int id);
 
-extern bool OverlayDrawed;
+extern int OverlayDrawed;
 
 void InitD3DVSync(int enabled);
 
@@ -535,7 +530,7 @@ inline std::wstring StringToWString(LPCSTR s)
 	return converter.from_bytes(s);
 }
 
-int __stdcall InitHpBar(int);
+
 void SetTlsForMe();
 void __stdcall Packet_Initialize(int TriggerHandle);
 /* Voice chat. Works only in a single player game :(
@@ -544,3 +539,22 @@ void UninitializeVoiceClient( );
 void InitVoiceClientThread( );
 void AddNewPaTestData( std::vector<unsigned char> _samples, int playerid, int packetsize, bool compressed );
 */
+
+
+
+
+
+
+bool IsAnyHotkeyIsActive();
+bool IsAnyEditBoxIsActive();
+
+void DisableInputForAnyHotkeyAndEditBox();
+
+void CurrentEditBoxRemoveCharacter(bool right = false);
+void CurrentEditBoxMoveCursorLeft();
+void CurrentEditBoxMoveCursorRight();
+void CurrentEditBoxEnterText(std::wstring text);
+
+void InitializeDreamDotaAPI(int config, void* _GameDll, HWND war3hwnd);
+void UninitializeDreamDotaAPI();
+void RegisterConfigWindow();

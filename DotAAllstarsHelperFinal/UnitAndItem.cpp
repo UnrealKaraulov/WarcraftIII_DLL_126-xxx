@@ -160,7 +160,7 @@ int __stdcall IsUnitInvulnerable(unsigned char* unitaddr)
 
 int __stdcall IsUnitIllusion(unsigned char* unitaddr)
 {
-	return (*(unsigned int*)(unitaddr + 0x5C) & 0x40000000) > 0;
+	return (*(unsigned int*)(unitaddr + 0x5C) & 0x40000000);
 }
 
 // Проверяет юнит или не юнит
@@ -218,7 +218,7 @@ int __stdcall IsNotBadUnit(unsigned char* unitaddr, int onlymem)
 			return false;
 		}
 
-		if ((unitflag2 & 0x100u) > 0)
+		if (unitflag2 & 0x100u)
 		{
 			if (SetInfoObjDebugVal)
 			{
@@ -704,6 +704,7 @@ float GetUnitY_real(unsigned char* unitaddr)
 	}
 	return result;
 }
+
 
 void(__thiscall* SelectUnitReal)(int pPlayerSelectData, unsigned char * pUnit, int id, int unk1, int unk2, int unk3) = NULL;
 void(__thiscall* UpdatePlayerSelection)(int pPlayerSelectData, int unk) = NULL;

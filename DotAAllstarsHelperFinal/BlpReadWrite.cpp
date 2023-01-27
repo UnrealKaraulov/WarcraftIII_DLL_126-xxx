@@ -194,7 +194,7 @@ void Resize_HQ_4ch(unsigned char* src, int w1, int h1,
 				y1a = min(y1a, 256 * (h1 - 1) - 1);
 				int y1c = y1a >> 8;
 
-				unsigned int* ddest2 = &((unsigned int*)dest)[y2 * w2 + 0];
+				unsigned int* ddest = &((unsigned int*)dest)[y2 * w2 + 0];
 
 				for (int x2 = 0; x2 < w2; x2++)
 				{
@@ -226,7 +226,7 @@ void Resize_HQ_4ch(unsigned char* src, int w1, int h1,
 					}
 
 					unsigned int c = ((r >> 16)) | ((g >> 8) & 0xFF00) | (b & 0xFF0000);
-					*ddest2++ = c;//ddest[y2*w2 + x2] = c;
+					*ddest++ = c;//ddest[y2*w2 + x2] = c;
 				}
 			}
 		}
@@ -318,7 +318,7 @@ void Resize_HQ_4ch(unsigned char* src, int w1, int h1,
 		}
 	}
 
-	outdest.buf = (unsigned char*)dest;
+	outdest.buf = (char*)dest;
 	outdest.length = w2 * h2 * 4;
 }
 
@@ -351,7 +351,7 @@ void ScaneImageSimple(unsigned char* data, int oldW, int oldH, int newW, int new
 	}
 
 	target.length = newW * newH * bytespp;
-	target.buf = (unsigned char*)newData;
+	target.buf = (char*)newData;
 }
 
 void ScaleImage(unsigned char* rawData, int oldW, int oldH, int newW, int newH, int bytespp, StormBuffer& target)
@@ -666,11 +666,11 @@ int CreateJpgBLP(StormBuffer rawData, StormBuffer& output, int quality, char con
 	source.length = (unsigned long)(width * height * 4);
 	if (bytespp < 4)
 	{
-		source.buf = (unsigned char*)Storm::MemAlloc((unsigned int)(width * height * 4));
+		source.buf = (char*)Storm::MemAlloc((unsigned int)(width * height * 4));
 		for (int j = 0; j < width * height; j++)
 		{
 			std::memcpy(source.buf + j * 4, rawData.buf + j * bytespp, (size_t)bytespp);
-			source.buf[j * 4 + 3] = 0xFF;
+			source.buf[j * 4 + 3] = '\xFF';
 		}
 	}
 
@@ -705,7 +705,7 @@ int CreateJpgBLP(StormBuffer rawData, StormBuffer& output, int quality, char con
 			int imglen = 0;
 			if (compressedimage = Compress(scaled[i].buf, xdimension, ydimension, bytespp, imglen, quality))
 			{
-				target[i].buf = (unsigned char*)compressedimage;
+				target[i].buf = (char*)compressedimage;
 				target[i].length = imglen;
 			}
 			else
@@ -745,10 +745,10 @@ int CreateJpgBLP(StormBuffer rawData, StormBuffer& output, int quality, char con
 	}
 	maxmipmaps = min(truemipmaps, maxmipmaps);
 
-	output.buf = (unsigned char*)Storm::MemAlloc(output.length);
+	output.buf = (char*)Storm::MemAlloc(output.length);
 	std::memcpy(output.buf, &blpHeader, sizeof(BLPHeader));
 	memset(output.buf + sizeof(BLPHeader), 0, 4);
-	unsigned char* blp = output.buf + sizeof(BLPHeader) + 4;
+	char* blp = output.buf + sizeof(BLPHeader) + 4;
 	for (int i = 0; i < 16; i++)
 	{
 		if (i < maxmipmaps && width > 0 && height > 0 && target[i].buf)
@@ -786,7 +786,7 @@ int CreatePalettedBLP(StormBuffer rawData, StormBuffer& output, int colors, char
 	if (!maxmipmaps)
 		maxmipmaps = truemipmaps;
 
-	output.length = sizeof(BLPHeader) + sizeof(COLOR4) * 256; // header + palette
+	output.length = sizeof(BLPHeader) + sizeof(BGRAPix) * 256; // header + palette
 	StormBuffer bufs[16];
 	int xdimension = width;
 	int ydimension = height;
@@ -822,18 +822,18 @@ int CreatePalettedBLP(StormBuffer rawData, StormBuffer& output, int colors, char
 		ydimension = ydimension / 2;
 	}
 
-	output.buf = (unsigned char*)Storm::MemAlloc(output.length);
+	output.buf = (char*)Storm::MemAlloc(output.length);
 	unsigned char* blpData = (unsigned char*)output.buf;
 	std::memcpy(blpData, &blpHeader, sizeof(BLPHeader));
-	memset(blpData + sizeof(BLPHeader), 0, sizeof(COLOR4) * 256);
-	unsigned char* blp = blpData + sizeof(BLPHeader) + sizeof(COLOR4) * 256;
-	COLOR4* palette = (COLOR4*)(blpData + sizeof(BLPHeader));
+	memset(blpData + sizeof(BLPHeader), 0, sizeof(BGRAPix) * 256);
+	unsigned char* blp = blpData + sizeof(BLPHeader) + sizeof(BGRAPix) * 256;
+	BGRAPix* palette = (BGRAPix*)(blpData + sizeof(BLPHeader));
 	q->SetColorTable(palette);
 	for (int i = 0; i <= 16; i++)
 	{
 		if (i < maxmipmaps && width > 0 && height > 0)
 		{
-			COLOR4* raw = (COLOR4*)bufs[i].buf;
+			BGRAPix* raw = (BGRAPix*)bufs[i].buf;
 			memset(blp, 0xFF, (size_t)(width * height * 2)); //(q->NeedsAlphaChannel() ? 2 : 1);
 			q->FloydSteinbergDither((unsigned char*)bufs[i].buf, width, height, (unsigned char)bytespp, blp, palette);
 			if (q->NeedsAlphaChannel())
@@ -843,7 +843,7 @@ int CreatePalettedBLP(StormBuffer rawData, StormBuffer& output, int colors, char
 					for (int x = 0; x < width; x++)
 					{
 						unsigned char* z = blp + width * (height - y - 1) + x + width * height;
-						COLOR4* j = raw + width * y + x;
+						BGRAPix* j = raw + width * y + x;
 						*(z) = j->A;
 					}
 				}
@@ -880,7 +880,7 @@ int TGA2Raw(StormBuffer input, StormBuffer& output, int& width, int& height, int
 	height = header->height;
 
 	output.length = (unsigned long)(width * height * bpp);
-	output.buf = (unsigned char*)Storm::MemAlloc(output.length);
+	output.buf = (char*)Storm::MemAlloc(output.length);
 	std::memcpy(output.buf, input.buf + sizeof(TGAHeader) + header->imageIDLength, output.length);
 
 	return true;
@@ -897,7 +897,7 @@ int RAW2Tga(StormBuffer input, StormBuffer& output, int width, int height, int b
 	header.bpp = bpp * 8;
 	header.imagedescriptor = bpp == 4 ? 8 : 0;
 	output.length = sizeof(TGAHeader) + width * height * bpp;
-	output.buf = (unsigned char*)Storm::MemAlloc(output.length);
+	output.buf = (char*)Storm::MemAlloc(output.length);
 
 	std::memcpy(output.buf, &header, sizeof(TGAHeader));
 	std::memcpy(output.buf + sizeof(TGAHeader), input.buf, output.length - sizeof(TGAHeader));
@@ -925,7 +925,7 @@ int BMP2Raw(StormBuffer input, StormBuffer& output, int& width, int& height, int
 	height = InfoHeader->biHeight;
 
 	output.length = (unsigned long)(width * height * bpp);
-	output.buf = (unsigned char*)Storm::MemAlloc(output.length);
+	output.buf = (char*)Storm::MemAlloc(output.length);
 	std::memcpy(output.buf, input.buf + FileHeader->bfOffBits, output.length);
 
 	if (bpp == 4) // invert alpha
@@ -955,7 +955,7 @@ void SwapBLPHeader(BLPHeader* header)
 }
 
 
-void textureInvertRBInPlace(COLOR4* bufsrc, unsigned long srcsize)
+void textureInvertRBInPlace(RGBAPix* bufsrc, unsigned long srcsize)
 {
 	for (unsigned long i = 0; i < (srcsize / 4); i++)
 	{
@@ -1058,9 +1058,9 @@ tBGRAPixel* blp1_convert_paletted_separated_alpha_BGRA(uint8_t* pSrc, tBGRAPixel
 	return pBuffer;
 }
 
-COLOR4* blp1_convert_paletted_separated_alpha(uint8_t* pSrc, COLOR4* pInfos, unsigned int width, unsigned int height, int invertAlpha)
+RGBAPix* blp1_convert_paletted_separated_alpha(uint8_t* pSrc, RGBAPix* pInfos, unsigned int width, unsigned int height, int invertAlpha)
 {
-	COLOR4* outrgba = (COLOR4*)blp1_convert_paletted_separated_alpha_BGRA(pSrc, (tBGRAPixel*)pInfos, width, height, invertAlpha);
+	RGBAPix* outrgba = (RGBAPix*)blp1_convert_paletted_separated_alpha_BGRA(pSrc, (tBGRAPixel*)pInfos, width, height, invertAlpha);
 
 	return outrgba;
 }
@@ -1088,9 +1088,9 @@ tBGRAPixel* blp1_convert_paletted_alpha_BGRA(uint8_t* pSrc, tBGRAPixel* pInfos, 
 	return pBuffer;
 }
 
-COLOR4* blp1_convert_paletted_alpha(uint8_t* pSrc, COLOR4* pInfos, unsigned int width, unsigned int height)
+RGBAPix* blp1_convert_paletted_alpha(uint8_t* pSrc, RGBAPix* pInfos, unsigned int width, unsigned int height)
 {
-	COLOR4* outrgba = (COLOR4*)blp1_convert_paletted_alpha_BGRA(pSrc, (tBGRAPixel*)pInfos, width, height);
+	RGBAPix* outrgba = (RGBAPix*)blp1_convert_paletted_alpha_BGRA(pSrc, (tBGRAPixel*)pInfos, width, height);
 	return outrgba;
 }
 
@@ -1117,9 +1117,9 @@ tBGRAPixel* blp1_convert_paletted_no_alpha_BGRA(uint8_t* pSrc, tBGRAPixel* pInfo
 	return pBuffer;
 }
 
-COLOR4* blp1_convert_paletted_no_alpha(uint8_t* pSrc, COLOR4* pInfos, unsigned int width, unsigned int height)
+RGBAPix* blp1_convert_paletted_no_alpha(uint8_t* pSrc, RGBAPix* pInfos, unsigned int width, unsigned int height)
 {
-	COLOR4* outrgba = (COLOR4*)blp1_convert_paletted_no_alpha_BGRA(pSrc, (tBGRAPixel*)pInfos, width, height);
+	RGBAPix* outrgba = (RGBAPix*)blp1_convert_paletted_no_alpha_BGRA(pSrc, (tBGRAPixel*)pInfos, width, height);
 	return outrgba;
 }
 
@@ -1168,7 +1168,7 @@ unsigned long Blp2Raw(StormBuffer input, StormBuffer& output, int& width, int& h
 			return 0;
 		}
 
-		COLOR4 Pal[256];
+		RGBAPix Pal[256];
 		std::memcpy(Pal, input.buf + curpos, 256 * 4);
 		curpos += 256 * 4;
 
@@ -1185,13 +1185,13 @@ unsigned long Blp2Raw(StormBuffer input, StormBuffer& output, int& width, int& h
 			uint8_t* tdata = (uint8_t*)Storm::MemAlloc((unsigned int)size);
 			std::memcpy(tdata, input.buf + offset, (size_t)size);
 
-			COLOR4* pic = blp1_convert_paletted_separated_alpha((uint8_t*)tdata, Pal, blph.sizex, blph.sizey, 0);
+			RGBAPix* pic = blp1_convert_paletted_separated_alpha((uint8_t*)tdata, Pal, blph.sizex, blph.sizey, 0);
 
 			Storm::MemFree(tdata);
 
 
 			output.length = textureSize;
-			output.buf = (unsigned char*)Storm::MemAlloc(textureSize);
+			output.buf = (char*)Storm::MemAlloc(textureSize);
 			std::memcpy(output.buf, pic, textureSize);
 			Storm::MemFree(pic);
 
@@ -1211,11 +1211,11 @@ unsigned long Blp2Raw(StormBuffer input, StormBuffer& output, int& width, int& h
 
 			uint8_t* tdata = (uint8_t*)Storm::MemAlloc((unsigned int)size);
 			std::memcpy(tdata, input.buf + offset, (size_t)size);
-			COLOR4* pic = blp1_convert_paletted_alpha((uint8_t*)tdata, Pal, blph.sizex, blph.sizey);
+			RGBAPix* pic = blp1_convert_paletted_alpha((uint8_t*)tdata, Pal, blph.sizex, blph.sizey);
 
 			Storm::MemFree(tdata);
 			output.length = textureSize;
-			output.buf = (unsigned char*)Storm::MemAlloc(textureSize);
+			output.buf = (char*)Storm::MemAlloc(textureSize);
 			std::memcpy(output.buf, pic, textureSize);
 			Storm::MemFree(pic);
 			width = (int)blph.sizex;
@@ -1232,11 +1232,11 @@ unsigned long Blp2Raw(StormBuffer input, StormBuffer& output, int& width, int& h
 
 			uint8_t* tdata = (uint8_t*)Storm::MemAlloc((unsigned int)size);
 			std::memcpy(tdata, input.buf + offset, (size_t)size);
-			COLOR4* pic = blp1_convert_paletted_no_alpha((uint8_t*)tdata, Pal, blph.sizex, blph.sizey);
+			RGBAPix* pic = blp1_convert_paletted_no_alpha((uint8_t*)tdata, Pal, blph.sizex, blph.sizey);
 
 			Storm::MemFree(tdata);
 			output.length = textureSize;
-			output.buf = (unsigned char*)Storm::MemAlloc(textureSize);
+			output.buf = (char*)Storm::MemAlloc(textureSize);
 			std::memcpy(output.buf, pic, textureSize);
 			Storm::MemFree(pic);
 			width = (int)blph.sizex;
@@ -1257,7 +1257,7 @@ unsigned long Blp2Raw(StormBuffer input, StormBuffer& output, int& width, int& h
 
 		StormBuffer tempdata;
 		tempdata.length = blph.psize[0] + JPEGHeaderSize;
-		tempdata.buf = (unsigned char*)Storm::MemAlloc(blph.psize[0] + JPEGHeaderSize);
+		tempdata.buf = (char*)Storm::MemAlloc(blph.psize[0] + JPEGHeaderSize);
 		std::memcpy(tempdata.buf, input.buf + curpos + 4, (size_t)JPEGHeaderSize);
 
 
@@ -1292,7 +1292,7 @@ unsigned long Blp2Raw(StormBuffer input, StormBuffer& output, int& width, int& h
 		flip_vertically((unsigned char*)tmpout.buf, width, height, 4);
 
 		// Output should be RGBA, BLPs use BGRA
-		//textureInvertRBInPlace( ( COLOR4* )output.buf, output.length );
+		//textureInvertRBInPlace( ( RGBAPix* )output.buf, output.length );
 		output = tmpout;
 
 		width = (int)blph.sizex;
@@ -1312,7 +1312,7 @@ int JPG2Raw(StormBuffer input, StormBuffer& output, int width, int height, int& 
 	if ((outdata = ReadImage(width, height, bpp, input.buf, input.length)) != NULL)
 	{
 		output.length = width * height * bpp;
-		output.buf = (unsigned char*)outdata;
+		output.buf = (char*)outdata;
 
 		return true;
 	}

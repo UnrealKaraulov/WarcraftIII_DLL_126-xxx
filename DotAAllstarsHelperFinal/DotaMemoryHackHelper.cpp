@@ -164,6 +164,7 @@ int __stdcall GetJassStringCount(int dump)
 	if (dump)
 		fopen_s(&f, "dumpallstr.txt", "w");
 
+
 	std::vector<int> foundoffsets;
 
 	for (i = 0; i < memsize; i++)
@@ -238,17 +239,11 @@ int __stdcall GetJassStringCount(int dump)
 }
 
 
-int UseWarnIsBadReadPtr = 0;
+const int UseWarnIsBadReadPtr = 2;
 
 
 int IsOkayPtr(void* ptr, unsigned int size)
 {
-	if (UseWarnIsBadReadPtr == 0)
-	{
-		if (!ptr || size > 0x20000000)
-			return false;
-		return true;
-	}
 	if (UseWarnIsBadReadPtr == 1)
 	{
 		int returnvalue = IsBadReadPtr(ptr, size) == 0;
@@ -257,7 +252,6 @@ int IsOkayPtr(void* ptr, unsigned int size)
 	else if (UseWarnIsBadReadPtr == 2)
 	{
 		MEMORY_BASIC_INFORMATION mbi;
-
 		if (VirtualQuery(ptr, &mbi, sizeof(MEMORY_BASIC_INFORMATION)) == 0)
 		{
 			return 0;
@@ -268,10 +262,12 @@ int IsOkayPtr(void* ptr, unsigned int size)
 			return 0;
 		}
 
+
 		if ((int)ptr < (int)mbi.BaseAddress)
 		{
 			return 0;
 		}
+
 
 		if (mbi.State != MEM_COMMIT)
 		{
