@@ -13,9 +13,6 @@
 
 #include "RawImageApi.h"
 
-#include "UIStructs.h"
-
-
 int FileExist(const char* name)
 {
 	std::ifstream f(name);
@@ -30,8 +27,6 @@ bool DEBUG_FULL = false;
 
 int SetInfoObjDebugVal = false;
 
-#pragma region All Offsets Here
-
 //  Game.dll
 unsigned char* GameDll = 0;
 //	Storm.dll
@@ -39,7 +34,7 @@ unsigned char* StormDll = 0;
 void* GameDllModule = 0;
 void* StormDllModule = 0;
 void* GetCurrentModule = NULL;
-
+unsigned long GetGameDllThread = 0;
 
 char buffer[4096];
 
@@ -109,18 +104,8 @@ pGetPlayerAlliance GetPlayerAlliance;
 unsigned char* DrawUnitBarOffset = 0;
 
 
-void __stdcall DisableAllHooks();
-#pragma endregion
-
 bool MainFuncWork = false;
 
-unsigned char* GetGlobalClassAddr()
-{
-	if (pW3XGlobalClass == NULL)
-		return 0;
-
-	return *(unsigned char**)pW3XGlobalClass;
-}
 
 war3::CGameUI* GameUIObjectGet() {
 	if (pW3XGlobalClass && *(unsigned char**)pW3XGlobalClass)
@@ -139,6 +124,7 @@ int ChatEditBoxVtable = 0;
 bool isChatBoxOn() {
 	if (GameUIObjectGet() && GameUIObjectGet()->chatEditBar)
 		return GameUIObjectGet()->chatEditBar->visible == 1;
+
 	return false;
 }
 
@@ -158,7 +144,7 @@ int IsGameFrameActive()
 	bool a1 = false, a2 = false, a3 = false;
 
 
-	unsigned char* pGlAddr = GetGlobalClassAddr();
+	unsigned char* pGlAddr = (unsigned char*)GameUIObjectGet();
 	if (pGlAddr)
 	{
 		pGlAddr = *(unsigned char**)(pGlAddr + 0x3D0);
@@ -170,7 +156,7 @@ int IsGameFrameActive()
 		}
 	}
 
-	pGlAddr = GetGlobalClassAddr();
+	pGlAddr = (unsigned char*)GameUIObjectGet();
 	if (pGlAddr)
 	{
 		int pGlAddrVal = *(int*)(pGlAddr + 0x258);
@@ -187,10 +173,6 @@ int IsGameFrameActive()
 
 	return a3 && a2 && a1;
 }
-
-
-
-#pragma optimize("",off)
 
 
 void PrintText(const char* text, float staytime, int force)
@@ -234,8 +216,6 @@ const char* GetBoolStr(int val)
 {
 	return val ? "true" : "false";
 }
-
-#pragma optimize("",on)
 
 LPVOID TlsValue;
 unsigned long TlsIndex;
@@ -309,11 +289,32 @@ void __stdcall UnloadAllOldHelpers(int)
 			}
 		}
 	}
-
 }
 
+bool IsGameDllAndStormFound()
+{
+	bool gameDllFound = false;
+	bool stormDllFound = false;
+	void* hMods[2048];
+	unsigned long cbNeeded;
+	unsigned int i;
+	if (EnumProcessModules(GetCurrentProcess(), (HMODULE*)hMods, sizeof(hMods), &cbNeeded))
+	{
+		for (i = 0; i < (cbNeeded / sizeof(void*)); i++)
+		{
+			if (hMods[i] == GameDllModule)
+			{
+				gameDllFound = true;
+			}
+			if (hMods[i] == StormDllModule)
+			{
+				stormDllFound = true;
+			}
+		}
+	}
 
-#pragma optimize("",off)
+	return stormDllFound && gameDllFound;
+}
 
 typedef void(WINAPI* PSleep)(unsigned long ms);
 typedef int(WINAPI* PFreeLibrary)(HMODULE hModule);
@@ -336,7 +337,7 @@ unsigned long WINAPI DllUnloadThreadProc(LPVOID lParam)
 	return 0;
 }
 
-VOID DllSelfUnloading(_In_ void* hModule)
+void* __stdcall DllSelfUnloading(void* hModule)
 {
 	PVOID pMemory = NULL;
 	pMemory = VirtualAlloc(NULL, 0x1000, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
@@ -354,12 +355,8 @@ VOID DllSelfUnloading(_In_ void* hModule)
 				(PVOID)(((unsigned char*)pMemory) + 0x500), 0, 0));
 		}
 	}
+	return 0;
 }
-#pragma optimize("",on)
-
-
-
-void* ThreadWatcherID = NULL;
 
 int SELF_UNLOAD_DLL_AFTER_GAME_END = false;
 
@@ -367,46 +364,6 @@ bool IsGameDllFound()
 {
 	return GameDll != NULL;
 }
-
-unsigned long __stdcall UNLOAD_WATCHER(void*)
-{
-	bool tls_setup = false;
-	while (true)
-	{
-		while (!IsGameDllFound())
-		{
-			Sleep(20);
-		}
-
-		if (IsGameDllFound())
-		{
-			if (!tls_setup)
-				SetTlsForMe();
-			tls_setup = true;
-
-			while (!IsGame())
-			{
-				Sleep(20);
-			}
-
-			while (IsGame())
-			{
-				Sleep(20);
-			}
-
-			DisableAllHooks();
-
-			if (SELF_UNLOAD_DLL_AFTER_GAME_END)
-			{
-				DllSelfUnloading(GetCurrentModule);
-				ThreadWatcherID = NULL;
-				ExitThread(0);
-			}
-		}
-	}
-	ExitThread(0);
-}
-
 
 void __stdcall SET_SELF_UNLOAD_DLL_AFTER_GAME_END(int unload)
 {
@@ -425,9 +382,14 @@ void __stdcall SET_SELF_UNLOAD_DLL_AFTER_GAME_END(int unload)
 //	ForceGameStart = false;
 //}
 
-int IsGame()
+bool IsGame()
 {
-	return/* ForceGameStart != 0 &&*/ GameDll && InGame && *InGame > 0;
+	bool retval = GameDll && (GameUIObjectGet() && GAME_START_CALLED);
+	if (retval)
+	{
+		//;
+	}
+	return retval;
 }
 
 pConvertStrToJassStr str2jstr;
@@ -544,7 +506,6 @@ void BuildFilePath(char* fname)
 		MapPathSize = strlen(CurrentMapPath);
 		if (MapPathSize > 4) // "Maps\"
 		{
-
 			memset(NewMapPath, 0, MAX_PATH);
 			if (fname != NULL && *fname != 0)
 				sprintf_s(NewMapPath, MAX_PATH, "%s%s", CurrentMapPath, fname);
@@ -554,9 +515,6 @@ void BuildFilePath(char* fname)
 		}
 	}
 }
-
-
-
 
 const char* __stdcall GetCurrentMapPath(int)
 {
@@ -573,28 +531,24 @@ DrawInterface_p DrawInterface_ptr;
 
 unsigned long DELAYKEY = 0;
 
+bool GAME_START_CALLED = false;
+
 int __fastcall DrawInterface_my(int arg1, int arg2)
 {
-	if (IsGame()/* && *IsWindowActive*/)
+	if (!GAME_START_CALLED)
 	{
-		//if ( WriteAccessStatus == -1 )
-		//{
-		//	WriteAccessStatus = CheckWriteAccess( );
-		//}
-
-
-		if (GetTickCount() - DELAYKEY > 20)
-		{
-			PressKeyWithDelay_timed();
-			DELAYKEY = GetTickCount();
-		}
-
-
-		DrawOverlayDx8();
-		DrawOverlayGl();
-
-		OverlayDrawed = true;
+		GAME_START_CALLED = true;
 	}
+	if (GetTickCount() - DELAYKEY > 20)
+	{
+		PressKeyWithDelay_timed();
+		DELAYKEY = GetTickCount();
+	}
+
+	DrawOverlayDx8();
+	DrawOverlayGl();
+
+	OverlayDrawed = true;
 
 	return DrawInterface_ptr(arg1, arg2);
 }
@@ -639,29 +593,12 @@ int __fastcall Wc3DrawObject_my(int a1, int a2)
 
 void InitHook()
 {
-
-
 	//EnableErrorHandler(0);
 
+	WarcraftRealWNDProc_org = (WarcraftRealWNDProc)Warcraft3WindowProcOffset;
 
-	if (!Warcraft3Window)
-	{
-		Warcraft3Window = FindWindowA("Warcraft III", 0);
-		if (!Warcraft3Window)
-			Warcraft3Window = FindWindowA(0, "Warcraft III");
-	}
-
-	if (Warcraft3Window)
-	{
-		WarcraftRealWNDProc_org = (WarcraftRealWNDProc)Warcraft3WindowProcOffset;
-
-		MH_CreateHook(WarcraftRealWNDProc_org, &WarcraftWindowProcHooked, reinterpret_cast<void**>(&WarcraftRealWNDProc_ptr));
-		MH_EnableHook(WarcraftRealWNDProc_org);
-
-	}
-	else
-	{
-	}
+	MH_CreateHook(WarcraftRealWNDProc_org, &WarcraftWindowProcHooked, reinterpret_cast<void**>(&WarcraftRealWNDProc_ptr));
+	MH_EnableHook(WarcraftRealWNDProc_org);
 
 	SetGameAreaFOV_org = (SetGameAreaFOV)(SetGameAreaFOVoffset + GameDll);
 
@@ -728,8 +665,6 @@ void InitHook()
 	MH_CreateHook(SimpleButtonClickEvent_org, &SimpleButtonClickEvent_my, reinterpret_cast<void**>(&SimpleButtonClickEvent_ptr));
 	MH_EnableHook(SimpleButtonClickEvent_org);
 
-
-
 	IssueFixerInit();
 
 	/*MH_CreateHook( DrawWc3UI_org, &DrawWc3UI_my, reinterpret_cast< void** >( &DrawWc3UI_ptr ) );
@@ -753,117 +688,42 @@ void InitHook()
 
 void UninitializeHook()
 {
-
-
-#pragma region Game.dll hook
-
-
 	// Отключить хук для IsDrawSkillPanel_org
 	if (IsDrawSkillPanel_org)
-	{
 		MH_DisableHook(IsDrawSkillPanel_org);
-		IsDrawSkillPanel_org = 0;
-	}
 	// Отключить хук для IsDrawSkillPanelOverlay_org
 	if (IsDrawSkillPanelOverlay_org)
-	{
 		MH_DisableHook(IsDrawSkillPanelOverlay_org);
-		IsDrawSkillPanelOverlay_org = 0;
-	}
 	// Отключить хук для IsNeedDrawUnit2org
 	if (IsNeedDrawUnit2org)
-	{
 		MH_DisableHook(IsNeedDrawUnit2org);
-		IsNeedDrawUnit2org = 0;
-	}
-
 	if (pOnChatMessage_org)
-	{
 		MH_DisableHook(pOnChatMessage_org);
-		pOnChatMessage_org = 0;
-	}
-
 	if (Wc3ControlClickButton_org)
-	{
 		MH_DisableHook(Wc3ControlClickButton_org);
-		Wc3ControlClickButton_org = 0;
-	}
-
 	if (SetGameAreaFOV_org)
-	{
 		MH_DisableHook(SetGameAreaFOV_org);
-		SetGameAreaFOV_org = 0;
-	}
-
 	if (GameGetFile_org)
-	{
 		MH_DisableHook(GameGetFile_org);
-		GameGetFile_org = 0;
-	}
-
-	/*if ( SFileReadFile_org )
-	{
+	/*
 		MH_DisableHook( SFileReadFile_org );
-		SFileReadFile_org = 0;
-	}
 
-	if ( SFileOpenFile_org )
-	{
 		MH_DisableHook( SFileOpenFile_org );
-		SFileOpenFile_org = 0;
 	}*/
-
 	if (DrawInterface_org)
-	{
 		MH_DisableHook(DrawInterface_org);
-		DrawInterface_org = NULL;
-	}
-
 	if (GetTownUnitCount_org)
-	{
 		MH_DisableHook(GetTownUnitCount_org);
-		DrawInterface_org = NULL;
-	}
-
-
 	if (DrawBarForUnit_org)
-	{
 		MH_DisableHook(DrawBarForUnit_org);
-		DrawBarForUnit_org = NULL;
-	}
-
 	if (SimpleButtonClickEvent_org)
-	{
 		MH_DisableHook(SimpleButtonClickEvent_org);
-		SimpleButtonClickEvent_org = NULL;
-	}
-
 	if (Wc3DrawStage_org)
-	{
 		MH_DisableHook(Wc3DrawStage_org);
-		Wc3DrawStage_org = NULL;
-	}
-
 	if (SimpleButtonPreClickEvent_org)
-	{
 		MH_DisableHook(SimpleButtonPreClickEvent_org);
-		SimpleButtonPreClickEvent_org = NULL;
-	}
-
 	if (pSetChatTargetUsers_org)
-	{
 		MH_DisableHook(pSetChatTargetUsers_org);
-		pSetChatTargetUsers_org = NULL;
-	}
-
-	if (SimpleButtonPreClickEvent_org)
-	{
-		MH_DisableHook(SimpleButtonPreClickEvent_org);
-		SimpleButtonPreClickEvent_org = NULL;
-	}
-
-
-#pragma endregion
 
 	IssueFixerDisable();
 }
@@ -893,14 +753,7 @@ int PlantDetourJMP(unsigned char* source, const unsigned char* destination, size
 }
 
 
-#pragma optimize("",off)
-
-
-
-
 char* bufferaddr = 0;
-
-
 
 int __declspec(naked) __cdecl GetUnitItemInSlot126a(unsigned char* unitaddr, int slotid)
 {
@@ -1418,10 +1271,6 @@ unsigned char* __stdcall SaveStringForHP_MP(unsigned char* unitaddr)
 	return unitaddr;
 }
 
-
-
-#pragma region HookFunctions
-
 int JumpBackAddr1()
 {
 	MessageBoxA(0, 0, 0, 1);
@@ -1776,20 +1625,6 @@ void __declspec(naked) HookSetCD_1000s_127a()
 	}
 }
 
-
-
-
-
-
-#pragma optimize("",on)
-
-
-
-#pragma endregion
-
-
-#pragma region BackupOffsets
-
 std::vector<waroffsetdata> offsetslist;
 int __stdcall AddNewOffset_(unsigned char* address, int data, unsigned int FeatureFlag = 0)
 {
@@ -1937,6 +1772,8 @@ void __stdcall RestoreAllOffsets()
 #define Feature16 0x8000
 
 
+bool ClickHelperDisabled = false;
+
 int __stdcall DisableFeatures(unsigned int Flags)
 {
 	if (DEBUG_FULL)
@@ -1953,71 +1790,44 @@ int __stdcall DisableFeatures(unsigned int Flags)
 	if (Flags & Feature_FileHelper)
 	{
 		if (GameGetFile_org)
-		{
 			MH_DisableHook(GameGetFile_org);
-		}
 
-		//if ( SFileOpenFile_org )
-		//{
-		//	//MH_DisableHook( SFileOpenFile_org );
-		//}
+		//MH_DisableHook( SFileOpenFile_org );
 
-		//if ( SFileOpenFile_org )
-		//{
-		//	//MH_DisableHook( SFileOpenFile_org );
-		//}
+		//MH_DisableHook( SFileOpenFile_org );
 	}
 
 	if (Flags & Feature_Widescreen)
 	{
 		if (SetGameAreaFOV_org)
-		{
 			MH_DisableHook(SetGameAreaFOV_org);
-		}
 	}
 
 	if (Flags & Feature_MutePlayer)
 	{
 		if (pOnChatMessage_org)
-		{
 			MH_DisableHook(pOnChatMessage_org);
-		}
 	}
 
 	if (Flags & Feature_AllySkillViewer)
 	{
 		if (IsDrawSkillPanel_org)
-		{
 			MH_DisableHook(IsDrawSkillPanel_org);
-		}
 		if (IsDrawSkillPanelOverlay_org)
-		{
 			MH_DisableHook(IsDrawSkillPanelOverlay_org);
-		}
 		if (IsNeedDrawUnit2org)
-		{
 			MH_DisableHook(IsNeedDrawUnit2org);
-		}
 	}
 
 	if (Flags & Feature_ClickHelper)
 	{
-		if (WarcraftRealWNDProc_org)
-		{
-			MH_DisableHook(WarcraftRealWNDProc_org);
-		}
-		if (Wc3ControlClickButton_org)
-		{
-			MH_DisableHook(Wc3ControlClickButton_org);
-		}
+		ClickHelperDisabled = true;
 	}
 
 	if (Flags & Feature_FPSfix1)
 	{
 		if (DrawBarForUnit_org)
-		{
 			MH_DisableHook(DrawBarForUnit_org);
-		}
 	}
 
 	return 0;
@@ -2081,14 +1891,7 @@ int __stdcall EnableFeatures(unsigned int Flags)
 
 	if (Flags & Feature_ClickHelper)
 	{
-		if (WarcraftRealWNDProc_org)
-		{
-			MH_EnableHook(WarcraftRealWNDProc_org);
-		}
-		if (Wc3ControlClickButton_org)
-		{
-			MH_EnableHook(Wc3ControlClickButton_org);
-		}
+		ClickHelperDisabled = false;
 	}
 
 	if (Flags & Feature_FPSfix1)
@@ -2101,10 +1904,6 @@ int __stdcall EnableFeatures(unsigned int Flags)
 
 	return 0;
 }
-
-#pragma endregion
-
-
 
 
 void __stdcall ClearCustomsBars()
@@ -2139,23 +1938,23 @@ void __stdcall FreeAllVectors()
 
 void __stdcall UnloadHWNDHandler(int Force = false)
 {
-	if (WarcraftRealWNDProc_org)
-	{
-		SkipAllMessages = true;
-		if (!Force)
-			MH_DisableHook(WarcraftRealWNDProc_org);
-		SkipAllMessages = false;
-		WarcraftRealWNDProc_org = NULL;
-	}
+	ClickHelperDisabled = true;
 }
 
 void __stdcall DisableAllHooks()
 {
+	if (!InitFunctionCalled)
+	{
+		return;
+	}
+	InitFunctionCalled = false;
+
 	/*MessageBoxA( 0, "Очистка по выходе из карты", "проверка", 0 );
 */
 	Packet_Uninitalize();
 
-
+	Warcraft3Window = NULL;
+	Storm::Cleanup();
 	// Вернуть стандартное ограничение FPS
 	//_SetMaxFps( 200 );
 	sprintf_s(MyFpsString, 512, "%s", "|nFPS: %.1f");
@@ -2185,6 +1984,7 @@ void __stdcall DisableAllHooks()
 
 	FreeAllVectors();
 
+	ClickHelperDisabled = false;
 	EnableSelectHelper = false;
 	AutoSelectHero = false;
 	BlockKeyAndMouseEmulation = false;
@@ -2209,10 +2009,8 @@ void __stdcall DisableAllHooks()
 	GlobalRawImageCallbackData = NULL;
 	ShowSkillPanelForObservers = false;
 	ShowSkillPanelOnlyForHeroes = true;
-	NeedReleaseUnusedMemory = false;
 	PlayerEnemyCache.clear();
 
-	InitFunctionCalled = false;
 	SetCustomFovFix(1.0f);
 
 	FrameDefHelperUninitialize();
@@ -2237,9 +2035,6 @@ void __stdcall DisableAllHooks()
 
 	//UnInitDreamRawImages();
 
-	MH_DisableHook(MH_ALL_HOOKS);
-	MH_Uninitialize();
-
 	EmulateKeyInputForHWND = false;
 	ShiftPressed = 0;
 	SkipSingleShift = false;
@@ -2250,6 +2045,9 @@ void __stdcall DisableAllHooks()
 
 	NewCallBackTriggerHandle = 0;
 	LastEventId = 0;
+
+	MH_DisableHook(MH_ALL_HOOKS);
+	MH_Uninitialize();
 }
 
 void PatchOffset(void* addr, void* lpbuffer, unsigned int size)
@@ -2339,8 +2137,6 @@ int __stdcall DeleteFileByName(char* file)
 		std::cout << __func__ << std::endl;
 	return DeleteFileA(file);
 }
-
-
 
 int __stdcall InitHpBar(int)
 {
@@ -2433,6 +2229,15 @@ int InitializedDream = false;
 
 unsigned int __stdcall InitDotaHelper(int)
 {
+	if (InitFunctionCalled)
+	{
+		DisableAllHooks();
+	}
+
+	//MessageBoxA(0, "INI", "T", 0);
+
+	GetGameDllThread = GetCurrentThreadId();
+
 	if (DEBUG_FULL)
 		std::cout << __func__ << std::endl;
 	UnloadAllOldHelpers(0);
@@ -2472,7 +2277,8 @@ unsigned int __stdcall InitDotaHelper(int)
 	memset(hpbarscaleUnitY, 0, sizeof(hpbarscaleUnitY));
 	memset(hpbarscaleTowerY, 0, sizeof(hpbarscaleTowerY));
 
-	Warcraft3Window = 0;
+	Warcraft3Window = NULL;
+	ClickHelperDisabled = false;
 	EnableSelectHelper = false;
 	AutoSelectHero = false;
 	BlockKeyAndMouseEmulation = false;
@@ -2505,7 +2311,6 @@ unsigned int __stdcall InitDotaHelper(int)
 	SkipAllMessages = false;
 
 	ScanId = 0;
-	NeedReleaseUnusedMemory = false;
 	PlayerEnemyCache.clear();
 
 	sprintf_s(MyFpsString, 512, "%s", "|nFPS: %.1f / 64.0 ");
@@ -2516,9 +2321,6 @@ unsigned int __stdcall InitDotaHelper(int)
 
 
 	_W3XTlsIndex = 0xAB7BF4 + GameDll;
-
-	UninitializeHook();
-	FreeAllIHelpers();
 
 	pOnChatMessage_offset = 0x2FB480;
 	IsNeedDrawUnit2offset = 0x28E1D0;
@@ -2540,7 +2342,6 @@ unsigned int __stdcall InitDotaHelper(int)
 	Storm_503 = (pStorm_503)(*(int*)(GameDll + 0x86D584));
 	_GlobalGlueObj = GameDll + 0xACE66C;
 	_GameUI = GameDll + 0x93631C;
-	InGame = (int*)(GameDll + 0xAB62A4);
 	_EventVtable = GameDll + 0xA9ACB0;
 	_ChatSendEvent = GameDll + 0x2FC700;
 	GetItemInSlotAddr = GameDll + 0x3C7730 + 0xA;
@@ -2772,7 +2573,6 @@ unsigned int __stdcall InitDotaHelper(int)
 
 	pWar3GlobalData1 = GameDll + 0xACBD40;
 	pWar3GlobalData1 = *(unsigned char**)pWar3GlobalData1;
-	Warcraft3Window = *(HWND*)(GameDll + 0xAD147C);
 	Warcraft3WindowProcOffset = GameDll + 0x6C6AA0;
 
 	Game_Wc3MessageBox = (pGame_Wc3MessageBox)(GameDll + 0x55CEB0);
@@ -2860,7 +2660,6 @@ unsigned int __stdcall InitDotaHelper(int)
 	UpdatePlayerSelection = (void(__thiscall*)(int pPlayerSelectData, int unk))(GameDll + 0x425490);
 	ClearSelection = (int(__cdecl*)(void))(GameDll + 0x3BBAA0);
 
-	InitHook();
 
 	for (int i = 0; i < 16; i++)
 	{
@@ -2883,10 +2682,6 @@ unsigned int __stdcall InitDotaHelper(int)
 	player_local_id = _GetLocalPlayerId();
 
 
-	InitFunctionCalled = true;
-
-
-
 	unsigned long crc32 = GetDllCrc32();
 
 
@@ -2898,7 +2693,13 @@ unsigned int __stdcall InitDotaHelper(int)
 
 	//InitDreamRawImages( );
 
-	//		InitVoiceClientThread( );
+	//InitVoiceClientThread( );
+
+	InitHook();
+
+
+	InitFunctionCalled = true;
+
 	return crc32;
 
 }
@@ -2968,9 +2769,6 @@ int __stdcall SetGameDllAddr(void* GameDllmdl)
 	return 0;
 }
 
-int TerminateStarted = false;
-
-
 int TestModeActivated = false;
 
 int __stdcall SLOW_DEBUG_INIT(int)
@@ -2989,12 +2787,12 @@ int __stdcall SLOW_DEBUG_INIT(int)
 	return 0;
 }
 
-#pragma region Main
 int __stdcall DllMain(HINSTANCE Module, unsigned int reason, LPVOID)
 {
 	if (reason == DLL_PROCESS_ATTACH)
 	{
 		GetCurrentModule = Module;
+		GetGameDllThread = GetCurrentThreadId();
 		/*std::streambuf *coutbuf = std::cout.rdbuf( );
 		std::ofstream out( "debug.log" );
 		std::cout.rdbuf( out.rdbuf( ) );
@@ -3021,6 +2819,7 @@ int __stdcall DllMain(HINSTANCE Module, unsigned int reason, LPVOID)
 
 	//cerr << "Dota Helper Error Log out:" << endl;
 	//cout << "Dota Helper Debug Log out" << endl;
+	// 
 		DisableThreadLibraryCalls(Module);
 
 
@@ -3046,27 +2845,22 @@ int __stdcall DllMain(HINSTANCE Module, unsigned int reason, LPVOID)
 		//EnableFeatures(0xFFFFFFFF);
 		//MainFuncWork = true;
 		//EnableErrorHandler(0);
-
-		CloseHandle(ThreadWatcherID = CreateThread(0, 0, UNLOAD_WATCHER, 0, 0, 0));
 	}
 	else if (reason == DLL_PROCESS_DETACH)
 	{
-		TerminateStarted = true;
-
-		if (!GetProcAddress((HMODULE)GameDllModule, "GameMain") || !GetProcAddress((HMODULE)StormDllModule, (LPCSTR)266))
+		if (IsGameDllAndStormFound())
 		{
-			// Unable to cleanup, need just terminate process :(
-			ExitProcess(0);
+			DisableAllHooks();
+			MH_DisableHook(MH_ALL_HOOKS);
+			MH_Uninitialize();
 		}
-
-		DisableAllHooks();
-		MH_DisableHook(MH_ALL_HOOKS);
-		MH_Uninitialize();
+		else
+		{
+			StormAvailable = false;
+		}
 	}
 	return true;
 }
-#pragma endregion
-
 
 
 

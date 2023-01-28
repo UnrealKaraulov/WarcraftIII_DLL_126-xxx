@@ -264,9 +264,11 @@ void __stdcall EnableAntialiasing(unsigned long value)
 	{
 		PrintText("Set antialiasing to " + std::to_string(value));
 	}
-
-	ShowWindow(Warcraft3Window, SW_MINIMIZE);
-	ShowWindow(Warcraft3Window, SW_RESTORE);
+	if (Warcraft3Window)
+	{
+		ShowWindow(Warcraft3Window, SW_MINIMIZE);
+		ShowWindow(Warcraft3Window, SW_RESTORE);
+	}
 }
 
 void __stdcall SetMipMaps(unsigned long value)
@@ -290,8 +292,11 @@ void __stdcall SetMipMaps(unsigned long value)
 		PrintText("Set mipmaps to " + std::to_string(value));
 	}
 
-	ShowWindow(Warcraft3Window, SW_MINIMIZE);
-	ShowWindow(Warcraft3Window, SW_RESTORE);
+	if (Warcraft3Window)
+	{
+		ShowWindow(Warcraft3Window, SW_MINIMIZE);
+		ShowWindow(Warcraft3Window, SW_RESTORE);
+	}
 }
 
 void InitD3DVSync(int enabled)
@@ -303,10 +308,11 @@ void InitD3DVSync(int enabled)
 		PrintText("Wait for restart device....");
 	}
 
-	//if (/*OLD_D3D_PARAMETERS_LOADED &&*/ d3dreset_org && d3dreset_ptr)
-	//{
-	ShowWindow(Warcraft3Window, SW_MINIMIZE);
-	ShowWindow(Warcraft3Window, SW_RESTORE);
+	if (Warcraft3Window)
+	{
+		ShowWindow(Warcraft3Window, SW_MINIMIZE);
+		ShowWindow(Warcraft3Window, SW_RESTORE);
+	}
 	//}
 }
 
@@ -699,26 +705,17 @@ void Uninitd3d8Hook(int cleartextures)
 				}
 			}
 		}
-		MH_DisableHook(EndScene_org);
-		EndScene_org = NULL;
+		if (EndScene_org)
+			MH_DisableHook(EndScene_org);
 
 		deviceglobal = NULL;
 
 		if (vsyncInitialized)
 		{
 			if (d3dreset_org)
-			{
 				MH_DisableHook(d3dreset_org);
-				d3dreset_org = NULL;
-				d3dreset_ptr = NULL;
-			}
-
 			if (Wc3SetTextureStageState_org)
-			{
 				MH_DisableHook(Wc3SetTextureStageState_org);
-				Wc3SetTextureStageState_org = NULL;
-				Wc3SetTextureStageState_ptr = NULL;
-			}
 		}
 		vsyncInitialized = false;
 

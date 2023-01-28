@@ -7,8 +7,6 @@
 #define WIN32_LEAN_AND_MEAN
 #define PSAPI_VERSION 1
 
-#pragma region Includes
-
 #include <stdint.h>
 #include <cstdio>
 #include <cstring>
@@ -74,7 +72,8 @@ namespace fs = std::filesystem;
 #include <ijl.h>
 
 
-#pragma endregion
+#include "GameStructs.h"
+
 
 extern bool DEBUG_FULL;
 
@@ -85,14 +84,20 @@ extern bool DEBUG_FULL;
 
 #define IsKeyPressed(CODE) ((GetAsyncKeyState(CODE) & 0x8000) > 0)
 
+extern int SELF_UNLOAD_DLL_AFTER_GAME_END;
+extern void* GameDllModule;
+extern void* StormDllModule;
+extern void* GetCurrentModule;
+void __stdcall DisableAllHooks();
+void* __stdcall DllSelfUnloading(void* hModule);
 
-int IsGame();
+extern bool FIRST_GAME_START_FOUND;
+bool IsGame();
 
 extern unsigned char* ConvertHandle(int handle);
 
 extern int InitFunctionCalled;
 
-extern int TerminateStarted;
 extern int IsVEHex;
 extern int TestModeActivated;
 
@@ -109,7 +114,7 @@ void FrameDefHelperInitialize();
 void PatchOffsetValue1(void* addr, unsigned char value);
 extern int RenderStage;
 
-unsigned char* GetGlobalClassAddr();
+war3::CGameUI* GameUIObjectGet();
 int FileExist(const char* name);
 unsigned long GetDllCrc32();
 typedef void* (__cdecl* _TriggerExecute)(int TriggerHandle);
@@ -153,9 +158,6 @@ extern int SetInfoObjDebugVal;
 char* GetWar3Preferense(int ID);
 extern char MyFpsString[512];
 
-
-#pragma region DotaPlayerHelper.cpp
-
 int IsPlayerEnemy(int hPlayer1, int hPlayer2);
 extern std::map<std::pair<int, int>, int> PlayerEnemyCache;
 
@@ -197,9 +199,7 @@ int _IsPlayerObserver(int pid);
 int IsLocalPlayerObserver();
 extern bool ShowSkillPanelForObservers;
 extern bool ShowSkillPanelOnlyForHeroes;
-#pragma endregion
 
-#pragma region UnitAndItem.cpp
 extern void(__thiscall* SelectUnitReal)(int pPlayerSelectData, unsigned char * pUnit, int id, int unk1, int unk2, int unk3);
 extern void(__thiscall* UpdatePlayerSelection)(int pPlayerSelectData, int unk);
 extern int(__cdecl* ClearSelection)(void);
@@ -229,9 +229,7 @@ float GetUnitHP(unsigned char* unitaddr);
 unsigned char* GetUnitAddressFloatsRelated(unsigned char* unitaddr, int step);
 float GetUnitX_real(unsigned char* unitaddr);
 float GetUnitY_real(unsigned char* unitaddr);
-#pragma endregion
 
-#pragma region DotaMPBarHelper.cpp
 typedef float* (__thiscall* _GetUnitFloatStat)(unsigned char* unitaddr, float* a2, int a3);
 extern _GetUnitFloatStat GetUnitFloatState;
 extern unsigned char BarVtableClone[0x80];
@@ -243,10 +241,6 @@ PBYTE GetVTableFunction(PDWORD* dwVTable, int Index);
 
 extern std::vector<int> MpBarUnitWhiteList;
 
-#pragma endregion
-
-
-#pragma region DotaHPBarHelper.cpp
 extern unsigned int hpbarcolorsHero[20];
 extern unsigned int hpbarcolorsUnit[20];
 extern unsigned int hpbarcolorsTower[20];
@@ -258,12 +252,6 @@ extern float hpbarscaleUnitY[20];
 extern float hpbarscaleTowerY[20];
 extern std::vector<CustomHPBar> CustomHPBarList[20];
 int __stdcall SetColorForUnit(unsigned int* coloraddr, BarStruct* BarStruct);
-
-
-
-#pragma endregion
-
-#pragma region ErrorHandler.cpp
 
 void  __stdcall AddNewLineToJassLog(const char* s);
 void __stdcall  AddNewLineToDotaChatLog(const char* s);
@@ -283,18 +271,15 @@ extern int bDllLogEnable;
 
 extern LPTOP_LEVEL_EXCEPTION_FILTER OriginFilter;
 
-#pragma endregion
-
-
 //  Game.dll
 extern unsigned char* GameDll;
+extern unsigned long GetGameDllThread;
 //	Storm.dll
 extern unsigned char* StormDll;
 extern void* GameDllModule;
 extern void* StormDllModule;
 extern HWND Warcraft3Window;
-
-#pragma region All Offsets Here
+extern bool ClickHelperDisabled;
 extern int GlobalGameStateOffset;
 extern int IsPlayerEnemyOffset;
 extern int DrawSkillPanelOffset;
@@ -306,7 +291,7 @@ extern int IsNeedDrawUnit2offset;
 extern int IsNeedDrawUnit2offsetRetAddress;
 extern unsigned char* _GlobalGlueObj;
 extern unsigned char* _GameUI;
-extern int* InGame;
+extern bool GAME_START_CALLED;
 extern int* IsWindowActive;
 extern unsigned char* ChatFound;
 extern unsigned char* pW3XGlobalClass;
@@ -328,10 +313,7 @@ extern float* GetWindowXoffset;
 extern float* GetWindowYoffset;
 extern unsigned char* GameFrameAtMouseStructOffset;
 extern int pTriggerExecute;
-#pragma endregion
 
-
-#pragma region DotaFilesHelper.cpp
 extern std::vector<ModelCollisionFixStruct> ModelCollisionFixList;
 extern std::vector<ModelTextureFixStruct> ModelTextureFixList;
 extern std::vector<ModelPatchStruct> ModelPatchList;
@@ -368,17 +350,16 @@ extern p_GetTypeInfo GetTypeInfo;
 
 
 extern std::vector<FakeFileStruct> FakeFileList;
-extern int NeedReleaseUnusedMemory;
+
 std::vector<std::string> get_file_list(const fs::path& path, bool dotolower = false);
 std::string GetFileContent(std::string filename);
 
 int __stdcall CheckWriteAccess(int a1 = 0);
 void __stdcall EnableLocalFiles(int enable);
 int __stdcall IsLocalFilesEnabled(int a1 = 0);
-#pragma endregion
 
 
-#pragma region DotaFovFix.cpp
+
 extern int EnableFixFOV;
 int __stdcall SetWidescreenFixState(int widefixenable);
 int __stdcall SetCustomFovFix(float _CustomFovFix);
@@ -386,17 +367,15 @@ extern Matrix1 globalmatrix;
 void __fastcall SetGameAreaFOV_my(Matrix1* a1, int a2, float a3, float a4, float a5, float a6);
 typedef int(__fastcall* SetGameAreaFOV)(Matrix1* a1, int a2, float a3, float a4, float a5, float a6);
 extern SetGameAreaFOV SetGameAreaFOV_org, SetGameAreaFOV_ptr;
-#pragma endregion
 
 
-#pragma region DotaWebHelper.cpp
+
 std::string SendHttpPostRequest(const char* url, const char* data);
 std::string SendHttpGetRequest(const char* host, const char* path);
 extern std::string LatestDownloadedString;
-#pragma endregion 
 
 
-#pragma region DotaAutoFPSlimit.cpp
+
 extern int FPS_LIMIT_ENABLED;
 extern void* Warcraft3_Process;
 extern unsigned int CPU_cores;
@@ -410,10 +389,7 @@ void __fastcall DrawBarForUnit_my(unsigned char* unitaddr);
 extern pDrawBarForUnit DrawBarForUnit_org, DrawBarForUnit_ptr;
 //extern map<int, int> NeedDrawBarForUnit;
 extern int FPSfix1Enabled;
-#pragma endregion
 
-
-#pragma region DotaChatHelper.cpp
 typedef int(__fastcall* pGameChatSetState)(unsigned char* chat, int unused, int IsOpened);
 extern pGameChatSetState GameChatSetState;
 
@@ -433,10 +409,10 @@ extern LPARAM lpLShiftScanKeyDOWN;
 
 extern unsigned char* _EventVtable;
 extern unsigned char* _ChatSendEvent;
-#pragma endregion
 
 
-#pragma region DotaCustomFrames.cpp
+
+
 extern int usedcustomframes;
 extern unsigned char* pCurrentFrameFocusedAddr;
 extern unsigned char* DefaultCStatus;
@@ -459,17 +435,17 @@ typedef unsigned char* (__fastcall* pGetFrameItemAddress)(const char* name, int 
 extern pGetFrameItemAddress GetFrameItemAddress;
 typedef int(__thiscall* pUpdateFrameFlags)(unsigned char* FrameAddr, char unk);
 extern pUpdateFrameFlags UpdateFrameFlags;
-typedef int(__thiscall* pWc3ControlClickButton)(unsigned char* btnaddr, int unk);
+typedef int(__thiscall* pWc3ControlClickButton)(void * btnaddr, int unk);
 extern pWc3ControlClickButton Wc3ControlClickButton_org, Wc3ControlClickButton_ptr;
-int __fastcall Wc3ControlClickButton_my(unsigned char* btnaddr, int, int unk);
+int __fastcall Wc3ControlClickButton_my(void* btnaddr, int, int unk);
 int __stdcall ShowConfigWindow(const char*);
 extern int ConfigWindowCreated;
 void ProcessClickAtCustomFrames();
 extern int GlyphButtonCreated;
-#pragma endregion
 
 
-#pragma region Overlays
+
+
 // for all warcraft versions
 void UninitOpenglHook();
 void InitOpenglHook();
@@ -489,10 +465,7 @@ extern bool OverlayDrawed;
 
 void InitD3DVSync(int enabled);
 
-#pragma endregion
 
-
-#pragma region MemoryHack
 //Get hModule from addr
 void* GetModuleFromAddress(unsigned char* addr);
 typedef int(__cdecl* GetTownUnitCount_p)(int*, int, int);
@@ -503,7 +476,7 @@ int __stdcall GetJassStringCount(int dump);
 int __stdcall ScanJassStringForErrors(int dump);
 
 int IsOkayPtr(void* ptr, unsigned int size = 4);
-#pragma endregion
+
 
 const float DesktopScreen_Width = (float)GetSystemMetrics(SM_CXSCREEN);
 const float DesktopScreen_Height = (float)GetSystemMetrics(SM_CYSCREEN);
@@ -511,11 +484,7 @@ const float DesktopScreen_Height = (float)GetSystemMetrics(SM_CYSCREEN);
 extern float DefaultSceenWidth;
 extern float DefaultSceenHeight;
 
-#pragma region DotaDesyncScan
 extern int ScanId;
-
-
-#pragma endregion
 
 
 

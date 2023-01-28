@@ -29,7 +29,14 @@ public:
 	bool NeedClear = false;
 	~StormBuffer( )
 	{
-		Clear( );
+		try
+		{
+			Clear();
+		}
+		catch (...)
+		{
+
+		}
 	}
 	StormBuffer()
 	{
@@ -75,12 +82,12 @@ public:
 	void Clear()
 	{
 		//	memoryleakcheck--;
-		length = 0;
-		if (buf != NULL)
+		if (buf != NULL && length > 0)
 		{
 			if (NeedClear)
 				Storm::MemFree(buf);
 		}
+		length = 0;
 		buf = NULL;
 		NeedClear = false;
 	}

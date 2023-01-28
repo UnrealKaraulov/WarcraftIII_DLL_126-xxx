@@ -23,6 +23,17 @@ namespace Storm {
 
 	typedef unsigned int(__stdcall* PROTOTYPE_StringGetHash)(const char* str);
 	extern PROTOTYPE_StringGetHash StringGetHash;
+	/*n aero::generic_std_call<void*>(
+			AddrMemFree,
+			addr,
+			"DotaMem",
+			2,
+			0
+			); */
+	void* __stdcall MemFree(void* addr, const char* sourcename = "delete", int sourceline = -1, unsigned int flags = 0);
+	typedef void *(__stdcall* PROTOTYPE_MemFree)(void * addr, const char * sourcename, int sourceline, unsigned int flags);
+	extern PROTOTYPE_MemFree MemFree_org;
+	extern PROTOTYPE_MemFree MemFree_ptr;
 
 	void* MemAlloc(unsigned int size);
 
@@ -40,7 +51,6 @@ namespace Storm {
 		return NULL;
 	}
 	void ShowAllLeaks();
-	void* MemFree(void* addr);
 	int MemGetSize(void* addr);
 	void* MemReAlloc(void* addr, unsigned int size);
 
@@ -50,6 +60,7 @@ namespace Storm {
 	bool FileCloseFile(void* hFile);
 	unsigned short FileGetLocale();
 
+	void ClearAllLeaks();
 	void Init(void* hModule);
-	void FreeAllMemory();
+	void Cleanup();
 }

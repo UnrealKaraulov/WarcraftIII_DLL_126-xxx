@@ -173,6 +173,7 @@
     <ClInclude Include="fnv.h" />
     <ClInclude Include="fp_call.h" />
     <ClInclude Include="FunctionTemplate.h" />
+    <ClInclude Include="GameStructs.h" />
     <ClInclude Include="HttpClass.h" />
     <ClInclude Include="IniReader.h" />
     <ClInclude Include="IniWriter.h" />
@@ -187,9 +188,6 @@
     <ClInclude Include="ViewAllySkill.h" />
     <ClInclude Include="WarcraftFrameHelper.h" />
     <ClInclude Include="WinHttpClient.h" />
-    <ClInclude Include="StructHelper.h" />
-    <ClInclude Include="BaseStructs.h" />
-    <ClInclude Include="UIStructs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

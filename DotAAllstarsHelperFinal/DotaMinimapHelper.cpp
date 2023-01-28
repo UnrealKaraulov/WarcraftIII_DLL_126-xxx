@@ -27,12 +27,8 @@ void __stdcall ShowMinimap(int type)
 	ShowMinimapType = type;
 }
 
-
-
 void __fastcall DrawMinimap_new()
 {
-
-
 
 }
 
@@ -55,9 +51,4 @@ void __fastcall DrawMinimap_my(int gClass)
 		DrawMinimap_ptr(gClass);
 		DrawMinimap_new();
 	}
-
-
-
-
-
 }

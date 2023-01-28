@@ -21,6 +21,10 @@ namespace Storm {
 	PROTOTYPE_FileArchiveOpen FileOpenArchive = NULL;
 	PROTOTYPE_FileArchiveClose FileCloseArchive = NULL;
 	PROTOTYPE_StringGetHash StringGetHash = NULL;
+
+	PROTOTYPE_MemFree MemFree_org = NULL;
+	PROTOTYPE_MemFree MemFree_ptr = NULL;
+
 	void* AddrMemAlloc;
 	void* AddrMemFree;
 	void* AddrMemGetSize;
@@ -31,27 +35,25 @@ namespace Storm {
 	void* AddrFileCloseFile;
 	void* AddrFileGetLocale;
 
-	void FreeAllMemory()
-	{
-
-		for (auto s : LeakHelperList)
-		{
-			if (s.memaddr != NULL)
-				Storm::MemFree(s.memaddr);
-		}
-		LeakHelperList.clear();
+	void Cleanup() {
+		if (MemFree_org)
+			MH_DisableHook(MemFree_org);
 	}
 
 	void Init(void* hModule) {
 		if (!hModule)
 			return;
-
 		StormModule = hModule;
 		FileOpenArchive = (PROTOTYPE_FileArchiveOpen)GetProcAddress((HMODULE)hModule, (LPCSTR)266);
 		FileCloseArchive = (PROTOTYPE_FileArchiveClose)GetProcAddress((HMODULE)hModule, (LPCSTR)252);
 		StringGetHash = (PROTOTYPE_StringGetHash)GetProcAddress((HMODULE)hModule, (LPCSTR)590);
 		AddrMemAlloc = (void*)GetProcAddress((HMODULE)hModule, (LPCSTR)401);
-		AddrMemFree = (void*)GetProcAddress((HMODULE)hModule, (LPCSTR)403);
+
+
+		MemFree_org = (PROTOTYPE_MemFree)GetProcAddress((HMODULE)hModule, (LPCSTR)403);
+		MH_CreateHook(MemFree_org, &MemFree, reinterpret_cast<void**>(&MemFree_ptr));
+		MH_EnableHook(MemFree_org);
+
 		AddrMemGetSize = (void*)GetProcAddress((HMODULE)hModule, (LPCSTR)404);
 		AddrMemReAlloc = (void*)GetProcAddress((HMODULE)hModule, (LPCSTR)405);
 		AddrFileOpenFileEx = (void*)GetProcAddress((HMODULE)hModule, (LPCSTR)268);
@@ -64,37 +66,35 @@ namespace Storm {
 
 	//294	SFileGetLocale() 
 	unsigned short FileGetLocale() {
-
-		return aero::generic_c_call<uint16_t>(AddrFileGetLocale);
+		return aero::generic_c_call<unsigned short>(AddrFileGetLocale);
 	}
 
 	//TODO Debug版本加上调试信息
 	void* MemAlloc(unsigned int size) {
 		auto retaddr = _ReturnAddress();
-		
+
+
 		if (!StormAvailable)
-			MessageBoxA(0, "Storm not initialized", "Error1", 0);
+			return 0;
 
 		void* retval = aero::generic_std_call<void*>(
 			AddrMemAlloc,
 			size + 4,
 			"DotaMem",
-			1,
+			-1,
 			0
 			);
 
 		if (!retval)
 			MessageBoxA(0, "Storm error. No memory!", "Fatal error", 0);
 
-		if (SetInfoObjDebugVal)
-		{
-			AllocationCount++;
-			StormLeakHelper tmpleak = StormLeakHelper();
-			tmpleak.retaddr = (int)retaddr;
+		AllocationCount++;
+		StormLeakHelper tmpleak = StormLeakHelper();
+		tmpleak.retaddr = (int)retaddr;
 
-			tmpleak.memaddr = retval;
-			LeakHelperList.push_back(tmpleak);
-		}
+		tmpleak.memaddr = retval;
+		LeakHelperList.push_back(tmpleak);
+
 		return retval;
 	}
 
@@ -111,49 +111,34 @@ namespace Storm {
 		MessageBoxA(0, outleaks.c_str(), (std::to_string(LeakHelperList.size()) + " leak found!").c_str(), 0);
 	}
 
-	void* MemFree(void* addr) {
+	void ClearAllLeaks()
+	{
+		for (auto s : LeakHelperList)
+		{
+			MemFree_ptr(s.memaddr, "delete", -1, 0);
+		}
+		LeakHelperList.clear();
+	}
 
-		if (!addr || !NeedReleaseUnusedMemory)
-			return 0;
+	void* __stdcall MemFree(void* addr, const char* sourcename, int sourceline, unsigned int flags)
+	{
+		bool FounMem = false;
+		auto is_even = [&](StormLeakHelper s) { return s.memaddr == addr; };
 
-		if (SetInfoObjDebugVal)
+		auto leakfound = std::find_if(LeakHelperList.begin(), LeakHelperList.end(), is_even);
+		if (leakfound != LeakHelperList.end())
 		{
 			AllocationCount--;
-
-			bool FounMem = false;
-
-			for (unsigned int i = 0; i < LeakHelperList.size(); i++)
-			{
-				if (LeakHelperList[i].memaddr == addr)
-				{
-					LeakHelperList.erase(LeakHelperList.begin() + i);
-					FounMem = true;
-					break;
-				}
-			}
-
-			if (!FounMem)
-			{
-				if (SetInfoObjDebugVal)
-				{
-					//MessageBoxA( 0, " Tried to free unknown memory!", "Fatal4ik error!", 0 );
-					throw std::exception("Fatal Error! Tried to free unknown memory!");
-				}
-				//
-				return 0;
-			}
+			LeakHelperList.erase(leakfound);
+			FounMem = true;
 		}
+		if (!MemFree_ptr)
+		{
+			MH_DisableHook(MemFree_org);
 
-		if (!addr)
-			return 0;
-
-		return aero::generic_std_call<void*>(
-			AddrMemFree,
-			addr,
-			"DotaMem",
-			2,
-			0
-			);
+			return MemFree_org(addr, sourcename, sourceline, flags);
+		}
+		return MemFree_ptr(addr, sourcename, sourceline, flags);
 	}
 
 	int MemGetSize(void* addr) {
@@ -164,7 +149,7 @@ namespace Storm {
 			AddrMemGetSize,
 			addr,
 			"DotaMem",
-			3
+			1
 			);
 	}
 
@@ -178,36 +163,37 @@ namespace Storm {
 			MessageBoxA(0, templog, "Error1", 0);
 			return 0;
 		}
-
-		for (unsigned int i = 0; i < LeakHelperList.size(); i++)
+		if (SetInfoObjDebugVal)
 		{
-			if (LeakHelperList[i].memaddr == addr)
+			for (unsigned int i = 0; i < LeakHelperList.size(); i++)
 			{
-				LeakHelperList.erase(LeakHelperList.begin() + i);
-				break;
+				if (LeakHelperList[i].memaddr == addr)
+				{
+					LeakHelperList.erase(LeakHelperList.begin() + i);
+					break;
+				}
 			}
 		}
 
 		if (!StormAvailable)
-			MessageBoxA(0, "Storm not initialized", "Error1", 0);
-
+			return 0;
 
 		void* retval = aero::generic_std_call<void*>(
 			AddrMemReAlloc,
 			addr,
 			size + 4,
 			"DotaMem",
-			4,
+			1,
 			0
 			);
 
-
-		StormLeakHelper tmpleak = StormLeakHelper();
-		tmpleak.retaddr = (int)retaddr;
-
-		tmpleak.memaddr = retval;
-		LeakHelperList.push_back(tmpleak);
-
+		if (SetInfoObjDebugVal)
+		{
+			StormLeakHelper tmpleak = StormLeakHelper();
+			tmpleak.retaddr = (int)retaddr;
+			tmpleak.memaddr = retval;
+			LeakHelperList.push_back(tmpleak);
+		}
 		return retval;
 	}
 

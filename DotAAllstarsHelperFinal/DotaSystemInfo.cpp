@@ -331,7 +331,7 @@ const char* __stdcall GetSystemInfo2(SystemInfo info, unsigned int DIV/*or arg2*
 {
 	GlobalBuf[0] = '\0';
 
-	if (FirstInit)
+	if (FirstInit && Warcraft3Window )
 	{
 		FirstInit = false;
 		PIXELFORMATDESCRIPTOR pfd =

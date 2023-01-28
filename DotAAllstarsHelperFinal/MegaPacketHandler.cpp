@@ -287,5 +287,4 @@ void  UninitializePacketHandler()
 {
 	if (CNetCommandTeamChangeAlliance_org)
 		MH_DisableHook(CNetCommandTeamChangeAlliance_org);
-	CNetCommandTeamChangeAlliance_org = NULL;
 }

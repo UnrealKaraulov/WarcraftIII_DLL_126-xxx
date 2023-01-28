@@ -130,7 +130,7 @@ namespace NWar3Frame
 	//	return *( int* )pGameGlobalUIaddr;
 	//}
 
-	unsigned char* CWar3Frame::GetCurrentFrameAddr() // or GetGlobalClassAddr( )GAMEUI? 
+	unsigned char* CWar3Frame::GetCurrentFrameAddr() // or GameUIObjectGet( )GAMEUI? 
 	{
 		if (!GlobalGlueObj || !(*GlobalGlueObj) || !(*GlobalGlueObj)->currentFrame)
 			return 0;
@@ -1500,7 +1500,7 @@ namespace NWar3Frame
 		FramesCount++;
 		FrameId = id;
 		//char debug[ 220 ];
-		//sprintf_s( debug, "%s -> %X -> %X -> %X", name, relativeframe, GetCurrentFrameAddr( ),GetGlobalClassAddr( ) );
+		//sprintf_s( debug, "%s -> %X -> %X -> %X", name, relativeframe, GetCurrentFrameAddr( ),GameUIObjectGet( ) );
 		//MessageBoxA( 0, debug, debug, 0 );
 		//
 		FrameName = name ? name : "";

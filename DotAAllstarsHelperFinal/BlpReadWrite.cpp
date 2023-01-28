@@ -1029,13 +1029,13 @@ unsigned char* Scale_WithoutResize(unsigned char* pixels, size_t width, size_t h
 }
 
 
-tBGRAPixel* blp1_convert_paletted_separated_alpha_BGRA(uint8_t* pSrc, tBGRAPixel* pInfos, unsigned int width, unsigned int height, int invertAlpha)
+tBGRAPixel* blp1_convert_paletted_separated_alpha_BGRA(unsigned char* pSrc, tBGRAPixel* pInfos, unsigned int width, unsigned int height, int invertAlpha)
 {
 	tBGRAPixel* pBuffer = (tBGRAPixel*)Storm::MemAlloc(width * height * sizeof(tBGRAPixel));
 	tBGRAPixel* pDst = pBuffer;
 
-	uint8_t* pIndices = pSrc;
-	uint8_t* pAlpha = pSrc + width * height;
+	unsigned char* pIndices = pSrc;
+	unsigned char* pAlpha = pSrc + width * height;
 
 	for (unsigned int y = 0; y < height; y++)
 	{
@@ -1044,7 +1044,7 @@ tBGRAPixel* blp1_convert_paletted_separated_alpha_BGRA(uint8_t* pSrc, tBGRAPixel
 			*pDst = pInfos[*pIndices];
 
 			if (invertAlpha)
-				pDst->a = (uint8_t)(0xFF - *pAlpha);
+				pDst->a = (unsigned char)(0xFF - *pAlpha);
 			else
 				pDst->a = *pAlpha;
 
@@ -1058,7 +1058,7 @@ tBGRAPixel* blp1_convert_paletted_separated_alpha_BGRA(uint8_t* pSrc, tBGRAPixel
 	return pBuffer;
 }
 
-COLOR4* blp1_convert_paletted_separated_alpha(uint8_t* pSrc, COLOR4* pInfos, unsigned int width, unsigned int height, int invertAlpha)
+COLOR4* blp1_convert_paletted_separated_alpha(unsigned char* pSrc, COLOR4* pInfos, unsigned int width, unsigned int height, int invertAlpha)
 {
 	COLOR4* outrgba = (COLOR4*)blp1_convert_paletted_separated_alpha_BGRA(pSrc, (tBGRAPixel*)pInfos, width, height, invertAlpha);
 
@@ -1066,19 +1066,19 @@ COLOR4* blp1_convert_paletted_separated_alpha(uint8_t* pSrc, COLOR4* pInfos, uns
 }
 
 
-tBGRAPixel* blp1_convert_paletted_alpha_BGRA(uint8_t* pSrc, tBGRAPixel* pInfos, unsigned int width, unsigned int height)
+tBGRAPixel* blp1_convert_paletted_alpha_BGRA(unsigned char* pSrc, tBGRAPixel* pInfos, unsigned int width, unsigned int height)
 {
 	tBGRAPixel* pBuffer = (tBGRAPixel*)Storm::MemAlloc(width * height * sizeof(tBGRAPixel));
 	tBGRAPixel* pDst = pBuffer;
 
-	uint8_t* pIndices = pSrc;
+	unsigned char* pIndices = pSrc;
 
 	for (unsigned int y = 0; y < height; ++y)
 	{
 		for (unsigned int x = 0; x < width; ++x)
 		{
 			*pDst = pInfos[*pIndices];
-			pDst->a = (uint8_t)(0xFF - pDst->a);
+			pDst->a = (unsigned char)(0xFF - pDst->a);
 
 			++pIndices;
 			++pDst;
@@ -1088,18 +1088,18 @@ tBGRAPixel* blp1_convert_paletted_alpha_BGRA(uint8_t* pSrc, tBGRAPixel* pInfos, 
 	return pBuffer;
 }
 
-COLOR4* blp1_convert_paletted_alpha(uint8_t* pSrc, COLOR4* pInfos, unsigned int width, unsigned int height)
+COLOR4* blp1_convert_paletted_alpha(unsigned char* pSrc, COLOR4* pInfos, unsigned int width, unsigned int height)
 {
 	COLOR4* outrgba = (COLOR4*)blp1_convert_paletted_alpha_BGRA(pSrc, (tBGRAPixel*)pInfos, width, height);
 	return outrgba;
 }
 
-tBGRAPixel* blp1_convert_paletted_no_alpha_BGRA(uint8_t* pSrc, tBGRAPixel* pInfos, unsigned int width, unsigned int height)
+tBGRAPixel* blp1_convert_paletted_no_alpha_BGRA(unsigned char* pSrc, tBGRAPixel* pInfos, unsigned int width, unsigned int height)
 {
 	tBGRAPixel* pBuffer = (tBGRAPixel*)Storm::MemAlloc(width * height * sizeof(tBGRAPixel));
 	tBGRAPixel* pDst = pBuffer;
 
-	uint8_t* pIndices = pSrc;
+	unsigned char* pIndices = pSrc;
 
 	for (unsigned int y = 0; y < height; ++y)
 	{
@@ -1117,7 +1117,7 @@ tBGRAPixel* blp1_convert_paletted_no_alpha_BGRA(uint8_t* pSrc, tBGRAPixel* pInfo
 	return pBuffer;
 }
 
-COLOR4* blp1_convert_paletted_no_alpha(uint8_t* pSrc, COLOR4* pInfos, unsigned int width, unsigned int height)
+COLOR4* blp1_convert_paletted_no_alpha(unsigned char* pSrc, COLOR4* pInfos, unsigned int width, unsigned int height)
 {
 	COLOR4* outrgba = (COLOR4*)blp1_convert_paletted_no_alpha_BGRA(pSrc, (tBGRAPixel*)pInfos, width, height);
 	return outrgba;
@@ -1177,15 +1177,13 @@ unsigned long Blp2Raw(StormBuffer input, StormBuffer& output, int& width, int& h
 
 		if (alphaflag > 0 && (blph.alphaEncoding == 4 || blph.alphaEncoding == 3))
 		{
-
 			if (input.length < curpos + blph.sizex * blph.sizey * 2)
 				return 0;
 
-
-			uint8_t* tdata = (uint8_t*)Storm::MemAlloc((unsigned int)size);
+			unsigned char* tdata = (unsigned char*)Storm::MemAlloc((unsigned int)size);
 			std::memcpy(tdata, input.buf + offset, (size_t)size);
 
-			COLOR4* pic = blp1_convert_paletted_separated_alpha((uint8_t*)tdata, Pal, blph.sizex, blph.sizey, 0);
+			COLOR4* pic = blp1_convert_paletted_separated_alpha((unsigned char*)tdata, Pal, blph.sizex, blph.sizey, 0);
 
 			Storm::MemFree(tdata);
 
@@ -1207,11 +1205,9 @@ unsigned long Blp2Raw(StormBuffer input, StormBuffer& output, int& width, int& h
 			if (input.length < curpos + blph.sizex * blph.sizey)
 				return 0;
 
-
-
-			uint8_t* tdata = (uint8_t*)Storm::MemAlloc((unsigned int)size);
+			unsigned char* tdata = (unsigned char*)Storm::MemAlloc((unsigned int)size);
 			std::memcpy(tdata, input.buf + offset, (size_t)size);
-			COLOR4* pic = blp1_convert_paletted_alpha((uint8_t*)tdata, Pal, blph.sizex, blph.sizey);
+			COLOR4* pic = blp1_convert_paletted_alpha((unsigned char*)tdata, Pal, blph.sizex, blph.sizey);
 
 			Storm::MemFree(tdata);
 			output.length = textureSize;
@@ -1230,9 +1226,9 @@ unsigned long Blp2Raw(StormBuffer input, StormBuffer& output, int& width, int& h
 				return 0;
 
 
-			uint8_t* tdata = (uint8_t*)Storm::MemAlloc((unsigned int)size);
+			unsigned char* tdata = (unsigned char*)Storm::MemAlloc((unsigned int)size);
 			std::memcpy(tdata, input.buf + offset, (size_t)size);
-			COLOR4* pic = blp1_convert_paletted_no_alpha((uint8_t*)tdata, Pal, blph.sizex, blph.sizey);
+			COLOR4* pic = blp1_convert_paletted_no_alpha((unsigned char*)tdata, Pal, blph.sizex, blph.sizey);
 
 			Storm::MemFree(tdata);
 			output.length = textureSize;
@@ -1259,9 +1255,6 @@ unsigned long Blp2Raw(StormBuffer input, StormBuffer& output, int& width, int& h
 		tempdata.length = blph.psize[0] + JPEGHeaderSize;
 		tempdata.buf = (unsigned char*)Storm::MemAlloc(blph.psize[0] + JPEGHeaderSize);
 		std::memcpy(tempdata.buf, input.buf + curpos + 4, (size_t)JPEGHeaderSize);
-
-
-
 
 		width = (int)blph.sizex;
 		height = (int)blph.sizey;

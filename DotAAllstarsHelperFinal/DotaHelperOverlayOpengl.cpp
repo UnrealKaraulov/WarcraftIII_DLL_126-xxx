@@ -189,9 +189,8 @@ void DrawOverlayGl()
 
 void UninitOpenglHook()
 {
-	if (wglSwapLayerBuffers_org && OpnglHookInitialized)
-		MH_DisableHook(wglSwapLayerBuffers_org);
-	wglSwapLayerBuffers_org = NULL;
+	if (OpnglHookInitialized)
+		MH_DisableHook(wglSwapLayerBuffers_org);;
 	OpnglHookInitialized = false;
 }
 

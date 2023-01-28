@@ -60,10 +60,10 @@ struct TGAHeader {
 
 struct tBGRAPixel
 {
-	uint8_t b;
-	uint8_t g;
-	uint8_t r;
-	uint8_t a;
+	unsigned char b;
+	unsigned char g;
+	unsigned char r;
+	unsigned char a;
 };
 struct COLOR3
 {

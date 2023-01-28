@@ -409,8 +409,6 @@ int __stdcall RawImage_DrawRect(unsigned int RawImage, unsigned int x1, unsigned
 	return true;
 }
 
-#pragma region DrawLineAlgorithm
-
 /*
 *
 * @date 25.03.2013
@@ -731,8 +729,6 @@ void drawThickLine(unsigned int RawImage, int aXStart, int aYStart, int aXEnd, i
 		}
 	}
 }
-
-#pragma endregion
 
 // Рисует линию с указанным цветом и размером
 int __stdcall RawImage_DrawLine(unsigned int RawImage, unsigned int x1, unsigned int y1, unsigned int x2
@@ -1894,9 +1890,6 @@ void ApplyIconFrameFilter(std::string filename, int* OutDataPointer, size_t* Out
 	SaveRawImageToGameFile(RawImage, (filename + "_frame.blp").c_str(), false, true);
 }
 
-
-
-
 void ClearAllRawImages()
 {
 	//int i = sizeof(RawImageStruct);
@@ -1928,7 +1921,6 @@ void ClearAllRawImages()
 	CreateRawImage(64, 64, tmppix.COLOR4War3(0, 255, 0, 255));
 }
 
-
 /* Only for game. int return = fix missing eax */
 int __stdcall GetScreenWidth(int)
 {
@@ -1942,7 +1934,7 @@ int __stdcall GetScreenHeight(int)
 int __stdcall GetWindowWidth(int)
 {
 	if (IsGame())
-		return   *(int*)GetWindowXoffset;
+		return *(int*)GetWindowXoffset;
 	return *(int*)&DesktopScreen_Width;
 }
 int __stdcall GetWindowHeight(int)
@@ -1963,7 +1955,6 @@ int __stdcall SetDefaultSceenSize(int w, int h)
 
 	return 0;
 }
-
 
 float RawImageOffsetToWar3_X(float raw_offset_x)
 {

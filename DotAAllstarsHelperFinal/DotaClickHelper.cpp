@@ -3,7 +3,7 @@
 #include <codecvt>
 #include "RawImageApi.h"
 
-HWND Warcraft3Window = 0;
+HWND Warcraft3Window = NULL;
 
 WarcraftRealWNDProc WarcraftRealWNDProc_org = NULL;
 WarcraftRealWNDProc WarcraftRealWNDProc_ptr;
@@ -69,7 +69,7 @@ void __fastcall PressCancel(int data)
 
 int IsCursorSelectTarget()
 {
-	unsigned char* pOffset1 = GetGlobalClassAddr();
+	unsigned char* pOffset1 = (unsigned char*)GameUIObjectGet();
 	if (pOffset1 && *(int*)(pOffset1 + 0x1BC) == 1)
 	{
 		/*char tmp[ 100 ];
@@ -82,7 +82,7 @@ int IsCursorSelectTarget()
 
 int GetCursorSkillID()
 {
-	unsigned char* pOffset1 = GetGlobalClassAddr();
+	unsigned char* pOffset1 = (unsigned char*)GameUIObjectGet();
 	if (pOffset1)
 	{
 		pOffset1 = *(unsigned char**)(pOffset1 + 0x1B4);
@@ -96,7 +96,7 @@ int GetCursorSkillID()
 
 int GetCursorOrder()
 {
-	unsigned char* pOffset1 = GetGlobalClassAddr();
+	unsigned char* pOffset1 = (unsigned char*)GameUIObjectGet();
 	if (pOffset1)
 	{
 		pOffset1 = *(unsigned char**)(pOffset1 + 0x1B4);
@@ -173,12 +173,14 @@ void SetHeroFrameXY_old()
 
 void MouseClickX(int toX, int toY)
 {
-	Sleep(5);
-	POINT point;
-	GetCursorPos(&point);
-	PostMessage(Warcraft3Window, WM_LBUTTONDOWN, MK_LBUTTON, MAKELONG(point.x, point.y));
-	PostMessage(Warcraft3Window, WM_LBUTTONUP, MK_LBUTTON, MAKELONG(point.x, point.y));
-
+	if (Warcraft3Window)
+	{
+		Sleep(5);
+		POINT point;
+		GetCursorPos(&point);
+		PostMessage(Warcraft3Window, WM_LBUTTONDOWN, MK_LBUTTON, MAKELONG(point.x, point.y));
+		PostMessage(Warcraft3Window, WM_LBUTTONUP, MK_LBUTTON, MAKELONG(point.x, point.y));
+	}
 	/*
 		POINT cursorPos;
 		GetCursorPos( &cursorPos );
@@ -242,7 +244,7 @@ void MouseClick(int toX, int toY)
 void JustClickMouse()
 {
 	bool ButtonDown = false;
-	if (IsKeyPressed(VK_LBUTTON))
+	if (IsKeyPressed(VK_LBUTTON) && Warcraft3Window)
 	{
 		ButtonDown = true;
 		SendMessage(Warcraft3Window, WM_LBUTTONUP, 0, oldlParam);
@@ -283,15 +285,16 @@ int PressMouseAtSelectedHero(int IsItem)
 			std::find(doubleclickSkillIDs.begin(), doubleclickSkillIDs.end(), GetCursorSkillID()) != doubleclickSkillIDs.end()
 			)
 		{
-			unsigned char* PortraitButtonAddr = GetGlobalClassAddr();
+			unsigned char* PortraitButton = NULL;
+			war3::CGameUI* PortraitButtonAddr = GameUIObjectGet();
 			if (PortraitButtonAddr)
 			{
-				PortraitButtonAddr = *(unsigned char**)(PortraitButtonAddr + 0x3F4);
+				PortraitButton = PortraitButtonAddr->portraitButton;
 			}
-			if (PortraitButtonAddr && !IsItem)
+			if (PortraitButton && !IsItem)
 			{
 				//PrintText( "NEED CLICK PORTRAIT" );
-				Wc3ControlClickButton_org(PortraitButtonAddr, 1);
+				Wc3ControlClickButton_org(PortraitButton, 1);
 			}
 			else
 			{
@@ -708,7 +711,7 @@ unsigned char* __stdcall GetSkillPanelButton(int idx)
 
 	if (GetSelectedUnit(GetLocalPlayerId()))
 	{
-		unsigned char* pclass = GetGlobalClassAddr();
+		unsigned char* pclass = (unsigned char*)GameUIObjectGet();
 		if (pclass)
 		{
 			unsigned char* pGamePlayerPanelSkills = *(unsigned char**)(pclass + 0x3c8);
@@ -736,7 +739,7 @@ unsigned char* __stdcall GetItemPanelButton(int idx)
 	if (GetSelectedUnit(GetLocalPlayerId()))
 	{
 
-		unsigned char* pclass = GetGlobalClassAddr();
+		unsigned char* pclass = (unsigned char*)GameUIObjectGet();
 		if (pclass)
 		{
 			unsigned char* pGamePlayerPanelItems = *(unsigned char**)(pclass + 0x3c4);
@@ -764,7 +767,7 @@ unsigned char* __stdcall GetItemPanelButton(int idx)
 
 unsigned char* GetHeroButton(int idx)
 {
-	unsigned char* pclass = GetGlobalClassAddr();
+	unsigned char* pclass = (unsigned char*)GameUIObjectGet();
 	if (pclass)
 	{
 		unsigned char* pGamePlayerHeroBtn = *(unsigned char**)(pclass + 0x3c8);
@@ -859,7 +862,7 @@ int CheckBtnForClickPortrain(unsigned char* pButton)
 				if (pAbilId)
 				{
 					//	PrintText( "Abil id found." );
-					for (auto & tmpClick : ClickPortrainForIdList)
+					for (auto& tmpClick : ClickPortrainForIdList)
 					{
 						if (pAbilId == tmpClick.abilid && !IsKeyPressed(tmpClick.keycode))
 						{
@@ -892,15 +895,16 @@ int __fastcall SimpleButtonClickEvent_my(unsigned char* pButton, unsigned char* 
 	{
 		//PrintText( "Abil id found in list." );
 		int retval = SimpleButtonClickEvent_ptr(pButton, unused, ClickEventType);
-		unsigned char* PortraitButtonAddr = GetGlobalClassAddr();
+		war3::CGameUI* PortraitButtonAddr = GameUIObjectGet();
+		unsigned char* PortraitButton = NULL;
 		if (PortraitButtonAddr)
 		{
-			PortraitButtonAddr = *(unsigned char**)(PortraitButtonAddr + 0x3F4);
+			PortraitButton = PortraitButtonAddr->portraitButton;
 		}
-		if (PortraitButtonAddr)
+		if (PortraitButton)
 		{
 			//PrintText( "Click to portrain." );
-			if (Wc3ControlClickButton_org(PortraitButtonAddr, 1))
+			if (Wc3ControlClickButton_org(PortraitButton, 1))
 			{
 				LatestButtonClickTime = GetTickCount();
 			}
@@ -1147,7 +1151,7 @@ void  DisableTargetCurcor()
 		{
 			PrintText("w1");
 		}
-		if (IsCursorSelectTarget())
+		if (IsCursorSelectTarget() && Warcraft3Window)
 		{
 			if (SetInfoObjDebugVal)
 			{
@@ -1175,7 +1179,7 @@ void  DisableTargetCurcor()
 }
 
 
-void PressKeyWithDelay_timed( )
+void PressKeyWithDelay_timed()
 {
 	if (IsGame() && *IsWindowActive)
 	{
@@ -1194,7 +1198,7 @@ void PressKeyWithDelay_timed( )
 			}
 			else
 			{
-				if (!DelayedPressList[i].IsCustom)
+				if (!DelayedPressList[i].IsCustom && Warcraft3Window)
 				{
 					if (DelayedPressList[i].NeedPressMsg == 0)
 					{
@@ -1270,7 +1274,7 @@ void PressKeyWithDelay_timed( )
 												}
 
 	*/
-											if (keyAction.IsQuickCast && PressedButton && IsCursorSelectTarget())
+											if (keyAction.IsQuickCast && PressedButton && IsCursorSelectTarget() && Warcraft3Window)
 											{
 												if (SetInfoObjDebugVal)
 												{
@@ -1409,7 +1413,7 @@ void GetMousePosition(float* x, float* y, float* z)
 #ifdef BOTDEBUG
 	PrintDebugInfo("Mouse info");
 #endif
-	unsigned char* globalclass = GetGlobalClassAddr();
+	unsigned char* globalclass = (unsigned char*)GameUIObjectGet();
 
 	unsigned char* offset1 = globalclass + 0x3BC;
 
@@ -1454,7 +1458,7 @@ int _stdcall GetMouseY(int)
 
 float _stdcall GetMouseFrameX(int)
 {
-	float X,Y,Z;
+	float X, Y, Z;
 	GetMousePosition(&X, &Y, &Z);
 	return X;
 }
@@ -1720,7 +1724,7 @@ void __stdcall SetInfoObjDebug(int debug)
 	SetInfoObjDebugVal = debug;
 }
 
-int GetAbilityManacost(unsigned char * pAbil)
+int GetAbilityManacost(unsigned char* pAbil)
 {
 	if (pAbil)
 	{
@@ -1768,7 +1772,7 @@ int __fastcall SimpleButtonPreClickEvent_my(unsigned char* pButton, int unused, 
 			{
 				AbilName = ReturnStringBeforeFirstChar(AbilName, '(');
 			}
-			unsigned char * pAbil = *(unsigned char**)(CommandButtonData + 0x6D4);
+			unsigned char* pAbil = *(unsigned char**)(CommandButtonData + 0x6D4);
 			//bool AbilFound = pAbil > 0 ;
 			int pObjId_1 = *(int*)(CommandButtonData + 0x6F8);
 			/*int pObjId_2 = *(int*)(CommandButtonData + 0x6FC);*/
@@ -2144,7 +2148,7 @@ float __fastcall GetCameraHeight_my(unsigned int a1)
 unsigned long GroupSelectLastTime = GetTickCount();
 int LastSelectedGroupHandle = 0;
 
-int ProcessHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam, bool& _IsAltPressed,
+int ProcessHotkeys(HWND hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam, bool& _IsAltPressed,
 	bool& _IsCtrlPressed, bool& _IsShiftPressed, bool& itempressed, bool& ClickHelperWork, int WithModifiers)
 {
 	for (KeyActionStruct& keyAction : KeyActionList)
@@ -2310,7 +2314,7 @@ int ProcessHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam
 							}
 							}*/
 
-							if (keyAction.IsQuickCast && PressedButton && IsCursorSelectTarget())
+							if (keyAction.IsQuickCast && PressedButton && IsCursorSelectTarget() && Warcraft3Window)
 							{
 								if (SetInfoObjDebugVal)
 								{
@@ -2443,7 +2447,7 @@ int ProcessHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam
 
 	return false;
 }
-int ProcessSelectActionHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam, bool& _IsAltPressed,
+int ProcessSelectActionHotkeys(HWND hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam, bool& _IsAltPressed,
 	bool& _IsCtrlPressed, bool& _IsShiftPressed, int WithModifiers)
 {
 	for (auto keyAction : KeySelectActionList)
@@ -2507,19 +2511,20 @@ int ProcessSelectActionHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LP
 					if (GetTickCount() - GroupSelectLastTime < 450 &&
 						LastSelectedGroupHandle == keyAction.GroupHandle)
 					{
-						unsigned char* PortraitButtonAddr = GetGlobalClassAddr();
+						unsigned char* PortraitButton = NULL;
+						war3::CGameUI* PortraitButtonAddr = GameUIObjectGet();
 						if (PortraitButtonAddr)
 						{
-							PortraitButtonAddr = *(unsigned char**)(PortraitButtonAddr + 0x3F4);
+							PortraitButton = PortraitButtonAddr->portraitButton;
 						}
-						if (PortraitButtonAddr)
+						if (PortraitButton)
 						{
 							if (SetInfoObjDebugVal)
 							{
 								PrintText("double click to portrain.");
 							}
-							Wc3ControlClickButton_org(PortraitButtonAddr, 1);
-							Wc3ControlClickButton_org(PortraitButtonAddr, 1);
+							Wc3ControlClickButton_org(PortraitButton, 1);
+							Wc3ControlClickButton_org(PortraitButton, 1);
 						}
 					}
 
@@ -2535,7 +2540,7 @@ int ProcessSelectActionHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LP
 	}
 	return false;
 }
-int ProcessCallbackHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam, bool& _IsAltPressed,
+int ProcessCallbackHotkeys(HWND hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam, bool& _IsAltPressed,
 	bool& _IsCtrlPressed, bool& _IsShiftPressed, int WithModifiers)
 {
 	int selectedunits = GetSelectedUnitCountBigger(GetLocalPlayerId());
@@ -2603,7 +2608,7 @@ int ProcessCallbackHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM
 	}
 	return false;
 }
-int ProcessChatHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam, bool& _IsAltPressed,
+int ProcessChatHotkeys(HWND hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam, bool& _IsAltPressed,
 	bool& _IsCtrlPressed, bool& _IsShiftPressed, int WithModifiers)
 {
 	for (auto keyAction : KeyChatActionList)
@@ -2645,7 +2650,7 @@ int ProcessChatHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lP
 	return false;
 
 }
-int ProcessShopHelper(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam)
+int ProcessShopHelper(HWND hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam)
 {
 	if (ShopHelperEnabled && IsGameFrameActive() && /*(*/ Msg == WM_KEYDOWN /*|| Msg == WM_KEYUP ) */)
 	{
@@ -2711,7 +2716,7 @@ int ProcessShopHelper(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lPa
 	}
 	return false;
 }
-int SkipKeyboardAndMouseWhenTeleport(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam)
+int SkipKeyboardAndMouseWhenTeleport(HWND hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam)
 {
 	if (BlockKeyboardAndMouseWhenTeleport)
 	{
@@ -2748,7 +2753,7 @@ int SkipKeyboardAndMouseWhenTeleport(HWND& hWnd, unsigned int& Msg, WPARAM& wPar
 
 				for (int& VK : WhiteListForTeleport)
 				{
-					if (wParam == (WPARAM) VK)
+					if (wParam == (WPARAM)VK)
 					{
 						NeedSkipForTP = false;
 						break;
@@ -2813,7 +2818,7 @@ int __stdcall GetLatestRegisteredHotkeyMsg(int)
 	return LatestRegisteredHotkeyMsg;
 }
 
-int ProcessRegisteredHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam)
+int ProcessRegisteredHotkeys(HWND hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam)
 {
 	LatestRegisteredHotkeyWPARAM = wParam;
 	LatestRegisteredHotkeyMsg = Msg;
@@ -2942,7 +2947,7 @@ int ProcessRegisteredHotkeys(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, LPAR
 	return false;
 }
 
-int FixNumpad(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, WPARAM& _wParam, LPARAM& lParam, bool& _IsShiftPressed)
+int FixNumpad(HWND hWnd, unsigned int& Msg, WPARAM& wParam, WPARAM& _wParam, LPARAM& lParam, bool& _IsShiftPressed)
 {
 	// SHIFT+NUMPAD TRICK
 	if (IsGameFrameActive() && (Msg == WM_KEYDOWN || Msg == WM_KEYUP) && (
@@ -3015,7 +3020,7 @@ int FixNumpad(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, WPARAM& _wParam, LP
 				//			SimpleButtonClickEvent_my( btnaddr, 0, 1 );*/
 				//			return true;
 
-				//			//int PortraitButtonAddr = GetGlobalClassAddr( );
+				//			//int PortraitButtonAddr = GameUIObjectGet( );
 				//			//if ( PortraitButtonAddr > 0 )
 				//			//{
 				//			//	PortraitButtonAddr = *( int* )( PortraitButtonAddr + 0x3F4 );
@@ -3052,12 +3057,62 @@ int FixNumpad(HWND& hWnd, unsigned int& Msg, WPARAM& wParam, WPARAM& _wParam, LP
 
 LRESULT __fastcall WarcraftWindowProcHooked(HWND hWnd, unsigned int _Msg, WPARAM _wParam, LPARAM lParam)
 {
+	if (!WarcraftRealWNDProc_ptr && !WarcraftRealWNDProc_org)
+	{
+		return DefWindowProc(hWnd, _Msg, _wParam, lParam);
+	}
 
-	if (Warcraft3Window != hWnd && hWnd != NULL)
+	if (!WarcraftRealWNDProc_ptr && WarcraftRealWNDProc_org)
+	{
+		MH_DisableHook(WarcraftRealWNDProc_org);
+		return WarcraftRealWNDProc_org(hWnd, _Msg, _wParam, lParam);
+	}
+
+
+	if (GetCurrentThreadId() != GetGameDllThread)
+	{
+		return WarcraftRealWNDProc_ptr(hWnd, _Msg, _wParam, lParam);
+	}
+
+	if (Warcraft3Window == NULL && hWnd != NULL)
 	{
 		Warcraft3Window = hWnd;
-		//SetWar3Window(hWnd);
 	}
+
+	if (Warcraft3Window != NULL && hWnd == NULL)
+	{
+		hWnd = Warcraft3Window;
+	}
+
+	if (!IsGame())
+	{
+		if (InitFunctionCalled && GAME_START_CALLED)
+		{
+			GAME_START_CALLED = false;
+			DisableAllHooks();
+			if (SELF_UNLOAD_DLL_AFTER_GAME_END)
+			{
+				DllSelfUnloading(GetCurrentModule);
+			}
+			return DefWindowProc(hWnd, _Msg, _wParam, lParam);
+		}
+		return WarcraftRealWNDProc_ptr(hWnd, _Msg, _wParam, lParam);
+	}
+
+	if (SkipAllMessages)
+	{
+		if (SetInfoObjDebugVal)
+		{
+			PrintText("SkipAllMessages");
+		}
+		return DefWindowProc(hWnd, _Msg, _wParam, lParam);
+	}
+
+	if (ClickHelperDisabled)
+	{
+		return WarcraftRealWNDProc_ptr(hWnd, _Msg, _wParam, lParam);
+	}
+
 	//DreamUI_WarWindow3Proc(hWnd, _Msg, _wParam, lParam);
 
 	if (!InitTestValues)
@@ -3065,6 +3120,7 @@ LRESULT __fastcall WarcraftWindowProcHooked(HWND hWnd, unsigned int _Msg, WPARAM
 		InitTestValues = true;
 		memset(TestValues, 0, sizeof(TestValues));
 	}
+
 	TestValues[0]++;
 
 
@@ -3088,12 +3144,12 @@ LRESULT __fastcall WarcraftWindowProcHooked(HWND hWnd, unsigned int _Msg, WPARAM
 	}
 
 	// NEXT BLOCK ONLY FOR TEST!!!!
-	if ( Msg == WM_KEYDOWN && TestModeActivated )
+	if (Msg == WM_KEYDOWN && TestModeActivated)
 	{
-		ShowConfigWindow( ".\\config.dota" );
+		ShowConfigWindow(".\\config.dota");
 	}
 
-	if (SkipAllMessages || TerminateStarted)
+	if (SkipAllMessages)
 	{
 		if (SetInfoObjDebugVal)
 		{
@@ -3136,11 +3192,6 @@ LRESULT __fastcall WarcraftWindowProcHooked(HWND hWnd, unsigned int _Msg, WPARAM
 	//	DebugMsgShow = false;
 	//}
 
-
-	if (!IsGame())
-	{
-		return WarcraftRealWNDProc_ptr(hWnd, Msg, wParam, lParam);
-	}
 	if (SetInfoObjDebugVal && _Msg == WM_KEYDOWN)
 	{
 		PrintText("@");
@@ -3350,7 +3401,7 @@ LRESULT __fastcall WarcraftWindowProcHooked(HWND hWnd, unsigned int _Msg, WPARAM
 			}
 		}
 
-		if (LOCK_MOUSE_IN_WINDOW)
+		if (LOCK_MOUSE_IN_WINDOW && Warcraft3Window)
 		{
 			POINT p;
 			tagWINDOWINFO pwi;
@@ -3739,8 +3790,6 @@ int __stdcall ToggleClickHelper(int enable)
 }
 
 
-#pragma region Фикс шифта для приказов
-
 typedef int(__stdcall* IssueWithoutTargetOrder)(int a1, int a2, unsigned int a3, unsigned int a4);
 typedef int(__stdcall* IssueTargetOrPointOrder2)(int a1, int a2, float a3, float a4, int a5, int a6);
 typedef int(__stdcall* sub_6F339D50)(int a1, int a2, int a3, unsigned int a4, unsigned int a5);
@@ -4008,8 +4057,6 @@ int sub_6F339F00Offset = 0;
 int sub_6F339F80Offset = 0;
 int sub_6F33A010Offset = 0;
 
-#pragma endregion
-
 // Включить фикс шифта для приказов
 void IssueFixerInit()
 {
@@ -4058,55 +4105,25 @@ void IssueFixerInit()
 // Отключить фикс шифта для приказов
 void IssueFixerDisable()
 {
-
 	memset(LastPressedKeysTime, 0, sizeof(LastPressedKeysTime));
-
 	if (IssueWithoutTargetOrderorg)
-	{
 		MH_DisableHook(IssueWithoutTargetOrderorg);
-		IssueWithoutTargetOrderorg = NULL;
-	}
 	if (IssueTargetOrPointOrder2org)
-	{
 		MH_DisableHook(IssueTargetOrPointOrder2org);
-		IssueTargetOrPointOrder2org = NULL;
-	}
 	if (sub_6F339D50org)
-	{
 		MH_DisableHook(sub_6F339D50org);
-		sub_6F339D50org = NULL;
-	}
 	if (IssueTargetOrPointOrderorg)
-	{
 		MH_DisableHook(IssueTargetOrPointOrderorg);
-		IssueTargetOrPointOrderorg = NULL;
-	}
 	if (sub_6F339E60org)
-	{
 		MH_DisableHook(sub_6F339E60org);
-		sub_6F339E60org = NULL;
-	}
 	if (sub_6F339F00org)
-	{
 		MH_DisableHook(sub_6F339F00org);
-		sub_6F339F00org = NULL;
-	}
 	if (sub_6F339F80org)
-	{
 		MH_DisableHook(sub_6F339F80org);
-		sub_6F339F80org = NULL;
-	}
 	if (sub_6F33A010org)
-	{
 		MH_DisableHook(sub_6F33A010org);
-		sub_6F33A010org = NULL;
-	}
-
 	if (GetCameraHeight_org)
-	{
 		MH_DisableHook(GetCameraHeight_org);
-		GetCameraHeight_org = NULL;
-	}
 
 	if (!RegisteredKeyCodes.empty())
 		RegisteredKeyCodes.clear();

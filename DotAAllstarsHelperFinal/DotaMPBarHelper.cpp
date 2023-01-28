@@ -1,6 +1,5 @@
 #include "Main.h"
 #include "Storm.h"
-#pragma optimize("",off)
 
 int sub_6F334180;   // 334C00 6f334C00
 int sub_6F6061B0;   // 606860 6f606860
@@ -529,9 +528,6 @@ void __declspec(naked) RedrawMPBar()
 		jmp     eax;
 	}
 }
-
-
-#pragma optimize("",on)
 
 int ManabarInitialized = false;
 int ManabarEnabled = false;

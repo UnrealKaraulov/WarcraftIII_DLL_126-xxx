@@ -505,8 +505,6 @@ int* GetItemCountAndItemArray(unsigned char*** itemarray)
 	return 0;
 }
 
-
-
 int* GetUnitCountAndUnitArray(unsigned char*** unitarray)
 {
 	int GlobalClassOffset = *(int*)(pW3XGlobalClass);
@@ -527,8 +525,6 @@ int* GetUnitCountAndUnitArray(unsigned char*** unitarray)
 	*unitarray = 0;
 	return 0;
 }
-
-
 
 void GetUnitLocation2D(unsigned char* unitaddr, float* x, float* y)
 {

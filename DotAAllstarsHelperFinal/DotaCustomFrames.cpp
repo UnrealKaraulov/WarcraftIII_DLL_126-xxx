@@ -41,7 +41,7 @@ void LoadNewFrameDef(const char* filename)
 
 unsigned char* CreateNewFrameAndShow(const char* FrameName, int Show = false)
 {
-	unsigned char* pGlobalGameClass = GetGlobalClassAddr();
+	unsigned char* pGlobalGameClass = (unsigned char*)GameUIObjectGet();
 	unsigned char* FrameAddr = CreateNewFrame(FrameName, pGlobalGameClass, 0, 0, 0);
 	if (Show && FrameAddr)
 	{
@@ -76,7 +76,7 @@ void ShowFrameWithPosAligned(unsigned char* FrameAddr, float left, float bottom,
 
 void ShowFrameWithPosAlternativeAligned(unsigned char* FrameAddr, float left, float bottom, int alignFirst, int alignTwo, int unk = true)
 {
-	unsigned char* pGlobalGameClass = GetGlobalClassAddr();
+	unsigned char* pGlobalGameClass = (unsigned char*)GameUIObjectGet();
 	ShowFrameAlternative(FrameAddr + 180, alignFirst, pGlobalGameClass + 180, alignTwo, left, bottom, 1);
 	ShowThisFrame(FrameAddr);
 }
@@ -84,7 +84,7 @@ void ShowFrameWithPosAlternativeAligned(unsigned char* FrameAddr, float left, fl
 
 void ShowFrameWithPosAlternative(unsigned char* FrameAddr, float left, float bottom)
 {
-	unsigned char* pGlobalGameClass = GetGlobalClassAddr();
+	unsigned char* pGlobalGameClass = (unsigned char*)GameUIObjectGet();
 	ShowFrameAlternative(FrameAddr + 180, 6, pGlobalGameClass + 180, 6, left, bottom, 1);
 	ShowThisFrame(FrameAddr);
 }
@@ -235,12 +235,14 @@ void ProcessClickAtCustomFrames()
 pWc3ControlClickButton Wc3ControlClickButton_ptr;
 pWc3ControlClickButton Wc3ControlClickButton_org;
 
-int __fastcall Wc3ControlClickButton_my(unsigned char* btnaddr, int, int unk)
+int __fastcall Wc3ControlClickButton_my(void* btnaddr, int, int unk)
 {
 	int retval = Wc3ControlClickButton_ptr(btnaddr, unk);
+	if (ClickHelperDisabled)
+		return retval;
 	if (GlyphButtonCreated && GlyphButtonAddr)
 	{
-		unsigned char* GlyphButtonItemFrame = GetFrameItemAddress("GlyphItemButton", 0);
+		void* GlyphButtonItemFrame = (void*)GetFrameItemAddress("GlyphItemButton", 0);
 		if (GlyphButtonItemFrame)
 		{
 			if (btnaddr == GlyphButtonItemFrame)

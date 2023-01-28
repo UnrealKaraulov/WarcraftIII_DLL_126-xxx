@@ -1,8 +1,4 @@
 #include "Main.h"
-
-#pragma optimize("",off)
-
-
 #include <iomanip>
 #include <eh.h>
 

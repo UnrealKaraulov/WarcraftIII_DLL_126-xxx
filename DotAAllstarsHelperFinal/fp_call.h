@@ -44,7 +44,7 @@ namespace aero
 	inline PointerReturnType pointer_sum(TypeA a, TypeB b)
 	{
 		return (PointerReturnType)(
-			(uint8_t*)(a)+b
+			(unsigned char*)(a)+b
 			);
 	}
 
@@ -52,14 +52,14 @@ namespace aero
 	inline PointerReturnType pointer_substract(TypeA a, TypeB b)
 	{
 		return (PointerReturnType)(
-			(uint8_t*)(a)-b
+			(unsigned char*)(a)-b
 			);
 	}
 
 	template <typename PointerType>
 	inline PointerType pointer_calc(pointer_traits::pointer_type pointer, std::ptrdiff_t offset)
 	{
-		PointerType p = (PointerType)((uint8_t*)(pointer)+offset);
+		PointerType p = (PointerType)((unsigned char*)(pointer)+offset);
 		return p;
 	}
 

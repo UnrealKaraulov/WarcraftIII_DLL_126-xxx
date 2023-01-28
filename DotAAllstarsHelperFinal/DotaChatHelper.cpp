@@ -92,10 +92,6 @@ unsigned char* _ChatSendEvent = 0;
 
 int __stdcall SendMessageToChat(const char* msg, int toAll)
 {
-	/* Send messages to chat without any delay!  */
-	/* by Karaulov 08.12.2017 */
-
-
 	if (!msg || msg[0] == '\0')
 		return false;
 
@@ -144,7 +140,7 @@ int __stdcall SendMessageToChat(const char* msg, int toAll)
 
 	BlockInput(true);
 
-	if (pChatString && Warcraft3Window)
+	if (pChatString)
 	{
 		if (*(int*)ChatFound)
 		{

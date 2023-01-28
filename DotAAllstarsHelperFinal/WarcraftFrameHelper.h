@@ -18,10 +18,7 @@ namespace NWar3Frame
 {
 	// thanks DreamHacks (dreamdota) for structures:
 
-
-#ifdef _MSC_VER
 #pragma pack(push, 1)
-#endif // _MSC_VER
 
 	struct CObserver {
 		void** vtable;			//0x0
@@ -46,7 +43,7 @@ namespace NWar3Frame
 		unsigned int				unk_3C;				//0x3C	15
 		unsigned int				unk_40;				//0x40	16
 		unsigned int				unk_44;				//0x44	17
-		uint8_t					unk_48[0x68];		//0x48
+		unsigned char					unk_48[0x68];		//0x48
 		unsigned int				flag_B0;			//0xB0
 	}; //sizeof = 0xB4
 
@@ -77,12 +74,12 @@ namespace NWar3Frame
 		unsigned int				unk_180;			//0x180 = 17
 		void* currentFrame;		//0x184
 		unsigned int				unk_188;			//0x188
-		uint8_t					unk_18C[0x4];		//0x18C
+		unsigned char					unk_18C[0x4];		//0x18C
 		unsigned int				unk_190;			//0x190
 		unsigned int				unk_194;			//0x194
 		unsigned int				unk_19C;			//0x19C
 		unsigned int				unk_1A0;			//0x1A0 = 17
-		uint8_t					unk_1A4[0x4];		//0x1A4
+		unsigned char					unk_1A4[0x4];		//0x1A4
 		unsigned int				unk_1A8;			//0x1A8
 	};//sizeof = 1AC
 
@@ -139,7 +136,7 @@ namespace NWar3Frame
 		unsigned int				unk_188;			//0x188
 		unsigned int				unk_18C;			//0x18C
 		unsigned int				unk_190;			//0x190
-		uint8_t					unk_194[0x24];		//0x194
+		unsigned char					unk_194[0x24];		//0x194
 		float					unk_1B8;			//0x1B8 = 0.025
 		float					unk_1BC;			//0x1BC
 		unsigned int				unk_1C0;			//0x1C0
@@ -148,7 +145,7 @@ namespace NWar3Frame
 		float					unk_1CC;			//0x1CC
 		float					unk_1D0;			//0x1D0
 		float					unk_1D4;			//0x1D4	
-		uint8_t					unk_1D8[0x4];		//0x1D8
+		unsigned char					unk_1D8[0x4];		//0x1D8
 	}; //sizeof = 0x1DC
 
 	struct CHighlightFrame {
@@ -218,7 +215,7 @@ namespace NWar3Frame
 		unsigned int					unk_228;				//0x228
 		unsigned int					unk_22C;				//0x22C = 1
 		unsigned int					unk_230;				//0x230 = 1
-		uint8_t						unk_234[0x8];			//0x234 
+		unsigned char						unk_234[0x8];			//0x234 
 		unsigned int					needUpdate;				//0x23C
 	}; //sizeof = 0x240
 
@@ -282,10 +279,7 @@ namespace NWar3Frame
 		ControlDisabledBackdrop = 3
 	};
 
-#ifdef _MSC_VER
 #pragma pack(pop)
-#endif // _MSC_VER
-
 
 	extern void(*GlobalEventCallback)();
 

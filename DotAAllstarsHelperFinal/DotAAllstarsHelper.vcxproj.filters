@@ -178,16 +178,10 @@
     <ClInclude Include="DotaClickHelper.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="StructHelper.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="BaseStructs.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="UIStructs.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="quantizer.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStructs.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

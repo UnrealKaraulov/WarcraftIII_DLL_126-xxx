@@ -25,7 +25,7 @@ int __stdcall DumpFilesToDisk(int enabled)
 }
 
 
-int GetFromIconMdlCache(const std::string filename, ICONMDLCACHE* iconhelperout)
+int GetFromIconMdlCache(const std::string filename, ICONMDLCACHE& iconhelperout)
 {
 	size_t filelen = filename.length();
 	u_int64_t hash = GetBufHash(filename.c_str(), filelen);
@@ -33,7 +33,7 @@ int GetFromIconMdlCache(const std::string filename, ICONMDLCACHE* iconhelperout)
 	{
 		if (ih.hashlen == filelen && ih._hash == hash)
 		{
-			*iconhelperout = ih;
+			iconhelperout = ih;
 			return true;
 		}
 	}
@@ -54,12 +54,9 @@ int IsFileRedirected(const std::string filename)
 
 int IsMemInCache(unsigned char* addr)
 {
-	for (ICONMDLCACHE& ih : ICONMDLCACHELIST)
-	{
-		if ((unsigned char*)ih.buf == addr)
-			return true;
-	}
-	return false;
+	auto is_even = [&](ICONMDLCACHE s) { return s.buf == addr; };
+	auto leakfound = std::find_if(ICONMDLCACHELIST.begin(), ICONMDLCACHELIST.end(), is_even);
+	return leakfound != ICONMDLCACHELIST.end();
 }
 
 void FreeAllIHelpers()
@@ -68,13 +65,9 @@ void FreeAllIHelpers()
 	{
 		for (ICONMDLCACHE& ih : ICONMDLCACHELIST)
 		{
-			if (ih.buf && NeedReleaseUnusedMemory)
+			if (ih.buf)
 				Storm::MemFree(ih.buf);
 		}
-
-
-		Storm::FreeAllMemory();
-
 		ICONMDLCACHELIST.clear();
 	}
 	if (!FileRedirectList.empty())
@@ -83,7 +76,7 @@ void FreeAllIHelpers()
 	if (!FakeFileList.empty())
 		FakeFileList.clear();
 	ClearAllRawImages();
-
+	Storm::ClearAllLeaks();
 }
 
 
@@ -108,11 +101,9 @@ int replaceAll(std::string& str, const std::string& from, const std::string& to)
 	return Replaced;
 }
 
-int NeedReleaseUnusedMemory = false;
-
 int __stdcall FileHelperReleaseStorm(int enabled)
 {
-	NeedReleaseUnusedMemory = enabled;
+	//NeedReleaseUnusedMemory = enabled;
 	return enabled;
 }
 
@@ -177,9 +168,8 @@ void ApplyTerrainFilter(std::string filename, unsigned char** OutDataPointer, si
 
 		if (OutBuffer.buf != NULL)
 		{
-			OutBuffer.length = 0;
-			Storm::MemFree(OutBuffer.buf);
-			OutBuffer.buf = 0;
+			OutBuffer.NeedClear = true;
+			OutBuffer.Clear();
 		}
 
 		if (ResultBuffer.buf != NULL)
@@ -189,9 +179,11 @@ void ApplyTerrainFilter(std::string filename, unsigned char** OutDataPointer, si
 			tmpih.size = ResultBuffer.length;
 			tmpih.hashlen = filename.length();
 			tmpih._hash = GetBufHash(filename.c_str(), tmpih.hashlen);
-			ICONMDLCACHELIST.push_back(tmpih);/*
-			if ( !IsMemInCache( *OutDataPointer ) && NeedReleaseUnusedMemory )
-				Storm::MemFree( ( void* )*OutDataPointer );*/
+			ICONMDLCACHELIST.push_back(tmpih);
+
+			/*if (!IsMemInCache(*OutDataPointer))
+				Storm::MemFree((void*)*OutDataPointer);*/
+
 			*OutDataPointer = tmpih.buf;
 			*OutSize = tmpih.size;
 		}
@@ -208,7 +200,7 @@ int __stdcall ApplyTerrainFilterDirectly(char* filename, unsigned char** OutData
 }
 
 
-void ApplyIconFilter(std::string filename, unsigned char ** OutDataPointer, size_t* OutSize)
+void ApplyIconFilter(std::string filename, unsigned char** OutDataPointer, size_t* OutSize)
 {
 	unsigned char* originfiledata = *OutDataPointer;
 	size_t sz = *OutSize;
@@ -294,8 +286,10 @@ void ApplyIconFilter(std::string filename, unsigned char ** OutDataPointer, size
 			tmpih.hashlen = filename.length();
 			tmpih._hash = GetBufHash(filename.c_str(), tmpih.hashlen);
 			ICONMDLCACHELIST.push_back(tmpih);
-			/*if ( !IsMemInCache( *OutDataPointer ) && NeedReleaseUnusedMemory )
-				Storm::MemFree( ( void* )*OutDataPointer );*/
+
+			/*if (!IsMemInCache(*OutDataPointer))
+				Storm::MemFree((void*)*OutDataPointer);*/
+
 			*OutDataPointer = tmpih.buf;
 			*OutSize = tmpih.size;
 
@@ -329,7 +323,7 @@ void ApplyIconFilter(std::string filename, unsigned char ** OutDataPointer, size
 void ApplyIconFrameFilter(std::string filename, int* OutDataPointer, size_t* OutSize);
 
 
-void ApplyTestFilter(std::string filename, unsigned char ** OutDataPointer, size_t* OutSize)
+void ApplyTestFilter(std::string filename, unsigned char** OutDataPointer, size_t* OutSize)
 {
 
 	ICONMDLCACHE tmpih;
@@ -440,8 +434,10 @@ void ApplyTestFilter(std::string filename, unsigned char ** OutDataPointer, size
 			tmpih.hashlen = filename.length();
 			tmpih._hash = GetBufHash(filename.c_str(), tmpih.hashlen);
 			ICONMDLCACHELIST.push_back(tmpih);
-			/*	if ( !IsMemInCache( *OutDataPointer ) && NeedReleaseUnusedMemory )
-					Storm::MemFree( ( void* )*OutDataPointer );*/
+
+			/*if (!IsMemInCache(*OutDataPointer))
+				Storm::MemFree((void*)*OutDataPointer);*/
+
 			*OutDataPointer = tmpih.buf;
 			*OutSize = tmpih.size;
 		}
@@ -455,7 +451,7 @@ const char* DisabledIconSignature2 = "Disabled\\DISDIS";
 const char* CommandButtonsDisabledIconSignature = "CommandButtonsDisabled\\DIS";
 
 
-int FixDisabledIconPath(std::string _filename, unsigned char ** OutDataPointer, size_t* OutSize, int unknown)
+int FixDisabledIconPath(std::string _filename, unsigned char** OutDataPointer, size_t* OutSize, int unknown)
 {
 	std::string filename = _filename;
 
@@ -1523,30 +1519,28 @@ void ProcessMdx(std::string filename, unsigned char** OutDataPointer, size_t* Ou
 			//}
 
 
-			ICONMDLCACHE* tmpih = Storm::MemAllocStruct<ICONMDLCACHE>();
+			ICONMDLCACHE tmpih;
 			StormBuffer ResultBuffer;
 			ResultBuffer.buf = (unsigned char*)Storm::MemAlloc(FullPatchData.size());
 			ResultBuffer.length = FullPatchData.size();
 			std::memcpy(&ResultBuffer.buf[0], &FullPatchData[0], FullPatchData.size());
 
-			tmpih->buf = ResultBuffer.buf;
-			tmpih->size = ResultBuffer.length;
-			tmpih->hashlen = filename.length();
-			tmpih->_hash = GetBufHash(filename.c_str(), tmpih->hashlen);
-			ICONMDLCACHELIST.push_back(*tmpih);
+			tmpih.buf = ResultBuffer.buf;
+			tmpih.size = ResultBuffer.length;
+			tmpih.hashlen = filename.length();
+			tmpih._hash = GetBufHash(filename.c_str(), tmpih.hashlen);
 
-			if (NeedReleaseUnusedMemory)
-				Storm::MemFree((void*)*OutDataPointer);
+			ICONMDLCACHELIST.push_back(tmpih);
 
-			*OutDataPointer = tmpih->buf;
-			*OutSize = tmpih->size;
+			/*if (!IsMemInCache(*OutDataPointer))
+				Storm::MemFree((void*)*OutDataPointer);*/
 
-			ModelBytes = (unsigned char*)tmpih->buf;
-			sz = tmpih->size;
+			*OutDataPointer = tmpih.buf;
+			*OutSize = tmpih.size;
 
-			Storm::MemFree(tmpih);
+			ModelBytes = (unsigned char*)tmpih.buf;
+			sz = tmpih.size;
 			ModelScaleList.erase(ModelScaleList.begin() + (int)i);
-
 		}
 	}
 
@@ -1558,7 +1552,7 @@ void ProcessMdx(std::string filename, unsigned char** OutDataPointer, size_t* Ou
 		ModelPatchStruct mdlfix = ModelPatchList[i];
 		if (filename == mdlfix.FilePath)
 		{
-			unsigned char * PatchFileData;
+			unsigned char* PatchFileData;
 			size_t PatchFileSize;
 
 			if (GameGetFile_ptr(mdlfix.patchPath.c_str(), &PatchFileData, &PatchFileSize, unknown))
@@ -1574,27 +1568,26 @@ void ProcessMdx(std::string filename, unsigned char** OutDataPointer, size_t* Ou
 
 	if (!FullPatchData.empty())
 	{
-
-		ICONMDLCACHE* tmpih = Storm::MemAllocStruct< ICONMDLCACHE>();
+		ICONMDLCACHE tmpih;
 		int FoundOldHelper = GetFromIconMdlCache(filename, tmpih);
 
 
 		if (FoundOldHelper)
 		{
 			StormBuffer ResultBuffer;
-			ResultBuffer.buf = (unsigned char*)Storm::MemAlloc(tmpih->size + FullPatchData.size());
+			ResultBuffer.buf = (unsigned char*)Storm::MemAlloc(tmpih.size + FullPatchData.size());
 
-			ResultBuffer.length = tmpih->size + FullPatchData.size();
+			ResultBuffer.length = tmpih.size + FullPatchData.size();
 
-			std::memcpy(&ResultBuffer.buf[0], tmpih->buf, sz);
+			std::memcpy(&ResultBuffer.buf[0], tmpih.buf, sz);
 
 			std::memcpy(&ResultBuffer.buf[sz], &FullPatchData[0], FullPatchData.size());
 
-			Storm::MemFree(tmpih->buf);
-			tmpih->buf = ResultBuffer.buf;
-			tmpih->size = ResultBuffer.length;
-			*OutDataPointer = tmpih->buf;
-			*OutSize = tmpih->size;
+			Storm::MemFree(tmpih.buf);
+			tmpih.buf = ResultBuffer.buf;
+			tmpih.size = ResultBuffer.length;
+			*OutDataPointer = tmpih.buf;
+			*OutSize = tmpih.size;
 		}
 		else
 		{
@@ -1604,34 +1597,33 @@ void ProcessMdx(std::string filename, unsigned char** OutDataPointer, size_t* Ou
 			std::memcpy(&ResultBuffer.buf[0], ModelBytes, sz);
 			std::memcpy(&ResultBuffer.buf[sz], &FullPatchData[0], FullPatchData.size());
 
-			tmpih->buf = ResultBuffer.buf;
-			tmpih->size = ResultBuffer.length;
+			tmpih.buf = ResultBuffer.buf;
+			tmpih.size = ResultBuffer.length;
 
-			tmpih->hashlen = filename.length();
-			tmpih->_hash = GetBufHash(filename.c_str(), tmpih->hashlen);
-			ICONMDLCACHELIST.push_back(*tmpih);
+			tmpih.hashlen = filename.length();
+			tmpih._hash = GetBufHash(filename.c_str(), tmpih.hashlen);
+			ICONMDLCACHELIST.push_back(tmpih);
 
-			if (NeedReleaseUnusedMemory)
-				Storm::MemFree((void*)*OutDataPointer);
+			// Не чистить файл который был создан не нами
+			//Storm::MemFree((void*)*OutDataPointer);
 
 
-			*OutDataPointer = tmpih->buf;
-			*OutSize = tmpih->size;
+			*OutDataPointer = tmpih.buf;
+			*OutSize = tmpih.size;
 
-			ModelBytes = (unsigned char*)tmpih->buf;
-			sz = tmpih->size;
+			ModelBytes = (unsigned char*)tmpih.buf;
+			sz = tmpih.size;
 
 		}
 
-		if (IsKeyPressed('0') && FileExist(".\\Test1234.mdx"))
-		{
-			FILE* f;
-			fopen_s(&f, ".\\Test1234.mdx", "wb");
-			fwrite(ModelBytes, sz, 1, f);
-			fclose(f);
-		}
+		//if (IsKeyPressed('0') && FileExist(".\\Test1234.mdx"))
+		//{
+		//	FILE* f;
+		//	fopen_s(&f, ".\\Test1234.mdx", "wb");
+		//	fwrite(ModelBytes, sz, 1, f);
+		//	fclose(f);
+		//}
 
-		Storm::MemFree(tmpih);
 		FullPatchData.clear();
 	}
 
@@ -1775,7 +1767,7 @@ void PrintLog(const char* str)
 }
 
 
-int ProcessFile(const char * filename, unsigned char ** OutDataPointer, size_t* OutSize, int unknown, int IsFileExistOld)
+int ProcessFile(const char* filename, unsigned char** OutDataPointer, size_t* OutSize, int unknown, int IsFileExistOld)
 {
 	//PrintLog( filename.c_str( ) );
 	int IsFileExist = IsFileExistOld;
@@ -1786,7 +1778,7 @@ int ProcessFile(const char * filename, unsigned char ** OutDataPointer, size_t* 
 	}
 
 	ICONMDLCACHE tmpih;
-	int FoundOldHelper = GetFromIconMdlCache(filename, &tmpih);
+	int FoundOldHelper = GetFromIconMdlCache(filename, tmpih);
 	if (FoundOldHelper)
 	{
 		*OutDataPointer = tmpih.buf;
@@ -1798,7 +1790,7 @@ int ProcessFile(const char * filename, unsigned char ** OutDataPointer, size_t* 
 	{
 		if (s.ingame)
 		{
-			if (_stricmp(filename,s.filename) == 0)
+			if (_stricmp(filename, s.filename) == 0)
 			{
 				*OutDataPointer = s.ingamebuffer.buf;
 				*OutSize = s.ingamebuffer.length;
@@ -2004,11 +1996,6 @@ int __fastcall GameGetFile_my(const char* filename, unsigned char** OutDataPoint
 	if (!(IsGame()) && !MainFuncWork)
 	{
 		return IsFileExist;
-	}
-
-	if (TerminateStarted)
-	{
-		return NULL;
 	}
 
 	if (!OutDataPointer || !OutSize)
