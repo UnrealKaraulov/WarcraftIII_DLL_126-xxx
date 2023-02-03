@@ -3055,6 +3055,16 @@ int FixNumpad(HWND hWnd, unsigned int& Msg, WPARAM& wParam, WPARAM& _wParam, LPA
 	return false;
 }
 
+typedef void(__stdcall* pCustomWinCallback)(HWND hWnd, unsigned int _Msg, WPARAM _wParam, LPARAM lParam);
+	//LRESULT __fastcall WarcraftWindowProc_my(HWND hWnd, unsigned int _Msg, WPARAM _wParam, LPARAM lParam);
+static pCustomWinCallback WarcraftWindowProc_my = NULL;
+
+int __stdcall SetCustomWinCallback(pCustomWinCallback tmp)
+{
+	WarcraftWindowProc_my = tmp;
+	return 0;
+}
+
 LRESULT __fastcall WarcraftWindowProcHooked(HWND hWnd, unsigned int _Msg, WPARAM _wParam, LPARAM lParam)
 {
 	if (!WarcraftRealWNDProc_ptr && !WarcraftRealWNDProc_org)
@@ -3068,11 +3078,13 @@ LRESULT __fastcall WarcraftWindowProcHooked(HWND hWnd, unsigned int _Msg, WPARAM
 		return WarcraftRealWNDProc_org(hWnd, _Msg, _wParam, lParam);
 	}
 
-
 	if (GetCurrentThreadId() != GetGameDllThread)
 	{
 		return WarcraftRealWNDProc_ptr(hWnd, _Msg, _wParam, lParam);
 	}
+
+	if (WarcraftWindowProc_my)
+		WarcraftWindowProc_my(hWnd, _Msg, _wParam, lParam);
 
 	if (Warcraft3Window == NULL && hWnd != NULL)
 	{
