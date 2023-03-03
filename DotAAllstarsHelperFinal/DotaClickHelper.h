@@ -52,3 +52,7 @@ void PressKeyWithDelay_timed();
 extern bool EmulateKeyInputForHWND;
 extern unsigned long SkipSingleShift;
 extern unsigned long SingleShift;
+
+
+typedef LRESULT(__stdcall* pCustomWinCallback)(HWND hWnd, unsigned int _Msg, WPARAM _wParam, LPARAM lParam);
+extern pCustomWinCallback WarcraftWindowProc_my;

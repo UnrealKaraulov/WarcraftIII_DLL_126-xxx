@@ -30,7 +30,7 @@ int CIniReader::ReadBOOLean(const char* szSection, const  char* szKey, int bolDe
 	int bolResult;
 	sprintf_s(szDefault, 255, "%s", bolDefaultValue ? "true" : "false");
 	GetPrivateProfileStringA(szSection, szKey, szDefault, szResult, 255, m_szFileName);
-	bolResult = _stricmp(szResult, "true") == 0 ? true : false;
+	bolResult = _stricmp(szResult, "true") == 0 ||  _stricmp(szResult, "1") ==  0 ? true : false;
 	return bolResult;
 }
 char* CIniReader::ReadString(const char* szSection, const  char* szKey, const char* szDefaultValue)

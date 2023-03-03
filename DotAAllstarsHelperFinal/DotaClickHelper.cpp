@@ -3055,9 +3055,8 @@ int FixNumpad(HWND hWnd, unsigned int& Msg, WPARAM& wParam, WPARAM& _wParam, LPA
 	return false;
 }
 
-typedef void(__stdcall* pCustomWinCallback)(HWND hWnd, unsigned int _Msg, WPARAM _wParam, LPARAM lParam);
-	//LRESULT __fastcall WarcraftWindowProc_my(HWND hWnd, unsigned int _Msg, WPARAM _wParam, LPARAM lParam);
-static pCustomWinCallback WarcraftWindowProc_my = NULL;
+//LRESULT __stdcall CustomWinCallback(HWND hWnd, unsigned int _Msg, WPARAM _wParam, LPARAM lParam);
+pCustomWinCallback WarcraftWindowProc_my = NULL;
 
 int __stdcall SetCustomWinCallback(pCustomWinCallback tmp)
 {

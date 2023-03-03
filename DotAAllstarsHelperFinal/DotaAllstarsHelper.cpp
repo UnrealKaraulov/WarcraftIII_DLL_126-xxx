@@ -337,6 +337,8 @@ unsigned long WINAPI DllUnloadThreadProc(LPVOID lParam)
 	return 0;
 }
 
+bool DLL_SELF_UNLOADED = false;
+
 void* __stdcall DllSelfUnloading(void* hModule)
 {
 	PVOID pMemory = NULL;
@@ -350,6 +352,8 @@ void* __stdcall DllSelfUnloading(void* hModule)
 			((PDLLUNLOADINFO)(((unsigned char*)pMemory) + 0x500))->m_fpSleep = Sleep;
 			((PDLLUNLOADINFO)(((unsigned char*)pMemory) + 0x500))->m_fpExitThread = ExitThread;
 			((PDLLUNLOADINFO)(((unsigned char*)pMemory) + 0x500))->m_hFreeModule = hModule;
+
+			DLL_SELF_UNLOADED = true;
 
 			CloseHandle(CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)pMemory,
 				(PVOID)(((unsigned char*)pMemory) + 0x500), 0, 0));
@@ -2046,6 +2050,8 @@ void __stdcall DisableAllHooks()
 	NewCallBackTriggerHandle = 0;
 	LastEventId = 0;
 
+	WarcraftWindowProc_my = NULL;
+
 	MH_DisableHook(MH_ALL_HOOKS);
 	MH_Uninitialize();
 }
@@ -2858,50 +2864,14 @@ int __stdcall DllMain(HINSTANCE Module, unsigned int reason, LPVOID)
 		{
 			StormAvailable = false;
 		}
+
+		// Если нет Game.dll/Storm.dll и то уничтожить процесс 
+		// на всякий случай дважды уничтожить :)
+		if (/*(!DLL_SELF_UNLOADED && GetCurrentThreadId() == GetGameDllThread) || */!IsGameDllAndStormFound())
+		{
+			TerminateProcess(GetCurrentProcess(), 0);
+			ExitProcess(0);
+		}
 	}
 	return true;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#pragma region Developer
-//Karaulov 
-#pragma endregion
