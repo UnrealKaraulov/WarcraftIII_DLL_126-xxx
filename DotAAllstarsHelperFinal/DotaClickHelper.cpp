@@ -3064,6 +3064,9 @@ int __stdcall SetCustomWinCallback(pCustomWinCallback tmp)
 	return 0;
 }
 
+unsigned long DELAYKEY = 0;
+
+
 LRESULT __fastcall WarcraftWindowProcHooked(HWND hWnd, unsigned int _Msg, WPARAM _wParam, LPARAM lParam)
 {
 	if (!WarcraftRealWNDProc_ptr && !WarcraftRealWNDProc_org)
@@ -3108,6 +3111,13 @@ LRESULT __fastcall WarcraftWindowProcHooked(HWND hWnd, unsigned int _Msg, WPARAM
 			return DefWindowProc(hWnd, _Msg, _wParam, lParam);
 		}
 		return WarcraftRealWNDProc_ptr(hWnd, _Msg, _wParam, lParam);
+	}
+
+
+	if (GetTickCount() - DELAYKEY > 20)
+	{
+		PressKeyWithDelay_timed();
+		DELAYKEY = GetTickCount();
 	}
 
 	if (SkipAllMessages)

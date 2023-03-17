@@ -533,8 +533,6 @@ typedef int(__fastcall* DrawInterface_p)(int, int);
 DrawInterface_p DrawInterface_org;
 DrawInterface_p DrawInterface_ptr;
 
-unsigned long DELAYKEY = 0;
-
 bool GAME_START_CALLED = false;
 
 int __fastcall DrawInterface_my(int arg1, int arg2)
@@ -542,11 +540,6 @@ int __fastcall DrawInterface_my(int arg1, int arg2)
 	if (!GAME_START_CALLED)
 	{
 		GAME_START_CALLED = true;
-	}
-	if (GetTickCount() - DELAYKEY > 20)
-	{
-		PressKeyWithDelay_timed();
-		DELAYKEY = GetTickCount();
 	}
 
 	DrawOverlayDx8();
