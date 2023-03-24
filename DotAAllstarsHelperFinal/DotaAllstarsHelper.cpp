@@ -1461,7 +1461,6 @@ void __declspec(naked) HookPrint1_126a()
 	}
 }
 
-
 void __declspec(naked) HookPrint2_126a()
 {
 	bufferaddr = itemstr2;
@@ -1473,8 +1472,6 @@ void __declspec(naked) HookPrint2_126a()
 		jmp JumpBackAddr3;
 	}
 }
-
-
 
 void __declspec(naked) HookPrint3_126a()
 {
@@ -1500,7 +1497,6 @@ void __declspec(naked) HookPrint4_126a()
 	}
 }
 
-
 void __declspec(naked) HookPrint1_127a()
 {
 	bufferaddr = itemstr1;
@@ -1513,7 +1509,6 @@ void __declspec(naked) HookPrint1_127a()
 	}
 }
 
-
 void __declspec(naked) HookPrint2_127a()
 {
 	bufferaddr = itemstr2;
@@ -1525,9 +1520,6 @@ void __declspec(naked) HookPrint2_127a()
 		jmp JumpBackAddr3;
 	}
 }
-
-
-
 
 void __declspec(naked) HookPrint3_127a()
 {
@@ -2044,6 +2036,10 @@ void __stdcall DisableAllHooks()
 	LastEventId = 0;
 
 	WarcraftWindowProc_my = NULL;
+
+
+	protect_integer = 0;
+	protect_integer2 = -1;
 
 	MH_DisableHook(MH_ALL_HOOKS);
 	MH_Uninitialize();
@@ -2729,7 +2725,6 @@ int __stdcall UpdatePlayerCache(int)
 
 	return 0;
 }
-
 
 const char* GameDllName = "Game.dll";
 const char* StormDllName = "Storm.dll";

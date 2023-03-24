@@ -102,7 +102,7 @@ int __stdcall CreateRawImage(int width, int height, COLOR4 defaultcolor)
 	StormBuffer tmpRawImageBuffer = StormBuffer();
 	tmpRawImageBuffer.Resize(width * height * 4);
 
-	if (defaultcolor.R == defaultcolor.G == defaultcolor.B == defaultcolor.A)
+	if (defaultcolor.A == defaultcolor.B && defaultcolor.B == defaultcolor.R && defaultcolor.R == defaultcolor.G)
 	{
 		memset(tmpRawImageBuffer.buf, defaultcolor.R, width * height * 4);
 	}

@@ -206,3 +206,5 @@ EnableLocalFiles
 IsLocalFilesEnabled
 SLOW_DEBUG_INIT
 SetCustomWinCallback
+GetMPBarUnlockNumber
+SetMPBarUnlocked

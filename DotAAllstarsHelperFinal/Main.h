@@ -486,6 +486,8 @@ extern float DefaultSceenHeight;
 
 extern int ScanId;
 
+extern int protect_integer;
+extern int protect_integer2;
 
 
 inline std::string WStringToString(LPCWSTR s)

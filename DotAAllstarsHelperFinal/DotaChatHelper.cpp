@@ -140,63 +140,60 @@ int __stdcall SendMessageToChat(const char* msg, int toAll)
 
 	BlockInput(true);
 
-	if (pChatString)
+	if (*(int*)ChatFound)
 	{
-		if (*(int*)ChatFound)
+		UsingCustomChatTarget = true;
+		if (toAll)
 		{
-			UsingCustomChatTarget = true;
-			if (toAll)
-			{
-				CustomChatTarget = 0;
-			}
-			else
-			{
-				CustomChatTarget = 1;
-			}
-			/* Close chat */
-			pChatString[0] = '\0';
-			GameChatSetState(ChatOffset, 0, 0);
-
-			/* Open chat */
-			GameChatSetState(ChatOffset, 0, 1);
-
-			/* Set message */
-			sprintf_s(pChatString, MAX_CHAT_MSG_LEN, "%.128s", msg);
-
-			/* Send Event */
-			GameChatSendMessage = (pGameChatSendMessage)(_ChatSendEvent);
-			GameChatSendMessage(*(int*)_GlobalGlueObj, 0, _EventVtable);
-
-			UsingCustomChatTarget = false;
+			CustomChatTarget = 0;
 		}
 		else
 		{
-			UsingCustomChatTarget = true;
+			CustomChatTarget = 1;
+		}
+		/* Close chat */
+		pChatString[0] = '\0';
+		GameChatSetState(ChatOffset, 0, 0);
 
-			if (toAll)
-			{
-				CustomChatTarget = 0;
-			}
-			else
-			{
-				CustomChatTarget = 1;
-			}
+		/* Open chat */
+		GameChatSetState(ChatOffset, 0, 1);
 
-			/* Open chat */
-			GameChatSetState(ChatOffset, 0, 1);
+		/* Set message */
+		sprintf_s(pChatString, MAX_CHAT_MSG_LEN, "%.128s", msg);
 
-			/* Set message */
-			sprintf_s(pChatString, MAX_CHAT_MSG_LEN, "%.128s", msg);
+		/* Send Event */
+		GameChatSendMessage = (pGameChatSendMessage)(_ChatSendEvent);
+		GameChatSendMessage(*(int*)_GlobalGlueObj, 0, _EventVtable);
 
-			/* Send Event */
-			GameChatSendMessage = (pGameChatSendMessage)(_ChatSendEvent);
-			GameChatSendMessage(*(int*)_GlobalGlueObj, 0, _EventVtable);
+		UsingCustomChatTarget = false;
+	}
+	else
+	{
+		UsingCustomChatTarget = true;
 
-			UsingCustomChatTarget = false;
-
+		if (toAll)
+		{
+			CustomChatTarget = 0;
+		}
+		else
+		{
+			CustomChatTarget = 1;
 		}
 
+		/* Open chat */
+		GameChatSetState(ChatOffset, 0, 1);
+
+		/* Set message */
+		sprintf_s(pChatString, MAX_CHAT_MSG_LEN, "%.128s", msg);
+
+		/* Send Event */
+		GameChatSendMessage = (pGameChatSendMessage)(_ChatSendEvent);
+		GameChatSendMessage(*(int*)_GlobalGlueObj, 0, _EventVtable);
+
+		UsingCustomChatTarget = false;
+
 	}
+
 	BlockInput(false);
 	//	SetKeyboardState( tmpbuf );
 

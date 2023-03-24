@@ -12,8 +12,6 @@ int sub_6F2C74B0;
 LPVOID a16F08C;
 LPVOID a16F004;
 LPVOID a16F090;
-//Address a16F06C;
-//Address a16F070;
 LPVOID a3000AC;
 LPVOID a3000B0;
 
@@ -88,8 +86,6 @@ void __stdcall SetMPBarYScaleForPlayer(unsigned int playerflag, float heroscale,
 	}
 }
 
-
-
 void __stdcall SetMPBarYOffsetForPlayer(unsigned int playerflag, float herooffset,
 	float unitoffset, float toweroffset)
 {
@@ -130,15 +126,31 @@ int __stdcall InMPBarWhiteList(unsigned char* unitaddr)
 	return 0;
 }
 
+int protect_integer = 0;
+int protect_integer2 = -1;
+
+int __stdcall GetMPBarUnlockNumber(int seed)
+{
+	srand(seed);
+	protect_integer = rand() % 0xFFFFFF;
+	return protect_integer;
+}
+
+int __stdcall SetMPBarUnlocked(int prot)
+{
+	protect_integer2 = prot;
+	return protect_integer2;
+}
+
 int __stdcall  SetMPBarConfigForPlayer(unsigned char* unitaddr)
 {
 	/*int retval = 0;*/
-	if (!unitaddr || IsEnemy(unitaddr) || IsUnitIllusion(unitaddr))
+	if (!unitaddr || ((IsEnemy(unitaddr) || IsUnitIllusion(unitaddr)) && protect_integer2 != protect_integer))
 		return 0;
+
 	int unitslot = GetUnitOwnerSlot(unitaddr);
 	if (unitslot > 15 || unitslot < 0)
 		return 0;
-
 
 	aMPBarSizeX = aMPBarSizeX_default;
 	aMPBarSizeY = aMPBarSizeY_default;
@@ -219,12 +231,10 @@ int __stdcall  SetMPBarConfigForPlayer(unsigned char* unitaddr)
 			}
 
 		}
-
 		return 1;
 	}
 	return 0;
 }
-
 
 void __declspec(naked) FillMemoryForMPBar()
 {
@@ -434,7 +444,7 @@ void __declspec(naked) f001527F0()
 		cmp		eax, _BarVTable; // FIX CRASH
 		je OkayBar;
 		lea		ecx, BarVtableClone
-			cmp		eax, ecx; // FIX CRASH
+		cmp		eax, ecx; // FIX CRASH
 		je OkayBar;
 		jmp L091;
 	OkayBar:
@@ -506,14 +516,12 @@ void __declspec(naked) f001527F0()
 		pop     esi;
 		pop     ebx;
 	L093:
-
-
-
 		pop     edi;
 		add     esp, 0x10;
 		retn;
 	}
 }
+
 void __declspec(naked) RedrawMPBar()
 {
 	__asm {
@@ -575,7 +583,6 @@ void Hook()
 	}
 
 }
-
 
 void Unhook()
 {
@@ -640,7 +647,6 @@ void ManaBarSwitch(int b)
 	ManabarInitialized = true;
 
 }
-
 
 int __stdcall SetManabarEnabled(int enabled)
 {
