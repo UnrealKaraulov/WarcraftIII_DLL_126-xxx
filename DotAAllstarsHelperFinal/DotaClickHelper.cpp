@@ -1245,9 +1245,9 @@ void PressKeyWithDelay_timed()
 													if (!((DelayedPressList[i].NeedPresslParam & 0x40000000) > 0))
 													{
 														if (keyAction.IsSkill)
-															PressedButton = PressSkillPanelButton(keyAction.altbtnID, keyAction.IsRightClick);
+															PressedButton = PressSkillPanelButton(keyAction.altbtnID, 0);
 														else
-															PressedButton = PressItemPanelButton(keyAction.btnID, keyAction.IsRightClick);
+															PressedButton = PressItemPanelButton(keyAction.btnID, 0);
 													}
 
 												}
@@ -1259,7 +1259,7 @@ void PressKeyWithDelay_timed()
 													if (keyAction.IsSkill)
 														PressedButton = PressSkillPanelButton(keyAction.btnID, keyAction.IsRightClick);
 													else
-														PressedButton = PressItemPanelButton(keyAction.btnID, keyAction.IsRightClick);
+														PressedButton = PressItemPanelButton(keyAction.btnID, 0);
 													//PressedButton = true;
 												}
 
@@ -2291,9 +2291,9 @@ int ProcessHotkeys(HWND hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam,
 								if (keyAction.altbtnID >= 0)
 								{
 									if (keyAction.IsSkill)
-										PressedButton = PressSkillPanelButton(keyAction.altbtnID, keyAction.IsRightClick);
+										PressedButton = PressSkillPanelButton(keyAction.altbtnID, 0);
 									else
-										PressedButton = PressItemPanelButton(keyAction.btnID, keyAction.IsRightClick);
+										PressedButton = PressItemPanelButton(keyAction.btnID, 0);
 									//PressedButton = true;
 								}
 							}
@@ -2302,7 +2302,7 @@ int ProcessHotkeys(HWND hWnd, unsigned int& Msg, WPARAM& wParam, LPARAM& lParam,
 								if (keyAction.IsSkill)
 									PressedButton = PressSkillPanelButton(keyAction.btnID, keyAction.IsRightClick);
 								else
-									PressedButton = PressItemPanelButton(keyAction.btnID, keyAction.IsRightClick);
+									PressedButton = PressItemPanelButton(keyAction.btnID, 0);
 								//PressedButton = true;
 							}
 
