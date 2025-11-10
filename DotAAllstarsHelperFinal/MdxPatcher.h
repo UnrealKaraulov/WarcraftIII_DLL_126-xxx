@@ -1,4 +1,3 @@
-// MdxPatcher.h  -- single-header MDLX patcher with robust CLID add/patch (sphere + box)
 #pragma once
 #include <string>
 #include <vector>
@@ -218,17 +217,16 @@ private:
 		}
 	}
 
-	// --- Надёжный поиск CLID: возвращает payloadPos и sizeFieldPos (и true если найден) ---
+	
 	static bool findCLIDChunk(const std::vector<unsigned char>& d, unsigned int& payloadPos, unsigned int& sizeFieldPos) {
 		payloadPos = SIZE_MAX;
 		sizeFieldPos = SIZE_MAX;
 		if (d.size() < 8) return false;
-		unsigned int off = 4; // пропускаем "MDLX"
+		unsigned int off = 4; 
 		while (off + 8 <= d.size()) {
 			char tag[5] = { 0 };
 			if (!read_tag(d, off, tag)) break;
 			off += 4;
-			// здесь off указывает на поле size
 			unsigned int len = 0;
 			if (!read_u32_le(d, off, len)) break;
 			unsigned int payload = off + 4;
@@ -237,13 +235,11 @@ private:
 				sizeFieldPos = off;
 				return true;
 			}
-			// переход к следующему чанку
 			off = payload + (unsigned int)len;
 		}
 		return false;
 	}
 
-	// --- Вставка entry в конец payload CLID (корректно обновляет поле size) ---
 	static bool safeAppendToCLID(std::vector<unsigned char>& d, unsigned int payloadPos, const std::vector<unsigned char>& entry) {
 		if (payloadPos == SIZE_MAX) return false;
 		if (payloadPos < 4) return false;
@@ -251,15 +247,13 @@ private:
 		unsigned int curSize = 0;
 		if (!read_u32_le(d, sizeFieldPos, curSize)) return false;
 		unsigned int insertPos = payloadPos + curSize;
-		if (insertPos > d.size()) return false; // защита
-		// вставляем entry в конец payload, сдвигая хвост вправо
+		if (insertPos > d.size()) return false; 
 		d.insert(d.begin() + (ptrdiff_t)insertPos, entry.begin(), entry.end());
 		unsigned int newSize = curSize + (unsigned int)entry.size();
 		if (!write_u32_le(d, sizeFieldPos, newSize)) return false;
 		return true;
 	}
 
-	// --- Создать новый CLID chunk в конце файла ---
 	static bool createNewCLIDAtEnd(std::vector<unsigned char>& d, const std::vector<unsigned char>& entry) {
 		const char tag[4] = { 'C','L','I','D' };
 		unsigned int chunkSize = (unsigned int)entry.size();
@@ -386,7 +380,7 @@ private:
 							}
 						}
 						else {
-							// Replace shape+payload range and update only CLID.size (InclusiveSize не трогаем!)
+							// Replace shape+payload range and update only CLID.size 
 							if (shapeOff + oldTotalShapeRange <= d.size()) {
 								int delta = (int)newShapeSize - (int)oldTotalShapeRange;
 
@@ -903,7 +897,6 @@ private:
 			return true;
 			};
 
-		// Список тегов и их страйдов
 		struct TagInfo { const char* tag; int nonInterp; int interp; };
 		static const TagInfo tags[] = {
 			{"KGTR", 16, 40}, // Node Translation
@@ -921,7 +914,6 @@ private:
 			{"KRTX",  8, 16}  // Ribbon TextureSlot (int1)
 		};
 
-		// Цикл: пока встречаем известные ключевые блоки, собираем их
 		bool found = true;
 		while (found) {
 			found = false;
@@ -1125,11 +1117,9 @@ private:
 					}
 				}
 
-				// Установка новой длительности целевой анимации
 				*Sequences[(unsigned int)ReplaceSequenceID].second = NewEndTime;
 				changed = true;
 
-				// Обработка временных меток
 				int keysModified = 0;
 				for (int* dwTime : TimesForReplace) {
 					if (*dwTime >= SeqEndTime) {
@@ -1151,7 +1141,6 @@ private:
 		return changed;
 	}
 
-	// --- изменить значения SEQS ---
 	bool applySequenceValues(const std::string& filename, std::vector<unsigned char>& d) {
 		bool changed = false;
 		for (unsigned int i = 0; i < seqvals_.size(); i++) {
