@@ -4557,7 +4557,7 @@ inline bool parse_range_header(const std::string &s, Ranges &ranges) try {
 #endif
   auto is_valid = [](const std::string &str) {
     return std::all_of(str.cbegin(), str.cend(),
-                       [](unsigned char c) { return std::isdigit(c); });
+                       [](unsigned char c) { return isdigit(c); });
   };
 
   if (s.size() > 7 && s.compare(0, 6, "bytes=") == 0) {

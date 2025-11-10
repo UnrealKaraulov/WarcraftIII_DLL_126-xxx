@@ -4,8 +4,7 @@
 #include <cstring>
 #include <algorithm>
 #include <cstdint>
-#include <stdio.h>
-#include <stdarg.h>
+#include <cctype>
 #pragma pack(push,1)
 
 
@@ -945,7 +944,7 @@ private:
 				if (s.empty()) return false;
 				for (auto& c : s)
 				{
-					if (!std::isdigit(static_cast<unsigned char>(c))) return false;
+					if (!isdigit(static_cast<unsigned char>(c))) return false;
 				}
 				return true;
 				};
@@ -1195,7 +1194,7 @@ private:
 			if (s.empty()) return false;
 			for (auto& c : s)
 			{
-				if (!std::isdigit(static_cast<unsigned char>(c))) return false;
+				if (!isdigit(static_cast<unsigned char>(c))) return false;
 			}
 			return true;
 			};
