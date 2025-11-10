@@ -164,7 +164,7 @@ using ssize_t = long;
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
-#ifdef XP_BUILD
+#if (_WIN32_WINNT <= 0x0501)
 extern int inet_pton(int af, const char* src, void* dst);
 #endif
 

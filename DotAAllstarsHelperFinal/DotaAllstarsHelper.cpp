@@ -1,4 +1,4 @@
-﻿#include "Main.h"
+#include "Main.h"
 #include "ViewAllySkill.h"
 
 #include <TlHelp32.h>
@@ -25,6 +25,7 @@ bool DEBUG_FULL = false;
  
 
 // WINXP SUPPORT
+#if (_WIN32_WINNT <= 0x0501)
 extern "C" uint64_t _dtoul3_legacy(const double x) {
 	uint64_t result;
 	__asm {
@@ -36,6 +37,7 @@ extern "C" uint64_t _dtoul3_legacy(const double x) {
 	}
 	return result;
 }
+#endif
 
 int SetInfoObjDebugVal = false;
 
@@ -115,8 +117,31 @@ pGetPlayerAlliance GetPlayerAlliance;
 
 unsigned char* DrawUnitBarOffset = 0;
 
-
 bool MainFuncWork = false;
+
+
+
+char* GlobalTextBuffer = 0;
+
+typedef int(__cdecl* pGetItemTypeId)(int itemhandle);
+pGetItemTypeId GetItemTypeId;
+
+typedef int(__fastcall* DrawInterface_p)(int, int);
+DrawInterface_p DrawInterface_org;
+DrawInterface_p DrawInterface_ptr;
+
+typedef void(__fastcall* Wc3DrawStage)(int arg1, int unused, int RenderStage, int type1, int type2, int arg1_2);
+Wc3DrawStage Wc3DrawStage_org;
+Wc3DrawStage Wc3DrawStage_ptr;
+
+typedef signed int(__fastcall* Wc3DrawObject)(int a1, int a2);
+Wc3DrawObject Wc3DrawObject_ptr;//sub_6F60FC00
+Wc3DrawObject Wc3DrawObject_org;
+
+
+typedef int(__stdcall* pStorm_503)(int a1, int a2, int a3);
+pStorm_503 Storm_503;
+
 
 
 war3::CGameUI* GameUIObjectGet() {
@@ -125,11 +150,6 @@ war3::CGameUI* GameUIObjectGet() {
 		return *reinterpret_cast<war3::CGameUI**>(pW3XGlobalClass);
 	}
 	return NULL;
-}
-
-void ShowConfigEditButton()
-{
-
 }
 
 int ChatEditBoxVtable = 0;
@@ -154,7 +174,6 @@ int IsChatActive()
 	OldChatState = NewChatState;
 
 	return NewChatState;
-	//return  *(int*)pCurrentFrameFocusedAddr  && **(int**)pCurrentFrameFocusedAddr == GameDll + ChatEditBoxVtable;
 }
 
 int IsGameFrameActive()
@@ -197,42 +216,6 @@ int IsGameFrameActive()
 	return a3 && a2 && a1;
 }
 
-
-void PrintText(const char* text, float staytime, int force)
-{
-	if (IsGame() || force)
-	{
-		__asm
-		{
-			push - 1;
-			push staytime;
-			push text;
-			mov ecx, pW3XGlobalClass;
-			mov ecx, [ecx];
-			mov eax, pPrintText2;
-			call eax;
-		}
-	}
-}
-
-
-void PrintText(std::string strtext, float staytime, int force)
-{
-	const char* text = strtext.c_str();
-	if (IsGame() || force)
-	{
-		__asm
-		{
-			push - 1;
-			push staytime;
-			push text;
-			mov ecx, pW3XGlobalClass;
-			mov ecx, [ecx];
-			mov eax, pPrintText2;
-			call eax;
-		}
-	}
-}
 
 
 const char* GetBoolStr(int val)
@@ -397,18 +380,6 @@ void __stdcall SET_SELF_UNLOAD_DLL_AFTER_GAME_END(int unload)
 	SELF_UNLOAD_DLL_AFTER_GAME_END = unload;
 }
 
-//void SetGameEnd(const Event*)
-//{
-//	if (ForceGameStart)
-//	{
-//		DisableAllHooks();
-//		if (SELF_UNLOAD_DLL_AFTER_GAME_END)
-//			DllSelfUnloading(GetCurrentModule);
-//	}
-//
-//	ForceGameStart = false;
-//}
-
 bool IsGame()
 {
 	bool retval = GameDll && (GameUIObjectGet() && GAME_START_CALLED);
@@ -551,11 +522,6 @@ const char* __stdcall GetCurrentMapPath(int)
 
 bool OverlayDrawed = false;
 int WriteAccessStatus = -1;
-
-typedef int(__fastcall* DrawInterface_p)(int, int);
-DrawInterface_p DrawInterface_org;
-DrawInterface_p DrawInterface_ptr;
-
 bool GAME_START_CALLED = false;
 
 int __fastcall DrawInterface_my(int arg1, int arg2)
@@ -577,9 +543,6 @@ int __fastcall DrawInterface_my(int arg1, int arg2)
 
 int RenderStage;
 
-typedef void(__fastcall* Wc3DrawStage)(int arg1, int unused, int RenderStage, int type1, int type2, int arg1_2);
-Wc3DrawStage Wc3DrawStage_org;
-Wc3DrawStage Wc3DrawStage_ptr;
 
 void __fastcall Wc3DrawStage_my(int arg1, int unused, int _RenderStage, int type1, int type2, int arg1_2)
 {
@@ -587,11 +550,6 @@ void __fastcall Wc3DrawStage_my(int arg1, int unused, int _RenderStage, int type
 	Wc3DrawStage_ptr(arg1, unused, _RenderStage, type1, type2, arg1_2);
 	RenderStage = -_RenderStage;
 }
-
-
-typedef signed int(__fastcall* Wc3DrawObject)(int a1, int a2);
-Wc3DrawObject Wc3DrawObject_ptr;//sub_6F60FC00
-Wc3DrawObject Wc3DrawObject_org;
 
 unsigned char* unlimunitaddr = 0;
 
@@ -602,13 +560,6 @@ int __stdcall SetUnitForUnlimiteDraw(unsigned char* unitaddr)
 	unlimunitaddr = unitaddr;
 	return 0;
 }
-
-int __fastcall Wc3DrawObject_my(int a1, int a2)
-{
-
-	return 0;
-}
-
 
 
 void InitHook()
@@ -747,11 +698,6 @@ void UninitializeHook()
 
 	IssueFixerDisable();
 }
-
-
-typedef int(__stdcall* pStorm_503)(int a1, int a2, int a3);
-pStorm_503 Storm_503;
-
 int PlantDetourJMP(unsigned char* source, const unsigned char* destination, size_t length)
 {
 
@@ -770,53 +716,6 @@ int PlantDetourJMP(unsigned char* source, const unsigned char* destination, size
 	VirtualProtect(source, length, oldProtection, &oldProtection);
 	FlushInstructionCache(GetCurrentProcess(), source, length);
 	return true;
-}
-
-
-char* bufferaddr = 0;
-
-int __declspec(naked) __cdecl GetUnitItemInSlot126a(unsigned char* unitaddr, int slotid)
-{
-	__asm
-	{
-		mov ecx, [esp + 4];
-		push esi;
-		mov eax, ecx;
-		jmp GetItemInSlotAddr;
-	}
-}
-
-int __declspec(naked) __cdecl GetUnitItemInSlot127a(unsigned char* unitaddr, int slotid)
-{
-	__asm
-	{
-		push ebp;
-		mov ebp, esp;
-		mov ecx, [ebp + 8];
-		push esi;
-		mov eax, ecx;
-		jmp GetItemInSlotAddr;
-	}
-}
-
-
-typedef int(__cdecl* pGetItemTypeId)(int itemhandle);
-pGetItemTypeId GetItemTypeId;
-
-int __cdecl GetItemTypeInSlot(unsigned char* unitaddr, int slotid)
-{
-
-	int itemhandle = 0;
-
-
-	itemhandle = GetUnitItemInSlot126a(unitaddr, slotid);
-
-	if (itemhandle)
-	{
-		return GetItemTypeId(itemhandle);
-	}
-
-	return 0;
 }
 
 int GetTypeId(unsigned char* unit_item_abil_etc_addr)
@@ -886,188 +785,6 @@ int __stdcall SetAttackReloadStr(const char* str)
 	return 0;
 }
 
-
-// Функция принимает данные о скорости атаки (и о увеличении урона от способностей) и сохраняет в буфер который будет использоваться при отрисовке
-int __stdcall PrintAttackSpeedAndOtherInfo(unsigned char* addr, float* attackspeed, float* BAT, unsigned char** unitaddr)
-{
-	if (DEBUG_FULL)
-		std::cout << __func__ << std::endl;
-	int retval = 0;
-	__asm mov retval, eax;
-	if (unitaddr)
-	{
-
-		if (IsNotBadUnit(*unitaddr) && IsHero(*unitaddr))
-		{
-			bufferaddr = buffer;
-			float realBAT = *(float*)BAT;
-			float fixedattackspeed = *(float*)attackspeed;
-			float realattackspeed = fixedattackspeed;
-			if (fixedattackspeed > *(float*)(GameDll + pAttackSpeedLimit))
-				fixedattackspeed = *(float*)(GameDll + pAttackSpeedLimit);
-
-			if (realattackspeed < 0.0f)
-				realattackspeed = 0.01f;
-			if (fixedattackspeed < 0.0f)
-				fixedattackspeed = 0.01f;
-
-
-			/*	if ( fixedattackspeed == 0 )
-				{
-					fixedattackspeed = 0.0001f;
-				}
-
-				if ( realBAT == 0 )
-				{
-					realBAT = 0.0001f;
-				}*/
-
-			if (magicampval > 0)
-			{
-				int magicamp = GetHeroInt(*unitaddr, 0, true) / magicampval;
-
-
-				int magicampbonus = 0;
-
-				for (int i = 0; i < 6; i++)
-				{
-					int item = GetItemTypeInSlot(*unitaddr, i);
-					for (auto const& s : SpellBonusItemList)
-					{
-						if (IsClassEqual(item, s.id))
-						{
-							magicampbonus += s.pc;
-						}
-					}
-				}
-
-				float AttacksPerSec = 0.0f;
-
-				float AttackReload = 0.0f;
-				if (fabs(fixedattackspeed) > 0.00001f && fabs(realBAT) > 0.00001f)
-				{
-					AttacksPerSec = fixedattackspeed / realBAT;
-					AttackReload = 1.0f / (fixedattackspeed / realBAT);
-				}
-				float AttackSpeedBonus = realattackspeed * 100.0f - 100.0f;
-
-				if (magicampbonus)
-					sprintf_s(buffer, sizeof(buffer), magicAmpBonusStr1.c_str(), AttacksPerSec, AttackReload, AttackSpeedBonus, magicamp, magicampbonus);
-				else
-					sprintf_s(buffer, sizeof(buffer), magicAmpBonusStr2.c_str(), AttacksPerSec, AttackReload, AttackSpeedBonus, magicamp);
-			}
-			else
-			{
-				float AttacksPerSec = 0.0f;
-
-				float AttackReload = 0.0f; 
-				
-				if (fabs(fixedattackspeed) > 0.00001f && fabs(realBAT) > 0.00001f)
-				{
-					AttacksPerSec = fixedattackspeed / realBAT;
-					AttackReload = 1.0f / (fixedattackspeed / realBAT);
-				}
-				float AttackSpeedBonus = realattackspeed * 100.0f - 100.0f;
-
-				sprintf_s(buffer, sizeof(buffer), attackBonusStr.c_str(), AttacksPerSec, AttackReload, AttackSpeedBonus);
-			}
-			if (fixedattackspeed > *(float*)(GameDll + pAttackSpeedLimit))
-				fixedattackspeed = *(float*)(GameDll + pAttackSpeedLimit);
-
-			if (fixedattackspeed < 0.2f)
-				fixedattackspeed = 0.2f;
-
-			__asm
-			{
-				PUSH 0x200;
-				PUSH bufferaddr;
-				PUSH addr;
-				CALL Storm_503;
-			}
-		}
-		else
-		{
-			bufferaddr = buffer;
-			float oldaddtackspeed = *(float*)attackspeed;
-			float fixedattackspeed = oldaddtackspeed;
-
-			if (fixedattackspeed > *(float*)(GameDll + pAttackSpeedLimit))
-				fixedattackspeed = *(float*)(GameDll + pAttackSpeedLimit);
-
-			if (fixedattackspeed < 0.2f)
-				fixedattackspeed = 0.2f;
-
-			sprintf_s(buffer, sizeof(buffer), attackReloadStr.c_str(), (fixedattackspeed / *(float*)BAT), 1.0f / (fixedattackspeed / *(float*)BAT));
-
-			__asm
-			{
-				PUSH 0x200;
-				PUSH bufferaddr;
-				PUSH addr;
-				CALL Storm_503;
-			}
-		}
-
-	}
-
-	return retval;
-}
-
-int saveeax = 0;
-int saveebx = 0;
-int saveecx = 0;
-int saveedx = 0;
-int saveesi = 0;
-int saveedi = 0;
-int saveebp = 0;
-int saveesp = 0;
-
-
-void __declspec(naked)  PrintAttackSpeedAndOtherInfoHook126a()
-{
-	__asm
-	{
-		mov saveeax, eax;
-		mov eax, [esp + 0x14];
-		cmp eax, 0;
-		JE JUSTEND;
-		add eax, 0x30;
-		push eax;
-		add eax, 0x128;
-		push eax;
-		add eax, 0x58;
-		push eax;
-		push esi;
-		call PrintAttackSpeedAndOtherInfo;
-	JUSTEND:;
-		mov eax, saveeax;
-		ret 8;
-	}
-}
-
-
-void __declspec(naked)  PrintAttackSpeedAndOtherInfoHook127a()
-{
-	__asm
-	{
-		mov saveeax, eax;
-		mov eax, [esp + 0x10];
-		cmp eax, 0;
-		JE JUSTEND;
-		add eax, 0x30;
-		push eax;
-		add eax, 0x128;
-		push eax;
-		add eax, 0x58;
-		push eax;
-		push ecx;
-		call PrintAttackSpeedAndOtherInfo;
-	JUSTEND:;
-		mov eax, saveeax;
-		ret 8;
-	}
-}
-
 float __stdcall GetMagicProtectionForHero_org(unsigned char* UnitAddr)
 {
 	float indmg = 100.0f;
@@ -1121,71 +838,6 @@ int __stdcall SetMagicProtectionString(const char* str)
 	magicProtStr = str;
 	return 0;
 }
-
-int __stdcall PrintMoveSpeed(unsigned char* addr, float* movespeed, unsigned char* AmovAddr)
-{
-	if (DEBUG_FULL)
-		std::cout << __func__ << std::endl;
-	int retval = 0;
-	__asm mov retval, eax;
-	if (AmovAddr)
-	{
-		float MagicProtection = GetMagicProtectionForHero_by_abiladdr(AmovAddr);
-		
-		bufferaddr = buffer;
-
-		if (fabs(MagicProtection) < 0.00001f)
-			sprintf_s(buffer, sizeof(buffer), "%.1f", (*(float*)movespeed));
-		else if (MagicProtection > 30.0f)
-			sprintf_s(buffer, sizeof(buffer), "%.1f|n%s: |cFF00C800%.1f|r%%", (*(float*)movespeed), magicProtStr.c_str(), MagicProtection);
-		else if (MagicProtection <= 30.0f && MagicProtection > 0.0f)
-			sprintf_s(buffer, sizeof(buffer), "%.1f|n%s: %.1f%%", (*(float*)movespeed), magicProtStr.c_str(), MagicProtection);
-		else
-			sprintf_s(buffer, sizeof(buffer), "%.1f|n%s: |cFFD82005%.1f|r%%", (*(float*)movespeed), magicProtStr.c_str(), MagicProtection);
-		__asm
-		{
-			PUSH 0x200;
-			PUSH bufferaddr;
-			PUSH addr;
-			CALL Storm_503;
-		}
-	}
-	return retval;
-}
-
-
-void __declspec(naked)  PrintMoveSpeedHook126a()
-{
-	__asm
-	{
-		mov saveeax, eax;
-		mov eax, esp;
-		add eax, 4;
-		push ebx;
-		push eax;
-		push esi;
-		call PrintMoveSpeed;
-		mov eax, saveeax;
-		ret 8;
-	}
-}
-
-void __declspec(naked)  PrintMoveSpeedHook127a()
-{
-	__asm
-	{
-		mov saveeax, eax;
-		mov eax, esp;
-		add eax, 4;
-		push edi;
-		push eax;
-		push ecx;
-		call PrintMoveSpeed;
-		mov eax, saveeax;
-		ret 8;
-	}
-}
-
 
 
 char itemstr1[512];
@@ -1393,293 +1045,6 @@ int JumpBackAddr9()
 	return 0;
 }
 
-
-
-void __declspec(naked) HookHPBarColorHelper126a()
-{
-	__asm
-	{
-		lea edx, [esp + 0x10];
-		fstp st(0);
-		pushad;
-		pusha;
-		push edi;
-		push edx;
-		call SetColorForUnit;
-		popa;
-		popad;
-		jmp JumpBackAddr9;
-	}
-}
-
-
-int calladdr1 = 0;
-
-
-
-void __declspec(naked) HookHPBarColorHelper127a()
-{
-	__asm
-	{
-		lea eax, [ebp + 0x08];
-		pushad;
-		pusha;
-		push esi;
-		push eax;
-		call SetColorForUnit;
-		popa;
-		popad;
-		push eax;
-		call calladdr1;
-		jmp JumpBackAddr9;
-	}
-}
-
-
-
-void __declspec(naked) HookItemAddr126a()
-{
-	__asm
-	{
-		pushad;
-		pusha;
-		push eax;
-		call SaveStringsForPrintItem;
-		popa;
-		popad;
-		mov ebx, eax;
-		test ebx, ebx;
-		mov[esp + 0x1C], ebx;
-		jmp JumpBackAddr1;
-	}
-}
-
-
-void __declspec(naked) HookItemAddr127a()
-{
-	__asm
-	{
-		pushad;
-		pusha;
-		push eax;
-		call SaveStringsForPrintItem;
-		popa;
-		popad;
-		mov edi, eax;
-		mov[ebp - 0x4F8], edi;
-		jmp JumpBackAddr1;
-	}
-}
-
-
-
-void __declspec(naked) HookUnitAddr126a()
-{
-	__asm
-	{
-		push edx;
-		mov eax, ecx;
-		pushad;
-		pusha;
-		push eax;
-		call SaveStringForHP_MP;
-		popa;
-		popad;
-		mov ecx, eax;
-		pop edx;
-		push edx;
-		lea eax, [esp + 0x40];
-		jmp JumpBackAddr4;
-	}
-}
-
-
-void __declspec(naked) HookUnitAddr127a()
-{
-	__asm
-	{
-		mov ecx, [edi + 0x00000238];
-		mov eax, ecx;
-		pushad;
-		pusha;
-		push eax;
-		call SaveStringForHP_MP;
-		popa;
-		popad;
-		mov ecx, eax;
-		test ecx, ecx;
-		jmp JumpBackAddr4;
-	}
-}
-
-
-char* GlobalTextBuffer = 0;
-
-
-void __declspec(naked) HookPrint1_126a()
-{
-	bufferaddr = itemstr1;
-	__asm
-	{
-		push bufferaddr;
-		mov eax, GlobalTextBuffer;
-		push 0x2000;
-		jmp JumpBackAddr2;
-	}
-}
-
-void __declspec(naked) HookPrint2_126a()
-{
-	bufferaddr = itemstr2;
-	__asm
-	{
-		push bufferaddr;
-		mov edx, GlobalTextBuffer;
-		push 0x2000;
-		jmp JumpBackAddr3;
-	}
-}
-
-void __declspec(naked) HookPrint3_126a()
-{
-	bufferaddr = unitstr1;
-	__asm
-	{
-		push bufferaddr;
-		lea ecx, [esp + 0x0000100];
-		push 0x28;
-		jmp JumpBackAddr5;
-	}
-}
-
-void __declspec(naked) HookPrint4_126a()
-{
-	bufferaddr = unitstr2;
-	__asm
-	{
-		push bufferaddr;
-		lea eax, [esp + 0x0000128];
-		push 0x28;
-		jmp JumpBackAddr6;
-	}
-}
-
-void __declspec(naked) HookPrint1_127a()
-{
-	bufferaddr = itemstr1;
-	__asm
-	{
-		push bufferaddr;
-		lea eax, [ebp - 0x2F0];
-		push 0x200;
-		jmp JumpBackAddr2;
-	}
-}
-
-void __declspec(naked) HookPrint2_127a()
-{
-	bufferaddr = itemstr2;
-	__asm
-	{
-		push bufferaddr;
-		lea eax, [ebp - 0x2F0];
-		push 0x200;
-		jmp JumpBackAddr3;
-	}
-}
-
-void __declspec(naked) HookPrint3_127a()
-{
-	bufferaddr = unitstr1;
-	__asm
-	{
-		push bufferaddr;
-		lea eax, [ebp - 0x60];
-		push 0x28;
-		jmp JumpBackAddr5;
-	}
-}
-
-void __declspec(naked) HookPrint4_127a()
-{
-	bufferaddr = unitstr2;
-	__asm
-	{
-		push bufferaddr;
-		lea eax, [ebp - 0x38];
-		push 0x28;
-		jmp JumpBackAddr6;
-	}
-}
-
-void __stdcall SetCdForAddr(unsigned char* cd_addr)
-{
-	if (cd_addr > (unsigned char*)0xb0 /*eax */)
-	{
-		unsigned char* abiladdr = cd_addr - 0xb0;
-		unsigned char* pData = *(unsigned char**)(abiladdr + 0xDC);
-		if (pData)
-		{
-			float val1 = *(float*)(pData + 0x4);
-			int pData2 = *(int*)(pData + 0xC);
-			if (pData2 > 0)
-			{
-				float val2 = *(float*)(pData2 + 0x40);
-				float val3 = val1 - val2;
-				if (val3 > 100)
-					*(float*)(cd_addr + 4) = 1000.0f;
-				else
-					*(float*)(cd_addr + 4) = 100.0f;
-				return;
-			}
-
-		}
-
-	}
-
-	if (fabs(*(float*)(cd_addr + 4) - 1000.0f) < 0.00001f)
-		*(float*)(cd_addr + 4) = 100.0f;
-}
-
-void __declspec(naked) HookSetCD_1000s_126a()
-{
-	//int cd_addr;
-	__asm
-	{
-		//	mov cd_addr, eax;
-		pushad;
-		pusha;
-		push eax;
-		call SetCdForAddr;
-		popa;
-		popad;
-		push esi;
-		push eax;
-		mov eax, [ecx];
-		mov eax, [eax + 0x18];
-		lea edx, [esp + 0x08];
-		push edx;
-		jmp JumpBackAddr7;
-	}
-}
-
-//37ed3
-void __declspec(naked) HookSetCD_1000s_127a()
-{
-	//	int cd_addr;
-	__asm
-	{
-		//	mov cd_addr, eax;
-		pushad;
-		pusha;
-		push eax;
-		call SetCdForAddr;
-		popa;
-		popad;
-		lea ecx, [edx + 0xD0];
-		jmp JumpBackAddr7;
-	}
-}
 
 std::vector<waroffsetdata> offsetslist;
 int __stdcall AddNewOffset_(unsigned char* address, int data, unsigned int FeatureFlag = 0)
@@ -1975,25 +1340,10 @@ void __stdcall ClearCustomsBars()
 		MpBarUnitWhiteList.clear();
 }
 
-void __stdcall FreeAllVectors()
-{
 
-	if (!ModelCollisionFixList.empty())
-		ModelCollisionFixList.clear();
-	if (!ModelTextureFixList.empty())
-		ModelTextureFixList.clear();
-	if (!ModelPatchList.empty())
-		ModelPatchList.clear();
-	if (!ModelRemoveTagList.empty())
-		ModelRemoveTagList.clear();
-	if (!ModelSequenceReSpeedList.empty())
-		ModelSequenceReSpeedList.clear();
-	if (!ModelSequenceValueList.empty())
-		ModelSequenceValueList.clear();
-}
-
-void __stdcall UnloadHWNDHandler(int Force = false)
+void __stdcall UnloadHWNDHandler(int Force)
 {
+	(void)(Force);
 	ClickHelperDisabled = true;
 }
 
@@ -2016,7 +1366,7 @@ void __stdcall DisableAllHooks(int)
 	sprintf_s(MyFpsString, 512, "%s", "|nFPS: %.1f");
 	ClipCursor(0);
 	// Выгрузить перехватчики функций
-	UnloadHWNDHandler();
+	UnloadHWNDHandler(true);
 	UninitializeHook();
 	// Убрать все патчи и вернуть стандартные данные
 	RestoreAllOffsets();
@@ -2038,8 +1388,6 @@ void __stdcall DisableAllHooks(int)
 
 	FreeAllIHelpers();
 
-	FreeAllVectors();
-
 	ClickHelperDisabled = false;
 	EnableSelectHelper = false;
 	AutoSelectHero = false;
@@ -2053,6 +1401,7 @@ void __stdcall DisableAllHooks(int)
 		WhiteListForTeleport.clear();
 	if (!doubleclickSkillIDs.empty())
 		doubleclickSkillIDs.clear();
+
 	//	if ( !NeedDrawBarForUnit.empty( ) )
 	//		NeedDrawBarForUnit.clear( );
 
@@ -2086,10 +1435,7 @@ void __stdcall DisableAllHooks(int)
 
 	LatestDownloadedString.clear();
 
-	//UninitializeDreamDotaAPI();
 	//UninitializeVoiceClient( );
-
-	//UnInitDreamRawImages();
 
 	EmulateKeyInputForHWND = false;
 	ShiftPressed = 0;
@@ -2207,19 +1553,6 @@ int __stdcall DeleteFileByName(char* file)
 	return DeleteFileA(file);
 }
 
-int __stdcall InitHpBar(int)
-{
-	if (DEBUG_FULL)
-		std::cout << __func__ << std::endl;
-	unsigned char* pHPBARHELPER = GameDll + 0x364beb;
-	AddNewOffset_(pHPBARHELPER, *(int*)pHPBARHELPER, Feature_HPBAR);
-	AddNewOffset_(pHPBARHELPER + 3, *(int*)(pHPBARHELPER + 3), Feature_HPBAR);
-	PlantDetourJMP((unsigned char*)(pHPBARHELPER), (unsigned char*)HookHPBarColorHelper126a, 6);
-	PlantDetourJMP((unsigned char*)(JumpBackAddr9), (unsigned char*)(GameDll + 0x364bf1), 5);
-
-	return 0;
-}
-
 int __stdcall InitOverlay(int)
 {
 	if (DEBUG_FULL)
@@ -2294,7 +1627,824 @@ unsigned char* ConvertHandle(int handleid)
 	return 0;
 }
 
-int InitializedDream = false;
+
+
+int __stdcall UpdatePlayerCache(int)
+{
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
+	for (int i = 0; i < 16; i++)
+	{
+		playercache[i] = _Player(i);
+	}
+
+	for (int i = 0; i < 16; i++)
+	{
+		player_real_cache[i] = _GetPlayerByNumber(i);
+	}
+
+	for (int i = 0; i < 16; i++)
+	{
+		player_observers[i] = _IsPlayerObserver(i);
+	}
+
+
+	player_local_id = _GetLocalPlayerId();
+
+	PlayerEnemyCache.clear();
+
+	return 0;
+}
+
+const char* GameDllName = "Game.dll";
+const char* StormDllName = "Storm.dll";
+
+int __stdcall SetCustomGameDllandStormDLL(const char* _GameDllName, const char* _StormDllName)
+{
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
+	GameDllModule = GetModuleHandleA(_GameDllName);
+	if (!GameDllModule)
+		return false;
+
+	GameDll = (unsigned char*)GameDllModule;
+
+	StormDllModule = GetModuleHandleA(_StormDllName);
+
+
+
+	if (!StormDllModule)
+		return false;
+	StormDll = (unsigned char*)StormDllModule;
+	Storm::Init(StormDllModule);
+	return 0;
+}
+
+int __stdcall SetGameDllAddr(void* GameDllmdl)
+{
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
+	GameDllModule = GameDllmdl;
+	GameDll = (unsigned char*)GameDllModule;
+
+	if (StormDllModule)
+		Storm::Init(StormDllModule);
+
+	return 0;
+}
+
+int TestModeActivated = false;
+
+int __stdcall SLOW_DEBUG_INIT(int)
+{
+	DEBUG_FULL = true;
+	FILE* f;
+
+	fopen_s(&f, "DotaAllstarsDataTrace.txt", "w");
+	if (f)
+	{
+		fclose(f);
+		f = NULL;
+		freopen_s(&f, "DotaAllstarsDataTrace.txt", "w", stdout);
+		f = NULL;
+	}
+	return 0;
+}
+
+int __stdcall DllMain(HINSTANCE Module, unsigned int reason, LPVOID)
+{
+	if (reason == DLL_PROCESS_ATTACH)
+	{
+		GetCurrentModule = Module;
+		GetGameDllThread = GetCurrentThreadId();
+		/*std::streambuf *coutbuf = std::cout.rdbuf( );
+		std::ofstream out( "debug.log" );
+		std::cout.rdbuf( out.rdbuf( ) );
+*/
+
+/*	FILE * f;
+
+	fopen_s( &f, "DotaAllstarsDataLog.txt", "w" );
+	if ( f )
+	{
+		fclose( f );
+		f = NULL;
+		freopen_s( &f, "DotaAllstarsDataLog.txt", "w", stdout );
+		f = NULL;
+	}
+
+	fopen_s( &f, "DotaAllstarsErrorLog.txt", "w" );
+	if ( f )
+	{
+		fclose( f );
+		f = NULL;
+		freopen_s( &f, "DotaAllstarsErrorLog.txt", "w", stderr );
+	}*/
+
+	//cerr << "Dota Helper Error Log out:" << endl;
+	//cout << "Dota Helper Debug Log out" << endl;
+	// 
+		DisableThreadLibraryCalls(Module);
+		MH_Initialize();
+
+
+		GameDllModule = GetModuleHandleA(GameDllName);
+		GameDll = (unsigned char*)GameDllModule;
+		StormDllModule = GetModuleHandleA(StormDllName);
+		StormDll = (unsigned char*)StormDllModule;
+
+		_W3XTlsIndex = 0xAB7BF4 + GameDll;
+
+		Warcraft3_Process = GetCurrentProcess();
+
+		if (StormDllModule)
+			Storm::Init(StormDllModule);
+
+		// NEXT LINES ONLY FOR TEST !!!
+		// 
+		//ForceGameStart = true;
+		// 	SetTlsForMe();
+		// Storm::Init(StormDllModule);
+		//TestModeActivated = true;
+		//InitDotaHelper(0x26a);
+		//EnableFeatures(0xFFFFFFFF);
+		//MainFuncWork = true;
+		//EnableErrorHandler(0);
+	}
+	else if (reason == DLL_PROCESS_DETACH)
+	{
+		if (IsGameDllAndStormFound() && !TICK_HOOK_ENABLED)
+		{
+			DisableAllHooks(0);
+			MH_DisableHook(MH_ALL_HOOKS);
+			MH_Uninitialize();
+		}
+		else
+		{
+			TerminateProcess(GetCurrentProcess(), 0);
+			ExitProcess(0);
+		}
+	}
+	return true;
+}
+
+
+
+
+#pragma optimize("", off)
+
+
+
+int __declspec(naked) __fastcall GetEspValue(int)
+{
+	__asm {
+		mov eax, esp;
+		ret;
+	}
+}
+
+int __stdcall GetEspValueStdCall(int)
+{
+	int value;
+	__asm mov value, esp;
+	return value;
+}
+
+
+void PrintText(const char* text, float staytime, int force)
+{
+	if (IsGame() || force)
+	{
+		__asm
+		{
+			push - 1;
+			push staytime;
+			push text;
+			mov ecx, pW3XGlobalClass;
+			mov ecx, [ecx];
+			mov eax, pPrintText2;
+			call eax;
+		}
+	}
+}
+
+
+void PrintText(std::string strtext, float staytime, int force)
+{
+	const char* text = strtext.c_str();
+	if (IsGame() || force)
+	{
+		__asm
+		{
+			push - 1;
+			push staytime;
+			push text;
+			mov ecx, pW3XGlobalClass;
+			mov ecx, [ecx];
+			mov eax, pPrintText2;
+			call eax;
+		}
+	}
+}
+
+
+int __declspec(naked) __cdecl GetUnitItemInSlot126a(unsigned char* /*unitaddr*/, int /*slotid*/)
+{
+	__asm
+	{
+		mov ecx, [esp + 4];
+		push esi;
+		mov eax, ecx;
+		jmp GetItemInSlotAddr;
+	}
+}
+
+
+
+int __cdecl GetItemTypeInSlot(unsigned char* unitaddr, int slotid)
+{
+
+	int itemhandle = 0;
+
+
+	itemhandle = GetUnitItemInSlot126a(unitaddr, slotid);
+
+	if (itemhandle)
+	{
+		return GetItemTypeId(itemhandle);
+	}
+
+	return 0;
+}
+
+
+int __declspec(naked) __cdecl GetUnitItemInSlot127a(unsigned char* /*unitaddr*/, int /*slotid*/)
+{
+	__asm
+	{
+		push ebp;
+		mov ebp, esp;
+		mov ecx, [ebp + 8];
+		push esi;
+		mov eax, ecx;
+		jmp GetItemInSlotAddr;
+	}
+}
+
+
+
+char* tmpGlobalBuffAddr = 0;
+
+// Функция принимает данные о скорости атаки (и о увеличении урона от способностей) и сохраняет в буфер который будет использоваться при отрисовке
+int __stdcall PrintAttackSpeedAndOtherInfo(unsigned char* addr, float* attackspeed, float* BAT, unsigned char** unitaddr)
+{
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
+	int retval = 0;
+	__asm mov retval, eax;
+	if (unitaddr)
+	{
+
+		if (IsNotBadUnit(*unitaddr) && IsHero(*unitaddr))
+		{
+			tmpGlobalBuffAddr = buffer;
+			float realBAT = *(float*)BAT;
+			float fixedattackspeed = *(float*)attackspeed;
+			float realattackspeed = fixedattackspeed;
+			if (fixedattackspeed > *(float*)(GameDll + pAttackSpeedLimit))
+				fixedattackspeed = *(float*)(GameDll + pAttackSpeedLimit);
+
+			if (realattackspeed < 0.0f)
+				realattackspeed = 0.01f;
+			if (fixedattackspeed < 0.0f)
+				fixedattackspeed = 0.01f;
+
+
+			/*	if ( fixedattackspeed == 0 )
+				{
+					fixedattackspeed = 0.0001f;
+				}
+
+				if ( realBAT == 0 )
+				{
+					realBAT = 0.0001f;
+				}*/
+
+			if (magicampval > 0)
+			{
+				int magicamp = GetHeroInt(*unitaddr, 0, true) / magicampval;
+
+
+				int magicampbonus = 0;
+
+				for (int i = 0; i < 6; i++)
+				{
+					int item = GetItemTypeInSlot(*unitaddr, i);
+					for (auto const& s : SpellBonusItemList)
+					{
+						if (IsClassEqual(item, s.id))
+						{
+							magicampbonus += s.pc;
+						}
+					}
+				}
+
+				float AttacksPerSec = 0.0f;
+
+				float AttackReload = 0.0f;
+				if (fabs(fixedattackspeed) > 0.00001f && fabs(realBAT) > 0.00001f)
+				{
+					AttacksPerSec = fixedattackspeed / realBAT;
+					AttackReload = 1.0f / (fixedattackspeed / realBAT);
+				}
+				float AttackSpeedBonus = realattackspeed * 100.0f - 100.0f;
+
+				if (magicampbonus)
+					sprintf_s(buffer, sizeof(buffer), magicAmpBonusStr1.c_str(), AttacksPerSec, AttackReload, AttackSpeedBonus, magicamp, magicampbonus);
+				else
+					sprintf_s(buffer, sizeof(buffer), magicAmpBonusStr2.c_str(), AttacksPerSec, AttackReload, AttackSpeedBonus, magicamp);
+			}
+			else
+			{
+				float AttacksPerSec = 0.0f;
+
+				float AttackReload = 0.0f;
+
+				if (fabs(fixedattackspeed) > 0.00001f && fabs(realBAT) > 0.00001f)
+				{
+					AttacksPerSec = fixedattackspeed / realBAT;
+					AttackReload = 1.0f / (fixedattackspeed / realBAT);
+				}
+				float AttackSpeedBonus = realattackspeed * 100.0f - 100.0f;
+
+				sprintf_s(buffer, sizeof(buffer), attackBonusStr.c_str(), AttacksPerSec, AttackReload, AttackSpeedBonus);
+			}
+			if (fixedattackspeed > *(float*)(GameDll + pAttackSpeedLimit))
+				fixedattackspeed = *(float*)(GameDll + pAttackSpeedLimit);
+
+			if (fixedattackspeed < 0.2f)
+				fixedattackspeed = 0.2f;
+
+			__asm
+			{
+				PUSH 0x200;
+				PUSH tmpGlobalBuffAddr;
+				PUSH addr;
+				CALL Storm_503;
+			}
+		}
+		else
+		{
+			tmpGlobalBuffAddr = buffer;
+			float oldaddtackspeed = *(float*)attackspeed;
+			float fixedattackspeed = oldaddtackspeed;
+
+			if (fixedattackspeed > *(float*)(GameDll + pAttackSpeedLimit))
+				fixedattackspeed = *(float*)(GameDll + pAttackSpeedLimit);
+
+			if (fixedattackspeed < 0.2f)
+				fixedattackspeed = 0.2f;
+
+			sprintf_s(buffer, sizeof(buffer), attackReloadStr.c_str(), (fixedattackspeed / *(float*)BAT), 1.0f / (fixedattackspeed / *(float*)BAT));
+
+			__asm
+			{
+				PUSH 0x200;
+				PUSH tmpGlobalBuffAddr;
+				PUSH addr;
+				CALL Storm_503;
+			}
+		}
+
+	}
+
+	return retval;
+}
+
+int saveeax = 0;
+int saveebx = 0;
+int saveecx = 0;
+int saveedx = 0;
+int saveesi = 0;
+int saveedi = 0;
+int saveebp = 0;
+int saveesp = 0;
+
+
+void __declspec(naked)  PrintAttackSpeedAndOtherInfoHook126a()
+{
+	__asm
+	{
+		mov saveeax, eax;
+		mov eax, [esp + 0x14];
+		cmp eax, 0;
+		JE JUSTEND;
+		add eax, 0x30;
+		push eax;
+		add eax, 0x128;
+		push eax;
+		add eax, 0x58;
+		push eax;
+		push esi;
+		call PrintAttackSpeedAndOtherInfo;
+	JUSTEND:;
+		mov eax, saveeax;
+		ret 8;
+	}
+}
+
+
+void __declspec(naked)  PrintAttackSpeedAndOtherInfoHook127a()
+{
+	__asm
+	{
+		mov saveeax, eax;
+		mov eax, [esp + 0x10];
+		cmp eax, 0;
+		JE JUSTEND;
+		add eax, 0x30;
+		push eax;
+		add eax, 0x128;
+		push eax;
+		add eax, 0x58;
+		push eax;
+		push ecx;
+		call PrintAttackSpeedAndOtherInfo;
+	JUSTEND:;
+		mov eax, saveeax;
+		ret 8;
+	}
+}
+
+
+int __stdcall PrintMoveSpeed(unsigned char* addr, float* movespeed, unsigned char* AmovAddr)
+{
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
+	int retval = 0;
+	__asm mov retval, eax;
+	if (AmovAddr)
+	{
+		float MagicProtection = GetMagicProtectionForHero_by_abiladdr(AmovAddr);
+
+		tmpGlobalBuffAddr = buffer;
+
+		if (fabs(MagicProtection) < 0.00001f)
+			sprintf_s(buffer, sizeof(buffer), "%.1f", (*(float*)movespeed));
+		else if (MagicProtection > 30.0f)
+			sprintf_s(buffer, sizeof(buffer), "%.1f|n%s: |cFF00C800%.1f|r%%", (*(float*)movespeed), magicProtStr.c_str(), MagicProtection);
+		else if (MagicProtection <= 30.0f && MagicProtection > 0.0f)
+			sprintf_s(buffer, sizeof(buffer), "%.1f|n%s: %.1f%%", (*(float*)movespeed), magicProtStr.c_str(), MagicProtection);
+		else
+			sprintf_s(buffer, sizeof(buffer), "%.1f|n%s: |cFFD82005%.1f|r%%", (*(float*)movespeed), magicProtStr.c_str(), MagicProtection);
+		__asm
+		{
+			PUSH 0x200;
+			PUSH tmpGlobalBuffAddr;
+			PUSH addr;
+			CALL Storm_503;
+		}
+	}
+	return retval;
+}
+
+
+void __declspec(naked)  PrintMoveSpeedHook126a()
+{
+	__asm
+	{
+		mov saveeax, eax;
+		mov eax, esp;
+		add eax, 4;
+		push ebx;
+		push eax;
+		push esi;
+		call PrintMoveSpeed;
+		mov eax, saveeax;
+		ret 8;
+	}
+}
+
+void __declspec(naked)  PrintMoveSpeedHook127a()
+{
+	__asm
+	{
+		mov saveeax, eax;
+		mov eax, esp;
+		add eax, 4;
+		push edi;
+		push eax;
+		push ecx;
+		call PrintMoveSpeed;
+		mov eax, saveeax;
+		ret 8;
+	}
+}
+
+
+
+
+void __declspec(naked) HookHPBarColorHelper126a()
+{
+	__asm
+	{
+		lea edx, [esp + 0x10];
+		fstp st(0);
+		pushad;
+		pusha;
+		push edi;
+		push edx;
+		call SetColorForUnit;
+		popa;
+		popad;
+		jmp JumpBackAddr9;
+	}
+}
+
+
+int calladdr1 = 0;
+
+
+
+void __declspec(naked) HookHPBarColorHelper127a()
+{
+	__asm
+	{
+		lea eax, [ebp + 0x08];
+		pushad;
+		pusha;
+		push esi;
+		push eax;
+		call SetColorForUnit;
+		popa;
+		popad;
+		push eax;
+		call calladdr1;
+		jmp JumpBackAddr9;
+	}
+}
+
+
+
+void __declspec(naked) HookItemAddr126a()
+{
+	__asm
+	{
+		pushad;
+		pusha;
+		push eax;
+		call SaveStringsForPrintItem;
+		popa;
+		popad;
+		mov ebx, eax;
+		test ebx, ebx;
+		mov[esp + 0x1C], ebx;
+		jmp JumpBackAddr1;
+	}
+}
+
+
+void __declspec(naked) HookItemAddr127a()
+{
+	__asm
+	{
+		pushad;
+		pusha;
+		push eax;
+		call SaveStringsForPrintItem;
+		popa;
+		popad;
+		mov edi, eax;
+		mov[ebp - 0x4F8], edi;
+		jmp JumpBackAddr1;
+	}
+}
+
+
+
+void __declspec(naked) HookUnitAddr126a()
+{
+	__asm
+	{
+		push edx;
+		mov eax, ecx;
+		pushad;
+		pusha;
+		push eax;
+		call SaveStringForHP_MP;
+		popa;
+		popad;
+		mov ecx, eax;
+		pop edx;
+		push edx;
+		lea eax, [esp + 0x40];
+		jmp JumpBackAddr4;
+	}
+}
+
+
+void __declspec(naked) HookUnitAddr127a()
+{
+	__asm
+	{
+		mov ecx, [edi + 0x00000238];
+		mov eax, ecx;
+		pushad;
+		pusha;
+		push eax;
+		call SaveStringForHP_MP;
+		popa;
+		popad;
+		mov ecx, eax;
+		test ecx, ecx;
+		jmp JumpBackAddr4;
+	}
+}
+
+
+void __declspec(naked) HookPrint1_126a()
+{
+	tmpGlobalBuffAddr = itemstr1;
+	__asm
+	{
+		push tmpGlobalBuffAddr;
+		mov eax, GlobalTextBuffer;
+		push 0x2000;
+		jmp JumpBackAddr2;
+	}
+}
+
+void __declspec(naked) HookPrint2_126a()
+{
+	tmpGlobalBuffAddr = itemstr2;
+	__asm
+	{
+		push tmpGlobalBuffAddr;
+		mov edx, GlobalTextBuffer;
+		push 0x2000;
+		jmp JumpBackAddr3;
+	}
+}
+
+void __declspec(naked) HookPrint3_126a()
+{
+	tmpGlobalBuffAddr = unitstr1;
+	__asm
+	{
+		push tmpGlobalBuffAddr;
+		lea ecx, [esp + 0x0000100];
+		push 0x28;
+		jmp JumpBackAddr5;
+	}
+}
+
+void __declspec(naked) HookPrint4_126a()
+{
+	tmpGlobalBuffAddr = unitstr2;
+	__asm
+	{
+		push tmpGlobalBuffAddr;
+		lea eax, [esp + 0x0000128];
+		push 0x28;
+		jmp JumpBackAddr6;
+	}
+}
+
+void __declspec(naked) HookPrint1_127a()
+{
+	tmpGlobalBuffAddr = itemstr1;
+	__asm
+	{
+		push tmpGlobalBuffAddr;
+		lea eax, [ebp - 0x2F0];
+		push 0x200;
+		jmp JumpBackAddr2;
+	}
+}
+
+void __declspec(naked) HookPrint2_127a()
+{
+	tmpGlobalBuffAddr = itemstr2;
+	__asm
+	{
+		push tmpGlobalBuffAddr;
+		lea eax, [ebp - 0x2F0];
+		push 0x200;
+		jmp JumpBackAddr3;
+	}
+}
+
+void __declspec(naked) HookPrint3_127a()
+{
+	tmpGlobalBuffAddr = unitstr1;
+	__asm
+	{
+		push tmpGlobalBuffAddr;
+		lea eax, [ebp - 0x60];
+		push 0x28;
+		jmp JumpBackAddr5;
+	}
+}
+
+void __declspec(naked) HookPrint4_127a()
+{
+	tmpGlobalBuffAddr = unitstr2;
+	__asm
+	{
+		push tmpGlobalBuffAddr;
+		lea eax, [ebp - 0x38];
+		push 0x28;
+		jmp JumpBackAddr6;
+	}
+}
+
+void __stdcall SetCdForAddr(unsigned char* cd_addr)
+{
+	if (cd_addr > (unsigned char*)0xb0 /*eax */)
+	{
+		unsigned char* abiladdr = cd_addr - 0xb0;
+		unsigned char* pData = *(unsigned char**)(abiladdr + 0xDC);
+		if (pData)
+		{
+			float val1 = *(float*)(pData + 0x4);
+			int pData2 = *(int*)(pData + 0xC);
+			if (pData2 > 0)
+			{
+				float val2 = *(float*)(pData2 + 0x40);
+				float val3 = val1 - val2;
+				if (val3 > 100)
+					*(float*)(cd_addr + 4) = 1000.0f;
+				else
+					*(float*)(cd_addr + 4) = 100.0f;
+				return;
+			}
+
+		}
+
+	}
+
+	if (fabs(*(float*)(cd_addr + 4) - 1000.0f) < 0.00001f)
+		*(float*)(cd_addr + 4) = 100.0f;
+}
+
+void __declspec(naked) HookSetCD_1000s_126a()
+{
+	//int cd_addr;
+	__asm
+	{
+		//	mov cd_addr, eax;
+		pushad;
+		pusha;
+		push eax;
+		call SetCdForAddr;
+		popa;
+		popad;
+		push esi;
+		push eax;
+		mov eax, [ecx];
+		mov eax, [eax + 0x18];
+		lea edx, [esp + 0x08];
+		push edx;
+		jmp JumpBackAddr7;
+	}
+}
+
+//37ed3
+void __declspec(naked) HookSetCD_1000s_127a()
+{
+	//	int cd_addr;
+	__asm
+	{
+		//	mov cd_addr, eax;
+		pushad;
+		pusha;
+		push eax;
+		call SetCdForAddr;
+		popa;
+		popad;
+		lea ecx, [edx + 0xD0];
+		jmp JumpBackAddr7;
+	}
+}
+
+
+
+
+int __stdcall InitHpBar(int)
+{
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
+	unsigned char* pHPBARHELPER = GameDll + 0x364beb;
+	AddNewOffset_(pHPBARHELPER, *(int*)pHPBARHELPER, Feature_HPBAR);
+	AddNewOffset_(pHPBARHELPER + 3, *(int*)(pHPBARHELPER + 3), Feature_HPBAR);
+	PlantDetourJMP((unsigned char*)(pHPBARHELPER), (unsigned char*)HookHPBarColorHelper126a, 6);
+	PlantDetourJMP((unsigned char*)(JumpBackAddr9), (unsigned char*)(GameDll + 0x364bf1), 5);
+
+	return 0;
+}
+
+
+
 
 unsigned int __stdcall InitDotaHelper(int)
 {
@@ -2757,10 +2907,6 @@ unsigned int __stdcall InitDotaHelper(int)
 
 	InitializePacketHandler();
 
-	//InitializeDreamDotaAPI(true, GameDllModule, Warcraft3Window);
-
-	//InitDreamRawImages( );
-
 	//InitVoiceClientThread( );
 
 	InitHook();
@@ -2770,178 +2916,4 @@ unsigned int __stdcall InitDotaHelper(int)
 
 	return crc32;
 
-}
-
-int __stdcall UpdatePlayerCache(int)
-{
-	if (DEBUG_FULL)
-		std::cout << __func__ << std::endl;
-	for (int i = 0; i < 16; i++)
-	{
-		playercache[i] = _Player(i);
-	}
-
-	for (int i = 0; i < 16; i++)
-	{
-		player_real_cache[i] = _GetPlayerByNumber(i);
-	}
-
-	for (int i = 0; i < 16; i++)
-	{
-		player_observers[i] = _IsPlayerObserver(i);
-	}
-
-
-	player_local_id = _GetLocalPlayerId();
-
-	PlayerEnemyCache.clear();
-
-	return 0;
-}
-
-const char* GameDllName = "Game.dll";
-const char* StormDllName = "Storm.dll";
-
-int __stdcall SetCustomGameDllandStormDLL(const char* _GameDllName, const char* _StormDllName)
-{
-	if (DEBUG_FULL)
-		std::cout << __func__ << std::endl;
-	GameDllModule = GetModuleHandleA(_GameDllName);
-	if (!GameDllModule)
-		return false;
-
-	GameDll = (unsigned char*)GameDllModule;
-
-	StormDllModule = GetModuleHandleA(_StormDllName);
-
-
-
-	if (!StormDllModule)
-		return false;
-	StormDll = (unsigned char*)StormDllModule;
-	Storm::Init(StormDllModule);
-	return 0;
-}
-
-int __stdcall SetGameDllAddr(void* GameDllmdl)
-{
-	if (DEBUG_FULL)
-		std::cout << __func__ << std::endl;
-	GameDllModule = GameDllmdl;
-	GameDll = (unsigned char*)GameDllModule;
-
-	if (StormDllModule)
-		Storm::Init(StormDllModule);
-
-	return 0;
-}
-
-int TestModeActivated = false;
-
-int __stdcall SLOW_DEBUG_INIT(int)
-{
-	DEBUG_FULL = true;
-	FILE* f;
-
-	fopen_s(&f, "DotaAllstarsDataTrace.txt", "w");
-	if (f)
-	{
-		fclose(f);
-		f = NULL;
-		freopen_s(&f, "DotaAllstarsDataTrace.txt", "w", stdout);
-		f = NULL;
-	}
-	return 0;
-}
-
-int __declspec(naked) __fastcall GetEspValue(int val)
-{
-	__asm {
-		mov eax, esp;
-		ret;
-	}
-}
-
-int __stdcall GetEspValueStdCall(int)
-{
-	int value;
-	__asm mov value, esp;
-	return value;
-}
-
-int __stdcall DllMain(HINSTANCE Module, unsigned int reason, LPVOID)
-{
-	if (reason == DLL_PROCESS_ATTACH)
-	{
-		GetCurrentModule = Module;
-		GetGameDllThread = GetCurrentThreadId();
-		/*std::streambuf *coutbuf = std::cout.rdbuf( );
-		std::ofstream out( "debug.log" );
-		std::cout.rdbuf( out.rdbuf( ) );
-*/
-
-/*	FILE * f;
-
-	fopen_s( &f, "DotaAllstarsDataLog.txt", "w" );
-	if ( f )
-	{
-		fclose( f );
-		f = NULL;
-		freopen_s( &f, "DotaAllstarsDataLog.txt", "w", stdout );
-		f = NULL;
-	}
-
-	fopen_s( &f, "DotaAllstarsErrorLog.txt", "w" );
-	if ( f )
-	{
-		fclose( f );
-		f = NULL;
-		freopen_s( &f, "DotaAllstarsErrorLog.txt", "w", stderr );
-	}*/
-
-	//cerr << "Dota Helper Error Log out:" << endl;
-	//cout << "Dota Helper Debug Log out" << endl;
-	// 
-		DisableThreadLibraryCalls(Module);
-		MH_Initialize();
-
-
-		GameDllModule = GetModuleHandleA(GameDllName);
-		GameDll = (unsigned char*)GameDllModule;
-		StormDllModule = GetModuleHandleA(StormDllName);
-		StormDll = (unsigned char*)StormDllModule;
-
-		_W3XTlsIndex = 0xAB7BF4 + GameDll;
-
-		Warcraft3_Process = GetCurrentProcess();
-
-		if (StormDllModule)
-			Storm::Init(StormDllModule);
-
-		// NEXT LINES ONLY FOR TEST !!!
-		// 
-		//ForceGameStart = true;
-		// 	SetTlsForMe();
-		// Storm::Init(StormDllModule);
-		//TestModeActivated = true;
-		//InitDotaHelper(0x26a);
-		//EnableFeatures(0xFFFFFFFF);
-		//MainFuncWork = true;
-		//EnableErrorHandler(0);
-	}
-	else if (reason == DLL_PROCESS_DETACH)
-	{
-		if (IsGameDllAndStormFound() && !TICK_HOOK_ENABLED)
-		{
-			DisableAllHooks(0);
-			MH_DisableHook(MH_ALL_HOOKS);
-			MH_Uninitialize();
-		}
-		else
-		{
-			TerminateProcess(GetCurrentProcess(), 0);
-			ExitProcess(0);
-		}
-	}
-	return true;
 }

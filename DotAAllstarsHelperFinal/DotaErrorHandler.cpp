@@ -270,9 +270,15 @@ int __stdcall TraceEsp_Print(int)
 unsigned long __stdcall EXIT_CURRENT_PROCESS(LPVOID)
 {
 	Sleep(3000);
+	try
+	{
+		TerminateProcess(GetCurrentProcess(), 0);
+		ExitProcess(0);
+	}
+	catch (...)
+	{
 
-	TerminateProcess(GetCurrentProcess(), 0);
-	ExitProcess(0);
+	}
 
 	return 0;
 }
@@ -431,10 +437,10 @@ public:
 protected:
 	virtual void OnDbgHelpErr(LPCSTR szFuncName, DWORD gle, DWORD64 addr)
 	{
-
+		(void)(szFuncName); (void)(gle); (void)(addr);
 	}
 	virtual void OnOutput(LPCSTR szText) {
-
+		(void)(szText);
 	}
 	virtual void OnLoadModule(LPCSTR    img,
                                LPCSTR    mod,
@@ -445,6 +451,7 @@ protected:
                                LPCSTR    pdbName,
                                ULONGLONG fileVersion)
 	{
+		(void)(fileVersion); (void)(pdbName); (void)(fileVersion); (void)(result); (void)(symType);
 		if (!modulesStartPrint)
 		{
 			modulesStartPrint = true;
@@ -456,6 +463,7 @@ protected:
 	}
 	virtual void OnCallstackEntry(CallstackEntryType eType, CallstackEntry& entry)
 	{
+		(void)(eType);
 		if (callStackEntries == 0)
 		{
 			if (debug_context)

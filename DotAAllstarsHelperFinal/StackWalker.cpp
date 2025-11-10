@@ -839,7 +839,7 @@ public:
     pModuleInfo->SizeOfStruct = sizeof(IMAGEHLP_MODULE64_V3);
     void* pData = malloc(
         4096); // reserve enough memory, so the bug in v6.3.5.1 does not lead to memory-overwrites...
-    if (pData <= NULL || !pModuleInfo)
+    if ((int)pData <= NULL || !pModuleInfo)
     {
       SetLastError(ERROR_NOT_ENOUGH_MEMORY);
       return FALSE;
@@ -1219,7 +1219,7 @@ BOOL StackWalker::ShowCallstack(HANDLE hThread, const CONTEXT* context, PReadPro
   CallstackEntry                            csEntry;
   StackWalkerInternal::IMAGEHLP_MODULE64_V3 Module;
   IMAGEHLP_LINE64                           Line;
-  int                                       frameNum;
+  int                                       frameNum = 0;
   int                                       curRecursionCount = 0;
 
   if (m_modulesLoaded == FALSE)
@@ -1241,7 +1241,7 @@ BOOL StackWalker::ShowCallstack(HANDLE hThread, const CONTEXT* context, PReadPro
   int attempt = 1;
   bool swFailed = false;
   bool endlessCallstack = false;
-  STACKFRAME64 s; // in/out stackframe
+  STACKFRAME64 s{}; // in/out stackframe
 
   do
   {
@@ -1286,7 +1286,7 @@ BOOL StackWalker::ShowCallstack(HANDLE hThread, const CONTEXT* context, PReadPro
           monitorRequestCond.wait(lock, [] {
             // Stop waiting when monitoring has started
             // or when this thread did not get enough CPU cycles and the MonitorThread already finished
-            const bool ts = threadToSuspend == nullptr;
+          //  const bool ts = threadToSuspend == nullptr;
             return threadSuspended == true || threadToSuspend == nullptr;
             });
           if (threadToSuspend == nullptr)

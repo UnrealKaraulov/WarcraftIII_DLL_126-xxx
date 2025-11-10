@@ -46,6 +46,7 @@ CWar3Frame* __stdcall CFrame_GetTriggerCFrame(int)
 
 int DotaHelperFrameCallback(CWar3Frame* frame, unsigned char* FrameAddr, unsigned int EventId)
 {
+	(void)(FrameAddr);
 	LastEventId = EventId;
 	latestcframe = frame;
 	//MessageBoxA( 0, frame->FrameName.c_str( ), frame->FrameName.c_str( ), 0 );
@@ -308,6 +309,7 @@ void __stdcall CFrame_Destroy(CWar3Frame* frame)
 // skipothercallback can be true or false (possibly useless)
 void __stdcall CFrame_AddCallback(CWar3Frame* frame, const char* callbackfuncname, unsigned int callbackeventid, int skipothercallback)
 {
+	(void)(skipothercallback);
 	if (!frame)
 		return;
 	CFrameBuffer tmpFrameBuf = CFrameBuffer();
@@ -324,11 +326,13 @@ void __stdcall CFrame_AddCallback(CWar3Frame* frame, const char* callbackfuncnam
 // OOPS ... callack ... :D
 void __stdcall CFrame_AddCallack(CWar3Frame* frame, const char* callbackfuncname, unsigned int callbackeventid, int skipothercallback)
 {
+	(void)(skipothercallback);
 	CFrame_AddCallback(frame, callbackfuncname, callbackeventid, skipothercallback);
 }
 
 void __stdcall CFrame_AddCallackPacket(CWar3Frame* frame, int FrameCode, unsigned int callbackeventid, int skipothercallback)
 {
+	(void)(skipothercallback);
 	if (!frame)
 		return;
 	CFrameBuffer tmpFrameBuf = CFrameBuffer();
@@ -361,6 +365,8 @@ void __stdcall CFrame_SetScale(CWar3Frame* frame, CFrameBackdropType backtype, i
 {
 	if (!frame)
 		return;
+
+	(void)(FillToFrame);
 	//frame->FillToParentFrame( backtype, FillToFrame );
 	frame->SetFrameScale(backtype, scalex, scaley);
 }

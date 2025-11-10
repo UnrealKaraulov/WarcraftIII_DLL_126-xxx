@@ -275,3 +275,4 @@ __pycache__/
 *.log
 /Signing
 MinHook/libMinHook.x86.lib
+/DotAAllstarsHelperFinal/Release_Win7

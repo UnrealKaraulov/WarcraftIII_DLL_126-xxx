@@ -176,7 +176,7 @@ int CallbackTrigger = 0;
 
 size_t size_of_sended_packet = 0;
 
-void __stdcall Packet_Clear(int unused)
+void __stdcall Packet_Clear(int)
 {
 	BytesToSend.clear();
 	BytesToRecv.clear();
@@ -220,7 +220,7 @@ void __stdcall Packet_PushInteger(unsigned int IntegerData)
 	*(unsigned int*)&BytesToSend[2] += 4;
 }
 
-int __stdcall Packet_PopInteger(int unused)
+int __stdcall Packet_PopInteger(int)
 {
 
 	if (BytesToRecv.size() >= 4)
@@ -245,7 +245,7 @@ void __stdcall Packet_PushReal(float RealData)
 	*(unsigned int*)&BytesToSend[2] += 4;
 }
 
-int __stdcall Packet_PopReal(int unused)
+int __stdcall Packet_PopReal(int)
 {
 	if (BytesToRecv.size() >= 4)
 	{
@@ -256,20 +256,20 @@ int __stdcall Packet_PopReal(int unused)
 	return 0;
 }
 
-void __stdcall Packet_Send(int unused)
+void __stdcall Packet_Send(int)
 {
 	SendPacket(&BytesToSend[0], BytesToSend.size());
 	BytesToSend.clear();
 }
 
-void __stdcall Packet_Send_Ex(int unused)
+void __stdcall Packet_Send_Ex(int)
 {
 	SendPacket(&BytesToSend[0], BytesToSend.size(), false);
 	BytesToSend.clear();
 }
 
 int PacketTriggerPlayerId = 0;
-int __stdcall Packet_GetTriggerPlayerId(int unused)
+int __stdcall Packet_GetTriggerPlayerId(int)
 {
 	return PacketTriggerPlayerId;
 }

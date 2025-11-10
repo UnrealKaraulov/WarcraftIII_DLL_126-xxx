@@ -11,10 +11,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BlpReadWrite.cpp">
+    <ClCompile Include="Crc32Dynamic.cpp">
       <Filter>Src</Filter>
     </ClCompile>
-    <ClCompile Include="Crc32Dynamic.cpp">
+    <ClCompile Include="BlpReadWrite.cpp">
       <Filter>Src</Filter>
     </ClCompile>
     <ClCompile Include="DotaAllstarsHelper.cpp">
@@ -188,6 +188,9 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="StackWalker.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="MdxPatcher.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

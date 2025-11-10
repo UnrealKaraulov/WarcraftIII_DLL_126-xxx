@@ -147,7 +147,7 @@ struct COLOR3
 			colorstr[9] = text[3];
 			colorstr[10] = '\0';
 
-			// Ñìûñëà îò ïðîçðà÷íîãî òåêñòà íåò òàê ÷òî ñ÷èòàåì ÷òî FF ýòî 0 ïðîçðà÷íîñòü
+			// Ð¡Ð¼Ñ‹ÑÐ»Ð° Ð¾Ñ‚ Ð¿Ñ€Ð¾Ð·Ñ€Ð°Ñ‡Ð½Ð¾Ð³Ð¾ Ñ‚ÐµÐºÑÑ‚Ð° Ð½ÐµÑ‚ Ñ‚Ð°Ðº Ñ‡Ñ‚Ð¾ ÑÑ‡Ð¸Ñ‚Ð°ÐµÐ¼ Ñ‡Ñ‚Ð¾ FF ÑÑ‚Ð¾ 0 Ð¿Ñ€Ð¾Ð·Ñ€Ð°Ñ‡Ð½Ð¾ÑÑ‚ÑŒ
 			this->FromUINT(strtoul(colorstr, NULL, 0));
 		}
 		else
@@ -288,7 +288,7 @@ struct COLOR4
 			colorstr[9] = text[3];
 			colorstr[10] = '\0';
 
-			// Ñìûñëà îò ïðîçðà÷íîãî òåêñòà íåò òàê ÷òî ñ÷èòàåì ÷òî FF ýòî 0 ïðîçðà÷íîñòü
+			// Ð¡Ð¼Ñ‹ÑÐ»Ð° Ð¾Ñ‚ Ð¿Ñ€Ð¾Ð·Ñ€Ð°Ñ‡Ð½Ð¾Ð³Ð¾ Ñ‚ÐµÐºÑÑ‚Ð° Ð½ÐµÑ‚ Ñ‚Ð°Ðº Ñ‡Ñ‚Ð¾ ÑÑ‡Ð¸Ñ‚Ð°ÐµÐ¼ Ñ‡Ñ‚Ð¾ FF ÑÑ‚Ð¾ 0 Ð¿Ñ€Ð¾Ð·Ñ€Ð°Ñ‡Ð½Ð¾ÑÑ‚ÑŒ
 			this->FromUINT(strtoul(colorstr, NULL, 0));
 		}
 		else
@@ -372,12 +372,12 @@ struct COLOR4
 
 typedef COLOR4 palette[256];
 unsigned char* Scale_WithoutResize(unsigned char* pixels, size_t width, size_t height, size_t newwidth, size_t newheight, size_t bytes_per_pixel);
-unsigned long Blp2Raw(StormBuffer input, StormBuffer& output, int& width, int& height, int& bpp, int& mipmaps, int& alphaflag, int& compresstype, int& pictype, char const* filename);
-int TGA2Raw(StormBuffer input, StormBuffer& output, int& width, int& height, int& bpp, const char* filename);
-int BMP2Raw(StormBuffer input, StormBuffer& output, int& width, int& height, int& bpp, const char* filename);
-int JPG2Raw(StormBuffer input, StormBuffer& output, int width, int height, int& bpp, const char* filename);
-int CreatePalettedBLP(StormBuffer rawData, StormBuffer& output, int colors, char const* filename, int width, int height, int bytespp, int  alphaflag, int& maxmipmaps);
-int RAW2Tga(StormBuffer input, StormBuffer& output, int width, int height, int bpp, const char* filename);
+unsigned long Blp2Raw(StormBuffer input, StormBuffer& output, int& width, int& height, int& bpp, int& mipmaps, int& alphaflag, int& compresstype, int& pictype);
+int TGA2Raw(StormBuffer input, StormBuffer& output, int& width, int& height, int& bpp);
+int BMP2Raw(StormBuffer input, StormBuffer& output, int& width, int& height, int& bpp);
+int JPG2Raw(StormBuffer input, StormBuffer& output, int width, int height, int& bpp);
+int CreatePalettedBLP(StormBuffer rawData, StormBuffer& output, int colors, char const* filename, int width, int height, int bytespp, int& maxmipmaps);
+int RAW2Tga(StormBuffer input, StormBuffer& output, int width, int height, int bpp);
 int CreateJpgBLP(StormBuffer rawData, StormBuffer& output, int quality, char const* filename, int width, int height, int bytespp, int  alphaflag, int& maxmipmaps);
 void textureInvertRBInPlace(COLOR4* bufsrc, unsigned long srcsize);
 void ScaleImage(unsigned char* rawData, int oldW, int oldH, int newW, int newH, int bytespp, StormBuffer& target);

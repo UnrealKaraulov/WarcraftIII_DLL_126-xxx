@@ -1,3 +1,5 @@
+#pragma optimize("", off)
+
 #include "Main.h"
 #include "Storm.h"
 
@@ -129,7 +131,7 @@ int __stdcall InMPBarWhiteList(unsigned char* unitaddr)
 int protect_integer = 0;
 int protect_integer2 = -1;
 
-int __stdcall GetMPBarUnlockNumber(int seed)
+int __stdcall GetMPBarUnlockNumber(int /*seed*/)
 {
 	//srand(seed);
 	protect_integer = rand() ^ rand();

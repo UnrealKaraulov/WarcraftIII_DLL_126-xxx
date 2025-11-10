@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 typedef signed int(__fastcall* IsDrawSkillPanel)(void* UnitAddr, int addr1);
 typedef signed int(__thiscall* DrawSkillPanel)(void* UnitAddr, int OID);
 typedef signed int(__fastcall* IsDrawSkillPanelOverlay)(void* UnitAddr, int addr1);

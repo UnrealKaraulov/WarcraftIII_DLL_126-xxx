@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 
 #include <stdint.h>
@@ -213,10 +213,6 @@ extern float hpbarscaleTowerY[20];
 extern std::vector<CustomHPBar> CustomHPBarList[20];
 int __stdcall SetColorForUnit(unsigned int* coloraddr, BarStruct* BarStruct);
 
-void  __stdcall AddNewLineToJassLog(const char* s);
-void __stdcall  AddNewLineToDotaChatLog(const char* s);
-void __stdcall  AddNewLineToDotaHelperLog(const char* s, int line);//( const char * s, int line );
-void __stdcall  AddNewLineToJassNativesLog(const char* s);
 void __stdcall EnableErrorHandler(int);
 void __stdcall DisableErrorHandler(int);
 
@@ -274,15 +270,6 @@ extern float* GetWindowXoffset;
 extern float* GetWindowYoffset;
 extern unsigned char* GameFrameAtMouseStructOffset;
 extern int pTriggerExecute;
-
-extern std::vector<ModelCollisionFixStruct> ModelCollisionFixList;
-extern std::vector<ModelTextureFixStruct> ModelTextureFixList;
-extern std::vector<ModelPatchStruct> ModelPatchList;
-extern std::vector<ModelRemoveTagStruct> ModelRemoveTagList;
-extern std::vector<ModelSequenceReSpeedStruct> ModelSequenceReSpeedList;
-extern std::vector<ModelSequenceValueStruct> ModelSequenceValueList;
-extern std::vector<ModelScaleStruct> ModelScaleList;
-
 extern std::vector<ICONMDLCACHE> ICONMDLCACHELIST;
 
 extern std::vector<FileRedirectStruct> FileRedirectList;
@@ -313,7 +300,7 @@ extern p_GetTypeInfo GetTypeInfo;
 extern std::vector<FakeFileStruct> FakeFileList;
 
 std::vector<std::string> get_file_list(const fs::path& path, bool dotolower = false);
-std::string GetFileContent(std::string filename);
+std::string GetFileContent(const std::string & filename);
 
 int __stdcall CheckWriteAccess(int a1 = 0);
 void __stdcall EnableLocalFiles(int enable);
@@ -474,8 +461,8 @@ void __stdcall Packet_Initialize(int TriggerHandle);
 In the local game or on the Internet there is a limit on sending data size, so the voice is recorded no more than one second! It is necessary to find and destroy the sending limit.
 */
 
-void UninitializeVoiceClient( );
-void InitVoiceClientThread( );
+//void UninitializeVoiceClient( );
+//void InitVoiceClientThread( );
 //void AddNewPaTestData( std::vector<unsigned char> _samples, int playerid, int packetsize, bool compressed );
 
 

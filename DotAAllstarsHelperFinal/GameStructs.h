@@ -82,9 +82,9 @@ namespace war3 {
 
 	struct CCamera {
 		void** vtable;
-		//0x3C	´óµØÍ¼x
-		//0x40	´óµØÍ¼y
-		//0x44	´óµØÍ¼z ?
+		//0x3C	å¤§åœ°å›¾x
+		//0x40	å¤§åœ°å›¾y
+		//0x44	å¤§åœ°å›¾z ?
 		//0x8C	distance
 	};//sizeof = 0x178
 
@@ -96,7 +96,7 @@ namespace war3 {
 
 	struct SimpleTopButtonList {
 		void* firstButton;
-		unsigned int					firstButtonType;//ÉĞÎ´¸ãÃ÷°×
+		unsigned int					firstButtonType;//å°šæœªææ˜ç™½
 		//...
 	};
 
@@ -114,9 +114,9 @@ namespace war3 {
 	struct CChatEditBar {
 		void** vtable;			//0x0
 		unsigned char						unk_4[0xAC];	//0x4
-		unsigned int					flags;			//0xB0 ¹Ø±ÕÊ±101101b ´ò¿ªÊ±101100b
+		unsigned int					flags;			//0xB0 å…³é—­æ—¶101101b æ‰“å¼€æ—¶101100b
 		unsigned char						unk_B4[0x128];	//0xB4
-		unsigned int					visible;		//0x1DC	¹Ø±ÕÊ±0 ´ò¿ªÊ±1
+		unsigned int					visible;		//0x1DC	å…³é—­æ—¶0 æ‰“å¼€æ—¶1
 		CChatEditBox* chatEditBox;	//0x1E0
 		//...
 	};
@@ -130,11 +130,11 @@ namespace war3 {
 
 	struct CFramePointRelative {
 		void** vtable;
-		CSimpleConsole* simpleConsole;	//0x04 ÕâÀï¿ÉÒÔÊÇÈÎºÎFrame
+		CSimpleConsole* simpleConsole;	//0x04 è¿™é‡Œå¯ä»¥æ˜¯ä»»ä½•Frame
 		unsigned int					unk_8;			//0x08
 		float						relativeX;		//0x0C
 		float						relativeY;		//0x10
-	};//sizeof = 0x504 (Í¨¹ıDataAllocator_6F4C1AB0µÃÖª)
+	};//sizeof = 0x504 (é€šè¿‡DataAllocator_6F4C1AB0å¾—çŸ¥)
 
 	struct CFramePointAbsolute {
 		void** vtable;
@@ -142,7 +142,7 @@ namespace war3 {
 		float						absuluteY;		//0x8
 	};//sizeof >= 0x10
 
-	//Ò»¸öÈ«¾Ö¶ÔÏóÖ¸ÕëGLOBAL_SIMPLETOP
+	//ä¸€ä¸ªå…¨å±€å¯¹è±¡æŒ‡é’ˆGLOBAL_SIMPLETOP
 	struct CSimpleTop {
 		void** vtable;
 		unsigned char unk_4[0x8A8];
@@ -178,8 +178,8 @@ namespace war3 {
 	struct CPreselectUI {
 		void** vtable;						//=0x9409E0
 		unsigned int unk_4;//always 0 ?
-		CUnit* unit;						//Ö¸ÏòËùÊôµ¥Î»
-		CStatBar* statBarHP;					//ÑªÌõ
+		CUnit* unit;						//æŒ‡å‘æ‰€å±å•ä½
+		CStatBar* statBarHP;					//è¡€æ¡
 	};//sizeof = 0x10
 
 	struct CLayoutFrame {
@@ -198,16 +198,16 @@ namespace war3 {
 		unsigned int					unk_30;				//0x30	=0					LayoutFrame
 		unsigned int					unk_34;				//0x34	=0					LayoutFrame
 		unsigned int					unk_38;				//0x38	=0					LayoutFrame
-		unsigned int					unk_3C;				//0x3C	=this_3C			LayoutFrame	Ö¸Ïò×Ô¼ºµÄÖ¸Õë
-		FRAMENODE* unk_40;				//0x40	=~this_3C			LayoutFrame	²Î¿¼6F605C70
+		unsigned int					unk_3C;				//0x3C	=this_3C			LayoutFrame	æŒ‡å‘è‡ªå·±çš„æŒ‡é’ˆ
+		FRAMENODE* unk_40;				//0x40	=~this_3C			LayoutFrame	å‚è€ƒ6F605C70
 		float						borderB;			//0x44	=0.0				LayoutFrame
 		float						borderL;			//0x48	=0.0				LayoutFrame
 		float						borderU;			//0x4C	=0.0				LayoutFrame	
 		float						borderR;			//0x50	=0.0				LayoutFrame
-		unsigned int					unk_54;				//0x54						LayoutFrame ×ø±ê¸Ä±äÊ±¸Ä±ä
-		float						width;				//0x58	=0.0				LayoutFrame	ÄÚÈİ¸Ä±äÊ±¸Ä±ä
-		float						height;				//0x5C	=0.0				LayoutFrame ÄÚÈİ¸Ä±äÊ±¸Ä±ä
-		float						scale;				//0x60	=0.0				LayoutFrame ÕûÌåËõ·Å±ÈÀı
+		unsigned int					unk_54;				//0x54						LayoutFrame åæ ‡æ”¹å˜æ—¶æ”¹å˜
+		float						width;				//0x58	=0.0				LayoutFrame	å†…å®¹æ”¹å˜æ—¶æ”¹å˜
+		float						height;				//0x5C	=0.0				LayoutFrame å†…å®¹æ”¹å˜æ—¶æ”¹å˜
+		float						scale;				//0x60	=0.0				LayoutFrame æ•´ä½“ç¼©æ”¾æ¯”ä¾‹
 		void* unk_64;				//0x64						LayoutFrame	SimpleFrame void (__thiscall *v4)(_DWORD); 
 	};//sizeof = 0x68
 
@@ -233,13 +233,13 @@ namespace war3 {
 		unsigned int					unk_70;				//0x70	=0					SimpleFrame
 		unsigned int					unk_74;				//0x74	=0					SimpleFrame
 		unsigned int					unk_78;				//0x78	=0					SimpleFrame
-		unsigned int					unk_7C;				//0x7C	=0					SimpleFrame	Storm#403 É¾³ı
+		unsigned int					unk_7C;				//0x7C	=0					SimpleFrame	Storm#403 åˆ é™¤
 		unsigned int					unk_80;				//0x80	=0					SimpleFrame
-		unsigned int					unk_84;				//0x84  =0					CToolTipWar3 ³õÊ¼»¯ÔÚ6F609980
-		unsigned int					unk_88;				//0x88	=0xFF000000			SimpleFrame Ö»³õÊ¼»¯ÁËµÚÒ»¸öBYTE£¬ÊÇBYTE±äÁ¿£¿
+		unsigned int					unk_84;				//0x84  =0					CToolTipWar3 åˆå§‹åŒ–åœ¨6F609980
+		unsigned int					unk_88;				//0x88	=0xFF000000			SimpleFrame åªåˆå§‹åŒ–äº†ç¬¬ä¸€ä¸ªBYTEï¼Œæ˜¯BYTEå˜é‡ï¼Ÿ
 		unsigned int					unk_8C;				//0x8C	=0					SimpleFrame	flags?
-		unsigned int					visible;			//0x90	=0,1				SimpleFrame	ToolTipÊÇ0	SimpleFrameÊÇ1 ÏÔÊ¾Ê±ÊÇ1£¬Òş²ØÊ±ÊÇ0
-		unsigned int					needUpdate;			//0x94	=1 bool?			SimpleFrame	ÔÚ6F609AD0±»Ê¹ÓÃÔËĞĞÍê¹é0	   ÏÔÊ¾Ê±ÊÇ1£¬Òş²ØÊ±ÊÇ0
+		unsigned int					visible;			//0x90	=0,1				SimpleFrame	ToolTipæ˜¯0	SimpleFrameæ˜¯1 æ˜¾ç¤ºæ—¶æ˜¯1ï¼Œéšè—æ—¶æ˜¯0
+		unsigned int					needUpdate;			//0x94	=1 bool?			SimpleFrame	åœ¨6F609AD0è¢«ä½¿ç”¨è¿è¡Œå®Œå½’0	   æ˜¾ç¤ºæ—¶æ˜¯1ï¼Œéšè—æ—¶æ˜¯0
 		float						unk_98;				//0x98	=0.0				SimpleFrame
 		float						unk_9C;				//0x9C	=0.0				SimpleFrame
 		float						unk_A0;				//0xA0	=0.0				SimpleFrame
@@ -255,11 +255,11 @@ namespace war3 {
 		unsigned int					unk_C8;				//0xC8	=0					SimpleFrame
 		SimpleFrameTextureSettings* textureSettings;	//0xCC	=0					SimpleFrame, CToolTipWar3
 		unsigned int					unk_D0;				//0xD0	=0					SimpleFrame
-		unsigned int					unk_D4;				//0xD4	=this_D4			SimpleFrame Ö¸Ïò×Ô¼ºµÄÖ¸Õë
+		unsigned int					unk_D4;				//0xD4	=this_D4			SimpleFrame æŒ‡å‘è‡ªå·±çš„æŒ‡é’ˆ
 		unsigned int					unk_D8;				//0xD8	=~this_D4			SimpleFrame
-		SimpleFrame_DC				unk_DC;				//0xDC						SimpleFrame ³õÊ¼»¯¹ı³Ì¼û 6F609D14
+		SimpleFrame_DC				unk_DC;				//0xDC						SimpleFrame åˆå§‹åŒ–è¿‡ç¨‹è§ 6F609D14
 		unsigned int					unk_118;			//0x118	=0					SimpleFrame
-		unsigned int					unk_11C;			//0x11C	=this_11C			SimpleFrame Ö¸Ïò×Ô¼ºµÄÖ¸Õë
+		unsigned int					unk_11C;			//0x11C	=this_11C			SimpleFrame æŒ‡å‘è‡ªå·±çš„æŒ‡é’ˆ
 		unsigned int					unk_120;			//0x120	=~this_11C			SimpleFrame
 	};//sizeof = 0x124
 
@@ -277,7 +277,7 @@ namespace war3 {
 		unsigned int					mouseOutEventId;	//0x134
 		unsigned int					currentState;		//0x138
 		unsigned int					enabled;			//0x13C
-		unsigned int					mouseButtonFlags;	//0x140	=0x10	Ö¸¶¨Ê²Ã´Êó±ê¼ü¿ÉÒÔ´¥·¢°´Å¥
+		unsigned int					mouseButtonFlags;	//0x140	=0x10	æŒ‡å®šä»€ä¹ˆé¼ æ ‡é”®å¯ä»¥è§¦å‘æŒ‰é’®
 		unsigned int					unk_144;			//0x144
 		unsigned int					unk_148;			//0x148
 		unsigned int					unk_14C;			//0x14C
@@ -297,7 +297,7 @@ namespace war3 {
 
 	struct CCommandButtonData {
 		void** vtable;			//0x0
-		unsigned int	abilityId;		//0x4 ÎïÆ·°´Å¥ºÍ»ù±¾¼¼ÄÜÕâÀïÊÇ0
+		unsigned int	abilityId;		//0x4 ç‰©å“æŒ‰é’®å’ŒåŸºæœ¬æŠ€èƒ½è¿™é‡Œæ˜¯0
 		unsigned int	orderId_8;		//0x8
 		unsigned int	orderId_C;		//0xC
 		unsigned int	flag10;			//0x10
@@ -306,33 +306,33 @@ namespace war3 {
 		HashGroup	agentHash;		//0x1C
 		unsigned int	unk24;			//0x24
 		unsigned int	isSpell;		//0x28
-		char		title[0x100];	//0x2C ³¤¶ÈÕıÈ·£¿
+		char		title[0x100];	//0x2C é•¿åº¦æ­£ç¡®ï¼Ÿ
 		unsigned char		unk12C[0x58];	//0x12C
 		unsigned int	unk184;			//0x184
 		unsigned int	unk188;			//0x188
-		char		tooltip[0x400];	//0x18C ³¤¶ÈÕıÈ·£¿
+		char		tooltip[0x400];	//0x18C é•¿åº¦æ­£ç¡®ï¼Ÿ
 		unsigned char		unk58C[0x8];	//0x58C
 		unsigned int	manaCost;		//0x594
 		unsigned int	unk598;			//0x598
 		unsigned int	displayOrder;	//0x59C ?
-		unsigned int	unk5A0;			//0x5A0 Ó¢ĞÛ¼¼ÄÜÊÇ2 ÎïÆ·ÊÇ0
-		unsigned int	unk5A4;			//0x5A4 Ó¢ĞÛ¼¼ÄÜÊÇ1 ÎïÆ·ÊÇ0
-		unsigned int	unk5A8;			//0x5A8 Ó¢ĞÛ¼¼ÄÜÊÇ1 ÎïÆ·ÊÇ0
+		unsigned int	unk5A0;			//0x5A0 è‹±é›„æŠ€èƒ½æ˜¯2 ç‰©å“æ˜¯0
+		unsigned int	unk5A4;			//0x5A4 è‹±é›„æŠ€èƒ½æ˜¯1 ç‰©å“æ˜¯0
+		unsigned int	unk5A8;			//0x5A8 è‹±é›„æŠ€èƒ½æ˜¯1 ç‰©å“æ˜¯0
 		unsigned int	hotkey;			//0x5AC
 		unsigned int	unk5B0;			//0x5B0
 		unsigned int	unk5B4;			//0x5B4
-		unsigned int	unk5B8;			//0x5B8 Ó¢ĞÛ¼¼ÄÜÊÇ1 ÎïÆ·ÊÇ0
-		unsigned int	unk5BC;			//0x5BC Ó¢ĞÛ¼¼ÄÜÊÇ1 ÎïÆ·ÊÇ0
-		unsigned int	unk5C0;			//0x5C0 Ó¢ĞÛ¼¼ÄÜÊÇ0 ÎïÆ·ÊÇ1
-		unsigned int	unk5C4;			//0x5C4 Ó¢ĞÛ¼¼ÄÜÊÇ0 ÎïÆ·ÊÇ1
-		char		iconPath[0x100];//0x5C8 ³¤¶ÈÕıÈ·£¿
+		unsigned int	unk5B8;			//0x5B8 è‹±é›„æŠ€èƒ½æ˜¯1 ç‰©å“æ˜¯0
+		unsigned int	unk5BC;			//0x5BC è‹±é›„æŠ€èƒ½æ˜¯1 ç‰©å“æ˜¯0
+		unsigned int	unk5C0;			//0x5C0 è‹±é›„æŠ€èƒ½æ˜¯0 ç‰©å“æ˜¯1
+		unsigned int	unk5C4;			//0x5C4 è‹±é›„æŠ€èƒ½æ˜¯0 ç‰©å“æ˜¯1
+		char		iconPath[0x100];//0x5C8 é•¿åº¦æ­£ç¡®ï¼Ÿ
 		unsigned int	unk6C8;			//0x6C8
 		unsigned int	unk6CC;			//0x6CC
 		unsigned int	unk6D0;			//0x6D0
-		unsigned char* ability;		//0x6D4 »ù±¾¼¼ÄÜ(ÀıÈçmove)ÕâÀïÊÇNULL
+		unsigned char* ability;		//0x6D4 åŸºæœ¬æŠ€èƒ½(ä¾‹å¦‚move)è¿™é‡Œæ˜¯NULL
 	};//sizeof = 0x6D8
 
-	//ĞèÒª¸ãÇå³şCShrinkingButton (¿ÉÄÜÖ»ÓĞĞéº¯Êı)
+	//éœ€è¦ææ¸…æ¥šCShrinkingButton (å¯èƒ½åªæœ‰è™šå‡½æ•°)
 	struct CCommandButton {
 		CSimpleButton				baseSimpleButton;	//0x0
 		unsigned char unk168[0x28];
@@ -340,7 +340,7 @@ namespace war3 {
 		unsigned char unk194[0x2C];
 	};//sizeof = 0x1C0
 
-	struct CHeroBarButton {//FIXME Í¬Ê±Ò²ÊÇÏĞÅ©Ãñ°´¼ü? ÑĞ¾¿peonbar
+	struct CHeroBarButton {//FIXME åŒæ—¶ä¹Ÿæ˜¯é—²å†œæ°‘æŒ‰é”®? ç ”ç©¶peonbar
 		CCommandButton				baseCommandButton;	//0x0
 		unsigned int unk1C0;
 		CUnit* hero;				//0x1C4
@@ -348,7 +348,7 @@ namespace war3 {
 		unsigned char unk1CC[0x44];
 	};//sizeof = 0x210
 
-	struct CResourceCover {//TODO Ñ°ÕÒÓëResourceBar¹ØÏµ
+	struct CResourceCover {//TODO å¯»æ‰¾ä¸ResourceBarå…³ç³»
 		void** vtable;						// = 0x93BC6C
 		//...
 	};
@@ -390,7 +390,7 @@ namespace war3 {
 		CSimpleTexture* texture;			//0x144
 		unsigned int unk_148;
 		unsigned int unk_14C;
-		float unk_150;									//ÒÉËÆÑªÌõÆ«ÒÆ³Ì¶È?
+		float unk_150;									//ç–‘ä¼¼è¡€æ¡åç§»ç¨‹åº¦?
 		CUnit* owner;				//0x154
 	};//sizeof = 0x158
 
@@ -433,8 +433,8 @@ namespace war3 {
 		CSimpleTexture* textureRight;			//0x8
 		CSimpleTexture* textureTop;				//0xC
 		CSimpleTexture* textureBottom;			//0x10
-		RCString			RCS_bgTexturePath;		//0x14	ÆäÊµÊÇRCStaticString£¬Ö»ÊÇvtable²»Í¬	±³¾°×ÊÔ´Â·¾¶
-		RCString			RCS_borderTexturePath;	//0x20	ÆäÊµÊÇRCStaticString£¬Ö»ÊÇvtable²»Í¬	±ß¿ò×ÊÔ´Â·¾¶
+		RCString			RCS_bgTexturePath;		//0x14	å…¶å®æ˜¯RCStaticStringï¼Œåªæ˜¯vtableä¸åŒ	èƒŒæ™¯èµ„æºè·¯å¾„
+		RCString			RCS_borderTexturePath;	//0x20	å…¶å®æ˜¯RCStaticStringï¼Œåªæ˜¯vtableä¸åŒ	è¾¹æ¡†èµ„æºè·¯å¾„
 		unsigned int			borderFlags;			//0x2C	
 		unsigned int			unk_30;					//0x30
 		unsigned int			unk_34;					//0x34
@@ -476,14 +476,14 @@ namespace war3 {
 		CSimpleFrame			baseSimpleFrame;	//0x0						CSimpleFrame
 		CUnit* unit;				//0x124						CUnitTip	6F2C9670
 		SimpleFrameTextureSettings* resData2;			//0x128						CUnitTip
-		CSimpleFontString* fontStr_12C;		//0x12C						CUnitTip	µ¥Î»ÀàĞÍÃû
-		CSimpleFontString* fontStr_130;		//0x130						CUnitTip	µÈ¼¶
-		CSimpleFontString* fontStr_134;		//0x134						CUnitTip	Íæ¼ÒÃû
-		unsigned int				unk_138;			//0x138						µ¥Î»Ãû¸üĞÂÁËÒªÉèÎª1
-		unsigned int				updateSize;			//0x13C						µ¥Î»µÈ¼¶»Øµ÷¸üĞÂÁËÒªÉèÎª1
-		unsigned int				unk_140;			//0x140						Íæ¼ÒÃû¸üĞÂÁËÒªÉèÎª1
+		CSimpleFontString* fontStr_12C;		//0x12C						CUnitTip	å•ä½ç±»å‹å
+		CSimpleFontString* fontStr_130;		//0x130						CUnitTip	ç­‰çº§
+		CSimpleFontString* fontStr_134;		//0x134						CUnitTip	ç©å®¶å
+		unsigned int				unk_138;			//0x138						å•ä½åæ›´æ–°äº†è¦è®¾ä¸º1
+		unsigned int				updateSize;			//0x13C						å•ä½ç­‰çº§å›è°ƒæ›´æ–°äº†è¦è®¾ä¸º1
+		unsigned int				unk_140;			//0x140						ç©å®¶åæ›´æ–°äº†è¦è®¾ä¸º1
 		unsigned char					unk_144[0x8];		//0x144
-		void* levelUpdateFunc;	//0x14C						6F35B740 ·µ»Øunit
+		void* levelUpdateFunc;	//0x14C						6F35B740 è¿”å›unit
 	}; //sizeof = 0x150
 
 	struct CLayer {
@@ -507,7 +507,7 @@ namespace war3 {
 		unsigned int				flag_B0;			//0xB0
 	}; //sizeof = 0xB4
 
-	//FrameµÄÑĞ¾¿£º
+	//Frameçš„ç ”ç©¶ï¼š
 	//float	bottom;		//0xF8
 	//float	left;		//0xFC
 	//float	top;		//0x100
@@ -569,12 +569,12 @@ namespace war3 {
 	// Game UI
 	//--------------------------------------------------------------------------------
 	//TODO
-	//0xACE66C: ÓÎÏ·ÍâÎªGlueMgr*£¬ÓÎÏ·ÄÚÎªGameUI*
+	//0xACE66C: æ¸¸æˆå¤–ä¸ºGlueMgr*ï¼Œæ¸¸æˆå†…ä¸ºGameUI*
 	//0xACE758: SimpleTop *, +0x8AC = firstbutton, +0x8B4 = count(?)
 
 
-	//ÓÎÏ·ÄÚUI
-	//ÒÔÏÂBorderB/L/U/RÎªÆÁÄ»2dÖµ, ·¶Î§[0,1], ÆÁÄ»2dÔ­µãÎª×óÏÂ½Ç
+	//æ¸¸æˆå†…UI
+	//ä»¥ä¸‹BorderB/L/U/Rä¸ºå±å¹•2då€¼, èŒƒå›´[0,1], å±å¹•2dåŸç‚¹ä¸ºå·¦ä¸‹è§’
 
 	struct CGameUI {
 		CScreenFrame				baseScreenFrame;			//0x0
@@ -700,10 +700,10 @@ namespace war3 {
 		CBackDropFrame* unk_1C0;			//0x1C0
 		CBackDropFrame* unk_1C4;			//0x1C4
 		CBackDropFrame* unk_1C8;			//0x1C8
-		unsigned int				unk_1CC;			//0x1CC ³õÊ¼»¯6F601D60
-		unsigned int				unk_1D0;			//0x1D0 ³õÊ¼»¯6F601D60
-		unsigned int				unk_1D4;			//0x1D4 ³õÊ¼»¯6F601DE0
-		unsigned int				unk_1D8;			//0x1D8	³õÊ¼»¯6F601DE0
+		unsigned int				unk_1CC;			//0x1CC åˆå§‹åŒ–6F601D60
+		unsigned int				unk_1D0;			//0x1D0 åˆå§‹åŒ–6F601D60
+		unsigned int				unk_1D4;			//0x1D4 åˆå§‹åŒ–6F601DE0
+		unsigned int				unk_1D8;			//0x1D8	åˆå§‹åŒ–6F601DE0
 		unsigned int				unk_1DC;			//0x1DC
 		unsigned int				unk_1E0;			//0x1E0 = 1
 	}; //sizeof = 0x1E4
@@ -781,7 +781,7 @@ namespace war3 {
 		unsigned char	unk_0[0xA8];			//0x0
 	};//sizeof = 0xA8
 
-	//TODO È«²¿µ÷ÓÃĞéº¯Êı£¬¶ø²»ÊÇÖ±½ÓĞŞ¸ÄÖµ¡£
+	//TODO å…¨éƒ¨è°ƒç”¨è™šå‡½æ•°ï¼Œè€Œä¸æ˜¯ç›´æ¥ä¿®æ”¹å€¼ã€‚
 	struct GxDeviceVTable {
 		void* unk0;						//0x0
 		void* unk4[8];					//0x4
@@ -802,7 +802,7 @@ namespace war3 {
 		float			unk_6C4;			//0x6C4
 		float			windowHeight;		//0x6C8
 		float			windowWidth;		//0x6CC
-		unsigned int		unk_6D0;			//0x6D0 ´°¿Ú´óĞ¡¸Ä±ä£¬ÕâÀïÉèÎª1
+		unsigned int		unk_6D0;			//0x6D0 çª—å£å¤§å°æ”¹å˜ï¼Œè¿™é‡Œè®¾ä¸º1
 		//..
 	};
 
@@ -816,7 +816,7 @@ namespace war3 {
 		float			unk_6C4;			//0x6C4
 		float			windowHeight;		//0x6C8
 		float			windowWidth;		//0x6CC
-		unsigned int		unk_6D0;			//0x6D0 ´°¿Ú´óĞ¡¸Ä±ä£¬ÕâÀïÉèÎª1
+		unsigned int		unk_6D0;			//0x6D0 çª—å£å¤§å°æ”¹å˜ï¼Œè¿™é‡Œè®¾ä¸º1
 	};
 
 	struct ColorARGB {
@@ -884,7 +884,7 @@ namespace war3 {
 	struct CSelectionWar3 {
 		void** vtable;				//0x0
 		unsigned char				unk_04[0x10];
-		UnitList			controlGroups[0x14];//0x14	//Òª¸ãÇå³şÄÄĞ©ÊÇ±¾µØ
+		UnitList			controlGroups[0x14];//0x14	//è¦ææ¸…æ¥šå“ªäº›æ˜¯æœ¬åœ°
 		unsigned int			unk_1A4;
 		CItem* itemLastSelected;	//0x1A8
 		unsigned int			playerId;			//0x1AC
@@ -916,9 +916,9 @@ namespace war3 {
 		//...
 	};
 
-	struct CUnit_174_30C { //1.24dÖ®Ç°
+	struct CUnit_174_30C { //1.24dä¹‹å‰
 		unsigned char unk_174[0x64];
-		HashGroupRaw				abilityHash;		//0x1DC	//ÒÔÏÂÆ«ÒÆÎª°´ÕÕ1.24dÒÔºó
+		HashGroupRaw				abilityHash;		//0x1DC	//ä»¥ä¸‹åç§»ä¸ºæŒ‰ç…§1.24dä»¥å
 		unsigned char unk_1E4[0x44];
 		float						impactZ;			//0x228 Projectile impact Z
 		float						impactSwimZ;		//0x22C	Projectile impact Z (swimming)
@@ -936,9 +936,9 @@ namespace war3 {
 		unsigned char						unk_2D8[0x38];
 	};
 
-	struct CUnit_174_310 { //1.24dºÍÖ®ºó
+	struct CUnit_174_310 { //1.24då’Œä¹‹å
 		unsigned char unk_174[0x68];
-		HashGroupRaw				abilityHash;		//0x1DC	//ÒÔÏÂÆ«ÒÆÎª°´ÕÕ1.24dÒÔºó
+		HashGroupRaw				abilityHash;		//0x1DC	//ä»¥ä¸‹åç§»ä¸ºæŒ‰ç…§1.24dä»¥å
 		unsigned char unk_1E4[0x44];
 		float						impactZ;			//0x228 Projectile impact Z
 		float						impactSwimZ;		//0x22C	Projectile impact Z (swimming)
@@ -967,7 +967,7 @@ namespace war3 {
 		unsigned int					unk_8;				//0x8
 		HashGroup					hash;				//0xC
 		unsigned char unk_14[0xC];
-		unsigned int					stateFlag;			//0x20 ±íÊ¾×´Ì¬, 1 << 3 ±íÊ¾ÎŞµĞ TODO ¼ÌĞøÑĞ¾¿ÆäËûbit
+		unsigned int					stateFlag;			//0x20 è¡¨ç¤ºçŠ¶æ€, 1 << 3 è¡¨ç¤ºæ— æ•Œ TODO ç»§ç»­ç ”ç©¶å…¶ä»–bit
 		unsigned char unk_24[0xC];
 		unsigned int					typeId;				//0x30
 		unsigned char unk_34[0x1C];
@@ -983,11 +983,11 @@ namespace war3 {
 		HashGroup					hash_unk16C;		//0x16C
 		CUnit_174					unit_174;			//0x174
 		/*
-		unsigned char unk_174[0x68];//ÔÚÕâÒ»¶Î´Ó1.24d? ¼ÓÁË4×Ö½Ú£¬< 1.24dÎª0x64
+		unsigned char unk_174[0x68];//åœ¨è¿™ä¸€æ®µä»1.24d? åŠ äº†4å­—èŠ‚ï¼Œ< 1.24dä¸º0x64
 
-		//0x19C,0x1A0Óëµ±Ç°OrderTargÓĞ¹Ø
+		//0x19C,0x1A0ä¸å½“å‰OrderTargæœ‰å…³
 
-		HashGroup					abilityHash;		//0x1DC	//ÒÔÏÂÆ«ÒÆÎª°´ÕÕ1.24dÒÔºó
+		HashGroup					abilityHash;		//0x1DC	//ä»¥ä¸‹åç§»ä¸ºæŒ‰ç…§1.24dä»¥å
 		unsigned char unk_1E4[0x44];
 		//TODO 0x194 = current action ?
 		float						impactZ;			//0x228 Projectile impact Z
@@ -1033,8 +1033,8 @@ namespace war3 {
 		//...
 	};
 
-	/*6F05063C ¿É²Î¿¼ */
-	//2ÊÊÓÃÓÚflag2 & 0x80²»Îª0µÄ¼¼ÄÜ
+	/*6F05063C å¯å‚è€ƒ */
+	//2é€‚ç”¨äºflag2 & 0x80ä¸ä¸º0çš„æŠ€èƒ½
 	struct AbilityUIDef {
 		void** table;			//0x0
 		unsigned char		unk_4[0x7C];	//0x4
@@ -1075,7 +1075,7 @@ namespace war3 {
 		unsigned int unk14;
 		unsigned int unk18;
 		unsigned int unk1C;
-		unsigned int		flag2;			//0x20	& 0x200 ±íÊ¾ÊÇ·ñÔÚCDÖĞ
+		unsigned int		flag2;			//0x20	& 0x200 è¡¨ç¤ºæ˜¯å¦åœ¨CDä¸­
 		HashGroup		nextAbilityHash;//0x24/
 		unsigned int unk2C;
 		CUnit* abilityOwner;	//0x30
@@ -1144,7 +1144,7 @@ namespace war3 {
 		unsigned int		unk74;
 		unsigned int		unk78;
 		unsigned int		unk7C;
-		FloatMini		floatMini80;	//value = dword_6FAAE470 ËÆºõÊÇÊ©·¨Ê±¼ä
+		FloatMini		floatMini80;	//value = dword_6FAAE470 ä¼¼ä¹æ˜¯æ–½æ³•æ—¶é—´
 		FloatMini		floatMini88;	//value = dword_6FAAE470
 		FloatMini		floatMini90;	//value = dword_6FAAE470
 		FloatMini		floatMini98;	//value = dword_6FAAE470
@@ -1232,10 +1232,10 @@ namespace war3 {
 		unsigned char unk_38[0x3C];
 		unsigned int			cargoSpaceUsed;		//0x74
 		unsigned char unk_78[0xC];
-		HashGroupCargo		cargoObjectHash[8];	//0x84	TODO ÕÒµ½´óĞ¡
+		HashGroupCargo		cargoObjectHash[8];	//0x84	TODO æ‰¾åˆ°å¤§å°
 	};//sizeof = ?
 
-	//TODO CUnitµÈ¼Ì³Ğ
+	//TODO CUnitç­‰ç»§æ‰¿
 	struct CWar3Image {
 		void** vtable;			//0x0
 		unsigned int unk_4[0x4];
@@ -1249,14 +1249,14 @@ namespace war3 {
 
 	struct CBulletBase {
 		CWar3Image			baseWar3Image;
-		HashGroup			sourceHash;		//0x2C	·¢³ö×Óµ¯µÄÎïÌå
+		HashGroup			sourceHash;		//0x2C	å‘å‡ºå­å¼¹çš„ç‰©ä½“
 		unsigned int unk_34[0x3];
-		FloatMini			attack;			//0x40	¹¥»÷Á¦£¨º¬³ı±©»÷ÒÔÍâ¸½¼ÓÖµ£©
-		FloatMini			crit;			//0x48	±©»÷Ëù¸½¼Ó¹¥»÷Á¦
-		FloatMini			speed;			//0x50	ÒÆ¶¯ËÙ¶È
-		unsigned int			weaponSound;	//0x58	ÎäÆ÷ÉùÒô Jass::WEAPON_TYPE_X
-		unsigned int			attackType;		//0x5C	¹¥»÷ÀàĞÍ Jass::ATTACK_TYPE_X
-		unsigned int unk_60;					//0x60	flag£¬ÖµÍ¨³£=00 01 00 00£¬µÚÒ»¸öunsigned char¸ÄÎª0xFF»áÎŞÉËº¦	TODO ÑĞ¾¿Ò»ÏÂ¹¥»÷missÓë±©»÷
+		FloatMini			attack;			//0x40	æ”»å‡»åŠ›ï¼ˆå«é™¤æš´å‡»ä»¥å¤–é™„åŠ å€¼ï¼‰
+		FloatMini			crit;			//0x48	æš´å‡»æ‰€é™„åŠ æ”»å‡»åŠ›
+		FloatMini			speed;			//0x50	ç§»åŠ¨é€Ÿåº¦
+		unsigned int			weaponSound;	//0x58	æ­¦å™¨å£°éŸ³ Jass::WEAPON_TYPE_X
+		unsigned int			attackType;		//0x5C	æ”»å‡»ç±»å‹ Jass::ATTACK_TYPE_X
+		unsigned int unk_60;					//0x60	flagï¼Œå€¼é€šå¸¸=00 01 00 00ï¼Œç¬¬ä¸€ä¸ªunsigned charæ”¹ä¸º0xFFä¼šæ— ä¼¤å®³	TODO ç ”ç©¶ä¸€ä¸‹æ”»å‡»missä¸æš´å‡»
 		CAgentTimer			timer_unk64;	//0x64	TODO
 	};//sizeof = 0x78
 
@@ -1282,7 +1282,7 @@ namespace war3 {
 
 	struct CBullet {
 		CBulletBase			baseBulletBase;
-		ProjectilePosition	posData;		//0x78	¿ÉÒÔÊ¹ÓÃ0x6F47A580 thiscall (xyz*) ·µ»Ø´óµØÍ¼×ø±ê£¨ÖĞÍ¾ËÆºõÏÈµÃµ½ÁËÁíÒ»ÖÖxyz?£©
+		ProjectilePosition	posData;		//0x78	å¯ä»¥ä½¿ç”¨0x6F47A580 thiscall (xyz*) è¿”å›å¤§åœ°å›¾åæ ‡ï¼ˆä¸­é€”ä¼¼ä¹å…ˆå¾—åˆ°äº†å¦ä¸€ç§xyz?ï¼‰
 		FloatMini			arc;			//0x88	missile arc
 	};//sizeof = 0x90
 
@@ -1290,21 +1290,21 @@ namespace war3 {
 		CBullet				baseBullet;
 		FloatMini			FMini_unk90;	//0x90
 		FloatMini			FMini_unk98;	//0x98
-		HashGroup			targetHash;		//0xA0	missileÄ¿±êÎïÌå, missÊ±ÎªÎŞ(0xFFFFFFFF x2)
+		HashGroup			targetHash;		//0xA0	missileç›®æ ‡ç‰©ä½“, missæ—¶ä¸ºæ— (0xFFFFFFFF x2)
 		unsigned int unk_A8;
 	};//sizeof = 0xAC
 
 	struct CMissileSplash {
 		CMissile			baseMissile;
 		unsigned int unk_AC;	//=0
-		unsigned int unk_B0;	//Ä³ÖÖflag
+		unsigned int unk_B0;	//æŸç§flag
 		SplashData			splashData;			//0xB4
 	};//sizeof = 0xDC
 
 	struct CMissileBounce {
 		CMissile			baseMissile;
 		unsigned int unk_AC;
-		unsigned int unk_B0;	//Ä³ÖÖflag
+		unsigned int unk_B0;	//æŸç§flag
 		unsigned int unk_B4;	//=1
 		FloatMini			dmgAreaFull;	//0xB8
 		FloatMini			dmgLoss;		//0xC0
@@ -1312,13 +1312,13 @@ namespace war3 {
 
 	struct CMissileLine {
 		CMissile			baseMissile;
-		unsigned int			typeId;			//0xAC ¹¥»÷ÕßµÄµ¥Î»ÀàĞÍid ?
+		unsigned int			typeId;			//0xAC æ”»å‡»è€…çš„å•ä½ç±»å‹id ?
 		unsigned int unk_B0;
-		unsigned int unk_B4;	//Ä³ÖÖflag
+		unsigned int unk_B4;	//æŸç§flag
 		FloatMini			dmgLoss;		//0xB8
-		FloatMini			dmgSpillDist;	//0xC0 ½¦Éä¾àÀë
-		FloatMini			dmgSpillRadius;	//0xC8 ½¦Éä°ë¾¶
-		FloatMini			angle;			//0xD0 ·½Ïò(»¡¶È)
+		FloatMini			dmgSpillDist;	//0xC0 æº…å°„è·ç¦»
+		FloatMini			dmgSpillRadius;	//0xC8 æº…å°„åŠå¾„
+		FloatMini			angle;			//0xD0 æ–¹å‘(å¼§åº¦)
 		SmartPosition		smartpos_unkD8;
 		SmartPosition		smartpos_unkE8;
 		unsigned int unk_F8;
@@ -1330,17 +1330,17 @@ namespace war3 {
 		unsigned int unk_90;
 		HashGroup			targetHash;		//0x94
 		unsigned int unk_9C;
-		unsigned int unk_A0;	//Ä³ÖÖflag
+		unsigned int unk_A0;	//æŸç§flag
 		SplashData			splashData;		//0xA4
 	};//sizeof = 0xCC
 
 	struct CArtilleryLine {
 		CArtillery			baseArtillery;
-		unsigned int			typeId;			//0xCC ¹¥»÷ÕßµÄµ¥Î»ÀàĞÍid
+		unsigned int			typeId;			//0xCC æ”»å‡»è€…çš„å•ä½ç±»å‹id
 		FloatMini			dmgLoss;		//0xD0
 		FloatMini			dmgSpillDist;	//0xD8
 		FloatMini			dmgSpillRadius;	//0xE0
-		FloatMini			angle;			//0xE8 ·½Ïò(»¡¶È)
+		FloatMini			angle;			//0xE8 æ–¹å‘(å¼§åº¦)
 		unsigned int unk_F0[0x8];//TRefCnt ?
 		void* unk_110;//TRefCnt* ?
 		CAgentTimer			timer_unk114;	//0x114
@@ -1352,7 +1352,7 @@ namespace war3 {
 		unsigned char				unk_4[0x78];	//0x4
 	};//sizeof = 0x7C
 
-	struct CSplatEmitter;	//size = 0xBC	TODO ÑéÖ¤class
+	struct CSplatEmitter;	//size = 0xBC	TODO éªŒè¯class
 	struct CDoodads;
 	struct CDoodadCustomData;
 	struct CSpawn;			//size = 0x14
@@ -1370,23 +1370,23 @@ namespace war3 {
 		unsigned int			unk_4;			//0x4	= 1?
 		unsigned int			unk_8;			//0x8	= 1?
 
-		unsigned int			v1a;			//0xC	ÀıÈç 37280
-		unsigned int			v1b;			//0x10	ÀıÈç 37249
-		MapDataBlock* dataBlocks1;	//0x14	Ó¦¸ÃÊÇµØÍ¼Êı¾İ
-		unsigned int			unk_18;			//0x18	Àı×Ó 32
+		unsigned int			v1a;			//0xC	ä¾‹å¦‚ 37280
+		unsigned int			v1b;			//0x10	ä¾‹å¦‚ 37249
+		MapDataBlock* dataBlocks1;	//0x14	åº”è¯¥æ˜¯åœ°å›¾æ•°æ®
+		unsigned int			unk_18;			//0x18	ä¾‹å­ 32
 
-		unsigned int			v2a;			//0x2C	Àı×Ó		7075
+		unsigned int			v2a;			//0x2C	ä¾‹å­		7075
 		unsigned int			v2b;			//0x30			7065
-		MapDataBlock* dataBlocks2;	//0x34	Ó¦¸ÃÊÇµØÍ¼Êı¾İ
-		unsigned int			unk_38;			//0x38	Àı×Ó 25
+		MapDataBlock* dataBlocks2;	//0x34	åº”è¯¥æ˜¯åœ°å›¾æ•°æ®
+		unsigned int			unk_38;			//0x38	ä¾‹å­ 25
 
-		unsigned int			v3a;			//0x3C	Àı×Ó		4608
+		unsigned int			v3a;			//0x3C	ä¾‹å­		4608
 		unsigned int			v3b;			//0x40			4382
-		MapDataBlock* dataBlocks3;	//0x44	Ó¦¸ÃÊÇµØÍ¼Êı¾İ
-		unsigned int			unk_48;			//0x48	Àı×Ó 256
+		MapDataBlock* dataBlocks3;	//0x44	åº”è¯¥æ˜¯åœ°å›¾æ•°æ®
+		unsigned int			unk_48;			//0x48	ä¾‹å­ 256
 
 		unsigned int			unk_4C;			//0x4C	FFFFFF80
-		unsigned int			unk_50;			//0x50	Àı×Ó 300
+		unsigned int			unk_50;			//0x50	ä¾‹å­ 300
 		unsigned int			unk_54;			//0x54	-1
 		unsigned int			unk_58;			//0x58	0
 		unsigned int			counter;		//0x5C	53030402
@@ -1398,7 +1398,7 @@ namespace war3 {
 	};
 
 	struct MapInfo {
-		void* unk_0;								//0x0	8byte ºóÃæÊÇµØÍ¼Ãû×Ö·û´®
+		void* unk_0;								//0x0	8byte åé¢æ˜¯åœ°å›¾åå­—ç¬¦ä¸²
 		unsigned int unk_4;
 		MapData* mapData;			//0x8
 		CDoodads* doodads;			//0xC	
@@ -1410,13 +1410,13 @@ namespace war3 {
 		void* unk_34;
 		char					mapPath[100];		//0x38
 
-		//ÏÂÃæËÆºõÊÇ¸÷ÖÖAbilityÀàµÄGenerator
+		//ä¸‹é¢ä¼¼ä¹æ˜¯å„ç§Abilityç±»çš„Generator
 	};
 
 	struct CNetData {
 		void** vtable;			//0x0
 		unsigned char				unk_4[0x610];	//0x4
-		unsigned int			replayState;		//0x614, Â¼ÏñÄ£Ê½=2 ?
+		unsigned int			replayState;		//0x614, å½•åƒæ¨¡å¼=2 ?
 		unsigned char				unk_618[0x1658];//0x618
 		unsigned int			time;			//0x1C70
 		unsigned char				unk_1C74[0x640];		//0x1C74
@@ -1462,10 +1462,10 @@ namespace war3 {
 	0x62C720 40040065
 	*/
 
-	//µ±µã»÷ÆÁÄ»ÉÏ·½²Ëµ¥£¬»òÏĞÖÃÅ©Ãñ°´Å¥Ê±ID = 0
-	const unsigned int EVENT_ABILITY_CLICK = 0x00030064; //µ±µã»÷µÄÊÇ¼¼ÄÜÀ¸ÖĞµÄ°´Å¥Ê±
-	const unsigned int EVENT_ITEM_CLICK = 0x00030065; //µ±µã»÷µÄÊÇÎïÆ·À¸ÖĞµÄ°´Å¥Ê±
-	const unsigned int EVENT_TRAINABLE_CLICK = 0x00030066; //µ±µã»÷µÄÊÇÑµÁ·ÖĞµÄ°´Å¥Ê±
+	//å½“ç‚¹å‡»å±å¹•ä¸Šæ–¹èœå•ï¼Œæˆ–é—²ç½®å†œæ°‘æŒ‰é’®æ—¶ID = 0
+	const unsigned int EVENT_ABILITY_CLICK = 0x00030064; //å½“ç‚¹å‡»çš„æ˜¯æŠ€èƒ½æ ä¸­çš„æŒ‰é’®æ—¶
+	const unsigned int EVENT_ITEM_CLICK = 0x00030065; //å½“ç‚¹å‡»çš„æ˜¯ç‰©å“æ ä¸­çš„æŒ‰é’®æ—¶
+	const unsigned int EVENT_TRAINABLE_CLICK = 0x00030066; //å½“ç‚¹å‡»çš„æ˜¯è®­ç»ƒä¸­çš„æŒ‰é’®æ—¶
 	const unsigned int EVENT_MINIMAPSIGNAL_CLICK = 0x00000015; //Minimap Signal
 	const unsigned int EVENT_MINIMAPTERRAIN_CLICK = 0x00000016; //Minimap Terrain
 	const unsigned int EVENT_ALLYCOLORMODE_CLICK = 0x00000017; //Minimap AllyColor
@@ -1481,7 +1481,7 @@ namespace war3 {
 
 	const unsigned int EVENT_PLAYER_CHAT = 0x80210;
 
-	//CD½áÊø = 0xD01B0
+	//CDç»“æŸ = 0xD01B0
 	const unsigned int EVENT_UNIT_ATTACK_RELEASED = 0xD01B1;
 	const unsigned int EVENT_UNIT_ACQUIRE_START = 0xD0163;
 	const unsigned int EVENT_UNIT_ACQUIRE_READY = 0xD01AF;
@@ -1491,7 +1491,7 @@ namespace war3 {
 		void** vtable;			//0x0
 		unsigned int		unk_4;			//0x4
 		unsigned int		id;				//0x8
-		void* object;			//0xC Õâ¸öÓ¦¸ÃÊÇ´¥·¢eventµÄ¶ÔÏó
+		void* object;			//0xC è¿™ä¸ªåº”è¯¥æ˜¯è§¦å‘eventçš„å¯¹è±¡
 	};//sizeof = 0x10
 
 	struct CKeyEvent {
@@ -1502,23 +1502,23 @@ namespace war3 {
 		unsigned int		unk_1C;			//0x1C
 	};
 
-	//×ó¼ü=1 ÖĞ¼ü=2 ÓÒ¼ü=4 ×ó±ß¿¿ºóµÄ²à¼ü=8 ×ó±ß¿¿Ç°µÄ²à¼ü=0x10
+	//å·¦é”®=1 ä¸­é”®=2 å³é”®=4 å·¦è¾¹é åçš„ä¾§é”®=8 å·¦è¾¹é å‰çš„ä¾§é”®=0x10
 	struct CMouseEvent {
 		CEvent			baseEvent;		//0x0
 		unsigned int unk_10;
-		unsigned int		keyCurrent;		//0x14 °´ÏÂÊÂ¼şÎªÓĞĞ§°´ÏÂ¼üÖµ£¬µ¯ÆğÊÂ¼şÎªÓĞĞ§µ¯Æğ¼üÖµ
-		unsigned int		keyFlag;		//0x18 °´ÏÂÊÂ¼şÎªËùÓĞ°´ÏÂ¼üÖµ£¬µ¯ÆğÊÂ¼şÎªÊ£Óà°´ÏÂ¼üÖµ£¬ÍÏ×§ÊÂ¼şÎªÍÏ×§¼üÖµ
+		unsigned int		keyCurrent;		//0x14 æŒ‰ä¸‹äº‹ä»¶ä¸ºæœ‰æ•ˆæŒ‰ä¸‹é”®å€¼ï¼Œå¼¹èµ·äº‹ä»¶ä¸ºæœ‰æ•ˆå¼¹èµ·é”®å€¼
+		unsigned int		keyFlag;		//0x18 æŒ‰ä¸‹äº‹ä»¶ä¸ºæ‰€æœ‰æŒ‰ä¸‹é”®å€¼ï¼Œå¼¹èµ·äº‹ä»¶ä¸ºå‰©ä½™æŒ‰ä¸‹é”®å€¼ï¼Œæ‹–æ‹½äº‹ä»¶ä¸ºæ‹–æ‹½é”®å€¼
 		unsigned int unk_1C;
 		unsigned int unk_20;
-		float			x;				//0x24 [0, 0.8]		2D×ø±ê(ÎÆÀí)
-		float			y;				//0x28 [0, 0.6]		×óÏÂ½ÇÎªÔ­µã(0, 0)
+		float			x;				//0x24 [0, 0.8]		2Dåæ ‡(çº¹ç†)
+		float			y;				//0x28 [0, 0.6]		å·¦ä¸‹è§’ä¸ºåŸç‚¹(0, 0)
 	};//sizeof = 0x2C
 
 	struct CControlDragEvent {
 		CMouseEvent		baseMouseEvent;	//0x0
 		unsigned int unk_2C;
-		unsigned short		pixel_x;		//0x30 [0, ·Ö±æÂÊX]	2D×ø±ê(Êµ¼ÊÏñËØ)£¬
-		unsigned short		pixel_y;		//0x32 [0, ·Ö±æÂÊY]	×óÉÏ½ÇÎªÔ­µã(0, 0)
+		unsigned short		pixel_x;		//0x30 [0, åˆ†è¾¨ç‡X]	2Dåæ ‡(å®é™…åƒç´ )ï¼Œ
+		unsigned short		pixel_y;		//0x32 [0, åˆ†è¾¨ç‡Y]	å·¦ä¸Šè§’ä¸ºåŸç‚¹(0, 0)
 		unsigned int unk_34[0x6];
 	};
 
@@ -1529,14 +1529,14 @@ namespace war3 {
 	};
 
 	struct CSimpleButtonClickEvent {
-		CEvent			baseEvent;		//0x0	ÎïÆ·ÊÂ¼şobjectÎªCInventoryBar, sizeof = 0x1C0
-		unsigned int		keyFlag;		//0x10	Í¬MouseEvent,µ«ÊÇÓ¦¸ÃÖ»ÏìÓ¦×óÓÒ¼ü
+		CEvent			baseEvent;		//0x0	ç‰©å“äº‹ä»¶objectä¸ºCInventoryBar, sizeof = 0x1C0
+		unsigned int		keyFlag;		//0x10	åŒMouseEvent,ä½†æ˜¯åº”è¯¥åªå“åº”å·¦å³é”®
 		/*
-			×¢£ºÒÔÏÂÊµ¼ÊÉÏ²»ÊôÓÚeventÄÚÈİ
+			æ³¨ï¼šä»¥ä¸‹å®é™…ä¸Šä¸å±äºeventå†…å®¹
 			unsigned char	unk_14[0x14];	//0x14
 			void*					simpleTop;		//0x28 CSimpleTop
 			unsigned int				unk_2C;			//0x2C
-			CSimpleButton*			button;				//0x30 Í¬target
+			CSimpleButton*			button;				//0x30 åŒtarget
 			float					x;				//0x34
 			float					y;				//0x38
 			unsigned int				unk_3C;			//0x3C
@@ -1569,7 +1569,7 @@ namespace war3 {
 		int				unk_14;				//0x14	default -1
 	};
 
-	//TODO£º·ÇÓÎÏ·Ä¬ÈÏclassÓ¦µ±ĞŞ¸ÄÇ°×º
+	//TODOï¼šéæ¸¸æˆé»˜è®¤classåº”å½“ä¿®æ”¹å‰ç¼€
 	struct PacketGeneral {
 		unsigned char			id;
 	};

@@ -3,7 +3,9 @@
 #include "Main.h"
 #include "Storm.h"
 #include "RawImageApi.h"
+#include "MdxPatcher.h"
 
+static ModelPatcher gModelPatcher{};
 
 u_int64_t GetBufHash(const char* data, size_t data_len)
 {
@@ -19,8 +21,8 @@ std::vector<FileRedirectStruct> FileRedirectList;
 int NeedDumpFilesToDisk = false;
 int __stdcall DumpFilesToDisk(int enabled)
 {
-	MessageBoxA(0, "ОШИБКА OSHIBKA ERROR", " ", 0);
-	//NeedDumpFilesToDisk = enabled;
+	MessageBoxA(0, "ВНИМАНИЕ!", " ", 0);
+	NeedDumpFilesToDisk = enabled;
 	return enabled;
 }
 
@@ -72,31 +74,28 @@ void FreeAllIHelpers()
 	}
 	if (!FileRedirectList.empty())
 		FileRedirectList.clear();
-
 	if (!FakeFileList.empty())
 		FakeFileList.clear();
+	gModelPatcher.clearAll();
+
 	ClearAllRawImages();
 	Storm::ClearAllLeaks();
+
 }
 
 
-int replaceAll(std::string& str, const std::string& from, const std::string& to)
-{
-	int Replaced = false;
-	if (from.empty())
-		return Replaced;
-	if (str.empty())
-		return Replaced;
+int replaceAll(std::string& str, const std::string& from, const std::string& to) {
+	if (from.empty() || str.empty()) return 0;
+	int replaced = 0;
 	size_t start_pos = 0;
-	size_t max_iterations = str.length() * 2;
-	size_t iterations = 0;
-	while ((start_pos = str.find(from, start_pos)) != std::string::npos &&
-		iterations++ < max_iterations) {
+	while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
 		str.replace(start_pos, from.length(), to);
 		start_pos += to.length();
+		++replaced;
 	}
-	return Replaced;
+	return replaced;
 }
+
 
 int __stdcall FileHelperReleaseStorm(int enabled)
 {
@@ -120,9 +119,9 @@ void ApplyTerrainFilter(std::string filename, unsigned char** OutDataPointer, si
 	InBuffer.length = sz;
 	StormBuffer OutBuffer;
 	if (IsTga)
-		rawImageSize = (unsigned long)TGA2Raw(InBuffer, OutBuffer, w, h, bpp, filename.c_str());
+		rawImageSize = (unsigned long)TGA2Raw(InBuffer, OutBuffer, w, h, bpp);
 	else
-		rawImageSize = Blp2Raw(InBuffer, OutBuffer, w, h, bpp, mipmaps, alphaflag, compress, alphaenconding, filename.c_str());
+		rawImageSize = Blp2Raw(InBuffer, OutBuffer, w, h, bpp, mipmaps, alphaflag, compress, alphaenconding);
 	if (rawImageSize > 0)
 	{
 		COLOR4* OutImage = (COLOR4*)OutBuffer.buf;
@@ -161,7 +160,7 @@ void ApplyTerrainFilter(std::string filename, unsigned char** OutDataPointer, si
 
 		StormBuffer ResultBuffer;
 
-		CreatePalettedBLP(OutBuffer, ResultBuffer, 256, filename.c_str(), w, h, bpp, alphaflag, mipmaps);
+		CreatePalettedBLP(OutBuffer, ResultBuffer, 256, filename.c_str(), w, h, bpp, mipmaps);
 
 		if (OutBuffer.buf != NULL)
 		{
@@ -209,7 +208,7 @@ void ApplyIconFilter(std::string filename, unsigned char** OutDataPointer, size_
 	InBuffer.buf = originfiledata;
 	InBuffer.length = sz;
 	StormBuffer OutBuffer;
-	rawImageSize = Blp2Raw(InBuffer, OutBuffer, w, h, bpp, mipmaps, alphaflag, compress, alphaenconding, filename.c_str());
+	rawImageSize = Blp2Raw(InBuffer, OutBuffer, w, h, bpp, mipmaps, alphaflag, compress, alphaenconding);
 
 	if (rawImageSize > 0 && OutBuffer.buf && OutBuffer.length && w == 64 && h == 64)
 	{
@@ -272,7 +271,7 @@ void ApplyIconFilter(std::string filename, unsigned char** OutDataPointer, size_
 		}
 
 		StormBuffer ResultBuffer;
-		CreatePalettedBLP(OutBuffer, ResultBuffer, 256, filename.c_str(), w, h, bpp, alphaflag, mipmaps);
+		CreatePalettedBLP(OutBuffer, ResultBuffer, 256, filename.c_str(), w, h, bpp, mipmaps);
 
 		OutBuffer.Clear();
 		if (ResultBuffer.buf != NULL)
@@ -326,7 +325,7 @@ void ApplyIconFilter(std::string filename, unsigned char** OutDataPointer, size_
 }
 
 
-void ApplyIconFrameFilter(std::string filename, int* OutDataPointer, size_t* OutSize);
+void ApplyIconFrameFilter(std::string filename);
 
 
 void ApplyTestFilter(std::string filename, unsigned char** OutDataPointer, size_t* OutSize)
@@ -346,7 +345,7 @@ void ApplyTestFilter(std::string filename, unsigned char** OutDataPointer, size_
 	InBuffer.length = sz;
 	StormBuffer OutBuffer;
 
-	rawImageSize = Blp2Raw(InBuffer, OutBuffer, w, h, bpp, mipmaps, alphaflag, compress, alphaenconding, filename.c_str());
+	rawImageSize = Blp2Raw(InBuffer, OutBuffer, w, h, bpp, mipmaps, alphaflag, compress, alphaenconding);
 	if (rawImageSize > 0 && w > 9 && h > 9)
 	{
 		COLOR4* OutImage = (COLOR4*)OutBuffer.buf;
@@ -424,7 +423,7 @@ void ApplyTestFilter(std::string filename, unsigned char** OutDataPointer, size_
 
 		StormBuffer ResultBuffer;
 
-		CreatePalettedBLP(OutBuffer, ResultBuffer, 256, filename.c_str(), w, h, bpp, alphaflag, mipmaps);
+		CreatePalettedBLP(OutBuffer, ResultBuffer, 256, filename.c_str(), w, h, bpp, mipmaps);
 
 		if (OutBuffer.buf != NULL)
 		{
@@ -520,1236 +519,138 @@ int FixDisabledIconPath(std::string _filename, unsigned char** OutDataPointer, s
 
 	return result;
 }
-
-std::vector<ModelCollisionFixStruct> ModelCollisionFixList;
-std::vector<ModelTextureFixStruct> ModelTextureFixList;
-std::vector<ModelPatchStruct> ModelPatchList;
-std::vector<ModelRemoveTagStruct> ModelRemoveTagList;
-std::vector<ModelSequenceReSpeedStruct> ModelSequenceReSpeedList;
-std::vector<ModelSequenceValueStruct> ModelSequenceValueList;
-std::vector<ModelScaleStruct> ModelScaleList;
-
 int __stdcall FixModelCollisionSphere(const char* mdlpath, float X, float Y, float Z, float Radius)
 {
-	ModelCollisionFixStruct tmpModelFix;
-	tmpModelFix.FilePath = mdlpath;
-	tmpModelFix.X = X;
-	tmpModelFix.Y = Y;
-	tmpModelFix.Z = Z;
-	tmpModelFix.Radius = Radius;
-	ModelCollisionFixList.push_back(tmpModelFix);
-	return 0;
+	if (!mdlpath) return 0;
+	gModelPatcher.setCollisionSphere(mdlpath, 999, X, Y, Z, Radius);
+	return 1;
+}
+
+int __stdcall FixModelCollisionSphereEx(const char* mdlpath, int collision_id, float X, float Y, float Z, float Radius)
+{
+	if (!mdlpath) return 0;
+	gModelPatcher.setCollisionSphere(mdlpath, collision_id, X, Y, Z, Radius);
+	return 1;
+}
+
+int __stdcall FixModelCollisionBox(const char* mdlpath, int collision_id, float X, float Y, float Z, float Radius)
+{
+	if (!mdlpath) return 0;
+	gModelPatcher.setCollisionBox(mdlpath, collision_id, X, Y, Z, Radius, Radius, Radius);
+	return 1;
+}
+
+int __stdcall FixModelCollisionBoxEx(const char* mdlpath, int collision_id, float X, float Y, float Z, float halfX, float  halfY, float halfZ)
+{
+	if (!mdlpath) return 0;
+	gModelPatcher.setCollisionBox(mdlpath, collision_id, X, Y, Z, halfX, halfY, halfZ);
+	return 1;
 }
 
 
+// texturenew texture name or replaceable id ("test\image.blp" or "5")
 int __stdcall FixModelTexturePath(const char* mdlpath, int textureid, const char* texturenew)
 {
-	ModelTextureFixStruct tmpModelFix;
-	tmpModelFix.FilePath = mdlpath;
-	tmpModelFix.TextureID = textureid;
-	tmpModelFix.NewTexturePath = texturenew;
-	ModelTextureFixList.push_back(tmpModelFix);
-	return 0;
+	if (!mdlpath || !texturenew) return 0;
+	gModelPatcher.fixTexture(mdlpath, textureid, texturenew);
+	return 1;
 }
-
-
 
 int __stdcall PatchModel(const char* mdlpath, const char* pathPatch)
 {
-	ModelPatchStruct tmpModelFix;
-	tmpModelFix.FilePath = mdlpath;
-	tmpModelFix.patchPath = pathPatch;
-	ModelPatchList.push_back(tmpModelFix);
+	if (!mdlpath || !pathPatch) return 0;
+	unsigned char* patchPtr = nullptr;
+	size_t patchSz = 0;
+	// GameGetFile_ptr обычно возвращает int и принимает (const char*, unsigned char**, size_t*, int)
+	int ok = GameGetFile_ptr(pathPatch, &patchPtr, &patchSz, 0);
+	if (ok && patchPtr && patchSz) {
+		std::vector<unsigned char> patchData;
+		patchData.assign(patchPtr, patchPtr + patchSz);
+		gModelPatcher.addPatch(mdlpath, patchData);
+		// не освобождаем patchPtr здесь?
+		return 1;
+	}
 	return 0;
 }
 
 int __stdcall RemoveTagFromModel(const char* mdlpath, const char* tagname)
 {
-	ModelRemoveTagStruct tmpModelFix;
-	tmpModelFix.FilePath = mdlpath;
-	tmpModelFix.TagName = tagname;
-	ModelRemoveTagList.push_back(tmpModelFix);
-	return 0;
+	if (!mdlpath || !tagname) return 0;
+	gModelPatcher.removeTag(mdlpath, tagname);
+	return 1;
 }
-
+//  sequence name or id ("Attack - 2" or "5")
 int __stdcall ChangeAnimationSpeed(const char* mdlpath, const char* SeqenceName, float Speed)
 {
-	ModelSequenceReSpeedStruct tmpModelFix;
-	tmpModelFix.FilePath = mdlpath;
-	tmpModelFix.AnimationName = SeqenceName;
-	tmpModelFix.SpeedUp = Speed;
-	ModelSequenceReSpeedList.push_back(tmpModelFix);
-	return 0;
+	if (!mdlpath || !SeqenceName) return 0;
+	gModelPatcher.changeAnimationSpeed(mdlpath, SeqenceName, Speed);
+	return 1;
 }
 
-
-
+// sequence name
 int __stdcall SetSequenceValue(const char* mdlpath, const char* SeqenceName, int Indx, float Value)
 {
-	if (Indx < 0 || Indx > 6)
-		return -1;
-
-	ModelSequenceValueStruct tmpModelFix;
-	tmpModelFix.FilePath = mdlpath;
-	tmpModelFix.AnimationName = SeqenceName;
-	tmpModelFix.Indx = Indx;
-	tmpModelFix.Value = Value;
-	ModelSequenceValueList.push_back(tmpModelFix);
-	return 0;
+	if (!mdlpath) return 0;
+	if (Indx < 0 || Indx > 6) return 0;
+	gModelPatcher.setSequenceValue(mdlpath, SeqenceName ? SeqenceName : "", Indx, Value);
+	return 1;
 }
-
 
 int __stdcall SetModelScale(const char* mdlpath, float Scale)
 {
-	ModelScaleStruct tmpModelFix;
-	tmpModelFix.FilePath = mdlpath;
-	tmpModelFix.Scale = Scale;
-	tmpModelFix.ScaleX = 0.0f;
-	tmpModelFix.ScaleY = 0.0f;
-	tmpModelFix.ScaleZ = 0.0f;
-	ModelScaleList.push_back(tmpModelFix);
-	return 0;
+	if (!mdlpath) return 0;
+	gModelPatcher.setModelScale(mdlpath, Scale);
+	return 1;
 }
 
 int __stdcall SetModelScaleEx(const char* mdlpath, float x, float y, float z)
 {
-	ModelScaleStruct tmpModelFix;
-	tmpModelFix.FilePath = mdlpath;
-	tmpModelFix.Scale = 0.0f;
-	tmpModelFix.ScaleX = x;
-	tmpModelFix.ScaleY = y;
-	tmpModelFix.ScaleZ = z;
-	ModelScaleList.push_back(tmpModelFix);
-	return 0;
+	if (!mdlpath) return 0;
+	gModelPatcher.setModelScaleEx(mdlpath, x, y, z);
+	return 1;
 }
+
 
 std::vector<unsigned char> FullPatchData;
 
-void ProcessNodeAnims(unsigned char* ModelBytes, size_t _offset, std::vector<int*>& TimesForReplace)
+
+void ProcessMdx(std::string filename, unsigned char** OutDataPointer, size_t* OutSize)
 {
-	Mdx_Track tmpTrack;
-	size_t offset = _offset;
-	if (memcmp(&ModelBytes[offset], "KGTR", 4) == 0)
-	{
-		offset += 4;
-		std::memcpy(&tmpTrack, &ModelBytes[offset], sizeof(Mdx_Track));
-		offset += sizeof(Mdx_Track);
-		for (int i = 0; i < tmpTrack.NrOfTracks; i++)
-		{
-			TimesForReplace.push_back((int*)&ModelBytes[offset]);
-			offset += (tmpTrack.InterpolationType > 1 ? 40 : 16);
-		}
+	if (!OutDataPointer || !OutSize || !*OutDataPointer || *OutSize < 8)
+		return;
+
+	// Проверить кэш перед обработкой
+	ICONMDLCACHE tmpih;
+	int FoundOldHelper = GetFromIconMdlCache(filename, tmpih);
+	if (FoundOldHelper) {
+		*OutDataPointer = tmpih.buf;
+		*OutSize = tmpih.size;
+		return;
 	}
 
-	if (memcmp(&ModelBytes[offset], "KGRT", 4) == 0)
-	{
-		offset += 4;
-		std::memcpy(&tmpTrack, &ModelBytes[offset], sizeof(Mdx_Track));
-		offset += sizeof(Mdx_Track);
-		for (int i = 0; i < tmpTrack.NrOfTracks; i++)
-		{
-			TimesForReplace.push_back((int*)&ModelBytes[offset]);
-			offset += (tmpTrack.InterpolationType > 1 ? 52 : 20);
-		}
-	}
+	std::vector<unsigned char> buf(*OutDataPointer, *OutDataPointer + *OutSize);
+	bool changed = gModelPatcher.processModel(filename, buf);
 
-	if (memcmp(&ModelBytes[offset], "KGSC", 4) == 0)
-	{
-		offset += 4;
-		std::memcpy(&tmpTrack, &ModelBytes[offset], sizeof(Mdx_Track));
-		offset += sizeof(Mdx_Track);
-		for (int i = 0; i < tmpTrack.NrOfTracks; i++)
-		{
-			TimesForReplace.push_back((int*)&ModelBytes[offset]);
-			offset += (tmpTrack.InterpolationType > 1 ? 40 : 16);
+	if (changed) {
+		unsigned char* newMem = (unsigned char*)Storm::MemAlloc(buf.size());
+		if (newMem) {
+			std::memcpy(newMem, buf.data(), buf.size());
+
+			// Добавить в кэш
+			ICONMDLCACHE newCache;
+			newCache.buf = newMem;
+			newCache.size = buf.size();
+			newCache.hashlen = filename.length();
+			newCache._hash = GetBufHash(filename.c_str(), newCache.hashlen);
+			ICONMDLCACHELIST.push_back(newCache);
+
+			*OutDataPointer = newMem;
+			*OutSize = buf.size();
 		}
 	}
 
 
-	if (memcmp(&ModelBytes[offset], "KGAO", 4) == 0)
-	{
-		offset += 4;
-		std::memcpy(&tmpTrack, &ModelBytes[offset], sizeof(Mdx_Track));
-		offset += sizeof(Mdx_Track);
-		for (int i = 0; i < tmpTrack.NrOfTracks; i++)
-		{
-			TimesForReplace.push_back((int*)&ModelBytes[offset]);
-			offset += (tmpTrack.InterpolationType > 1 ? 16 : 8);
-		}
-	}
-
-	if (memcmp(&ModelBytes[offset], "KGAC", 4) == 0)
-	{
-		offset += 4;
-		std::memcpy(&tmpTrack, &ModelBytes[offset], sizeof(Mdx_Track));
-		offset += sizeof(Mdx_Track);
-		for (int i = 0; i < tmpTrack.NrOfTracks; i++)
-		{
-			TimesForReplace.push_back((int*)&ModelBytes[offset]);
-			offset += (tmpTrack.InterpolationType > 1 ? 16 : 8);
-		}
-	}
-
-}
-
-
-unsigned char HelperBytesPart1[] = {
-							0x42,0x4F,0x4E,0x45,0x88,0x00,0x00,0x00,0x80,0x00,
-							0x00,0x00,0x42,0x6F,0x6E,0x65,0x5F,0x52,0x6F,0x6F,
-							0x74,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-							0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-							0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-							0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-							0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-							0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-							0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-							0x00,0x00 };
-
-unsigned char HelperBytesPart2[] = { 0xFF,0xFF,0xFF,0xFF,0x00,0x01,0x00,0x00,0x4B,
-							0x47,0x53,0x43,0x01,0x00,0x00,0x00,0x00,0x00,0x00,
-							0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 };
-
-unsigned char HelperBytesPart3[] = { 0xFF,0xFF,0xFF,0xFF,
-							 0xFF,0xFF,0xFF,0xFF
-};
-
-
-void ProcessMdx(std::string filename, unsigned char** OutDataPointer, size_t* OutSize, int unknown)
-{
-	unsigned char* ModelBytes = *OutDataPointer;
-	size_t sz = *OutSize;
-
-
-
-	for (unsigned int i = 0; i < ModelSequenceValueList.size(); i++)
-	{
-		ModelSequenceValueStruct mdlfix = ModelSequenceValueList[i];
-		if (filename == mdlfix.FilePath)
-		{
-			size_t offset = 0;
-			if (memcmp(&ModelBytes[offset], "MDLX", 4) == 0)
-			{
-				offset += 4;
-				while (offset < sz)
-				{
-					if (memcmp(&ModelBytes[offset], "SEQS", 4) == 0)
-					{
-						Mdx_Sequence tmpSequence;
-
-						offset += 4;
-
-						size_t currenttagsize = *(size_t*)&ModelBytes[offset];
-						size_t SequencesCount = currenttagsize / sizeof(Mdx_Sequence);
-
-						size_t newoffset = offset + currenttagsize;
-						offset += 4;
-						while (SequencesCount > 0)
-						{
-							SequencesCount--;
-							std::memcpy(&tmpSequence, &ModelBytes[offset], sizeof(Mdx_Sequence));
-
-							if (mdlfix.AnimationName.length() == 0 || mdlfix.AnimationName == tmpSequence.Name)
-							{
-								size_t NeedPatchOffset = offset + 104 + (mdlfix.Indx * 4);
-								*(float*)&ModelBytes[NeedPatchOffset] = mdlfix.Value;
-								if (NeedPatchOffset + sizeof(float) <= sz) {
-									std::memcpy(&ModelBytes[NeedPatchOffset], &mdlfix.Value, sizeof(float));
-								}
-							}
-
-							offset += sizeof(Mdx_Sequence);
-						}
-						offset = newoffset;
-					}
-					else
-					{
-						offset += 4;
-						offset += *(int*)&ModelBytes[offset];
-					}
-
-					offset += 4;
-				}
-
-			}
-
-
-			/*	if ( IsKeyPressed( '0' ) && FileExist( ".\\Test1234.mdx" ) )
-				{
-					FILE *f;
-					fopen_s( &f, ".\\Test1234.mdx", "wb" );
-					fwrite( ModelBytes, sz, 1, f );
-					fclose( f );
-					MessageBoxA( 0, "Ok dump", "DUMP", 0 );
-				}
-	*/
-
-			ModelSequenceValueList.erase(ModelSequenceValueList.begin() + (int)i);
-
-		}
-
-	}
-
-	for (unsigned int i = 0; i < ModelSequenceReSpeedList.size(); i++)
-	{
-		ModelSequenceReSpeedStruct mdlfix = ModelSequenceReSpeedList[i];
-		if (filename == mdlfix.FilePath)
-		{
-
-			int SequenceID = 0;
-			int ReplaceSequenceID = -1;
-
-			// First find Animation and shift others
-			std::vector<Mdx_SequenceTime> Sequences;
-
-			// Next find all objects with Node struct and shift 
-			std::vector<int*> TimesForReplace;
-
-			// Shift any others animations
-			// Next need search and shift needed animation
-			size_t offset = 0;
-			if (memcmp(&ModelBytes[offset], "MDLX", 4) == 0)
-			{
-				offset += 4;
-				while (offset < sz)
-				{
-					if (memcmp(&ModelBytes[offset], "SEQS", 4) == 0)
-					{
-
-						Mdx_Sequence tmpSequence;
-
-						offset += 4;
-
-						size_t currenttagsize = *(size_t*)&ModelBytes[offset];
-						size_t SequencesCount = currenttagsize / sizeof(Mdx_Sequence);
-
-						size_t newoffset = offset + currenttagsize;
-						offset += 4;
-						while (SequencesCount > 0)
-						{
-							SequencesCount--;
-							std::memcpy(&tmpSequence, &ModelBytes[offset], sizeof(Mdx_Sequence));
-
-
-							if (mdlfix.AnimationName == tmpSequence.Name)
-							{
-								ReplaceSequenceID = SequenceID;
-							}
-
-
-							Mdx_SequenceTime CurrentSequenceTime;
-							CurrentSequenceTime.IntervalStart = (int*)&ModelBytes[offset + 80];
-							CurrentSequenceTime.IntervalEnd = (int*)&ModelBytes[offset + 84];
-							Sequences.push_back(CurrentSequenceTime);
-
-							offset += sizeof(Mdx_Sequence);
-							SequenceID++;
-						}
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "BONE", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						Mdx_Node tmpNode;
-						while (newoffset > offset)
-						{
-							std::memcpy(&tmpNode, &ModelBytes[offset], sizeof(Mdx_Node));
-							ProcessNodeAnims(ModelBytes, offset + sizeof(Mdx_Node), TimesForReplace);
-							offset += tmpNode.InclusiveSize + 8;
-						}
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "HELP", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						Mdx_Node tmpNode;
-						while (newoffset > offset)
-						{
-							std::memcpy(&tmpNode, &ModelBytes[offset], sizeof(Mdx_Node));
-							ProcessNodeAnims(ModelBytes, offset + sizeof(Mdx_Node), TimesForReplace);
-							offset += tmpNode.InclusiveSize;
-						}
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "LITE", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						Mdx_Node tmpNode;
-						while (newoffset > offset)
-						{
-							size_t size_of_this_struct = *(size_t*)&ModelBytes[offset];
-							offset += 4;
-							std::memcpy(&tmpNode, &ModelBytes[offset], sizeof(Mdx_Node));
-							ProcessNodeAnims(ModelBytes, offset + sizeof(Mdx_Node), TimesForReplace);
-							offset += size_of_this_struct - 4;
-						}
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "ATCH", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						Mdx_Node tmpNode;
-						while (newoffset > offset)
-						{
-							size_t size_of_this_struct = *(size_t*)&ModelBytes[offset];
-							offset += 4;
-							std::memcpy(&tmpNode, &ModelBytes[offset], sizeof(Mdx_Node));
-							ProcessNodeAnims(ModelBytes, offset + sizeof(Mdx_Node), TimesForReplace);
-							offset += size_of_this_struct - 4;
-						}
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "PREM", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						Mdx_Node tmpNode;
-						while (newoffset > offset)
-						{
-							size_t size_of_this_struct = *(size_t*)&ModelBytes[offset];
-							offset += 4;
-							std::memcpy(&tmpNode, &ModelBytes[offset], sizeof(Mdx_Node));
-							ProcessNodeAnims(ModelBytes, offset + sizeof(Mdx_Node), TimesForReplace);
-							offset += size_of_this_struct - 4;
-						}
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "PRE2", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						Mdx_Node tmpNode;
-						while (newoffset > offset)
-						{
-							size_t size_of_this_struct = *(size_t*)&ModelBytes[offset];
-							offset += 4;
-							std::memcpy(&tmpNode, &ModelBytes[offset], sizeof(Mdx_Node));
-							ProcessNodeAnims(ModelBytes, offset + sizeof(Mdx_Node), TimesForReplace);
-							offset += size_of_this_struct - 4;
-						}
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "GEOA", 4) == 0)
-					{
-						Mdx_GeosetAnimation tmpGeosetAnimation;
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						while (newoffset > offset)
-						{
-							std::memcpy(&tmpGeosetAnimation, &ModelBytes[offset], sizeof(Mdx_GeosetAnimation));
-							ProcessNodeAnims(ModelBytes, offset + sizeof(Mdx_GeosetAnimation), TimesForReplace);
-
-							offset += tmpGeosetAnimation.InclusiveSize;
-						}
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "RIBB", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						Mdx_Node tmpNode;
-						while (newoffset > offset)
-						{
-							size_t size_of_this_struct = *(size_t*)&ModelBytes[offset];
-							offset += 4;
-							std::memcpy(&tmpNode, &ModelBytes[offset], sizeof(Mdx_Node));
-							ProcessNodeAnims(ModelBytes, offset + sizeof(Mdx_Node), TimesForReplace);
-							offset += size_of_this_struct - 4;
-						}
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "EVTS", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						Mdx_Node tmpNode;
-						Mdx_Tracks tmpTracks;
-						while (newoffset > offset)
-						{
-							std::memcpy(&tmpNode, &ModelBytes[offset], sizeof(Mdx_Node));
-							ProcessNodeAnims(ModelBytes, offset + sizeof(Mdx_Node), TimesForReplace);
-							offset += tmpNode.InclusiveSize;
-							if (memcmp(&ModelBytes[offset], "KEVT", 4) == 0)
-							{
-								offset += 4;
-								std::memcpy(&tmpTracks, &ModelBytes[offset], sizeof(Mdx_Tracks));
-								offset += sizeof(Mdx_Tracks);
-								for (int n = 0; n < tmpTracks.NrOfTracks; n++)
-								{
-									TimesForReplace.push_back((int*)&ModelBytes[offset]);
-									offset += 4;
-								}
-							}
-							else offset += 4;
-						}
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "CLID", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						Mdx_Node tmpNode;
-						while (newoffset > offset)
-						{
-							std::memcpy(&tmpNode, &ModelBytes[offset], sizeof(Mdx_Node));
-							ProcessNodeAnims(ModelBytes, offset + sizeof(Mdx_Node), TimesForReplace);
-							offset += tmpNode.InclusiveSize;
-							unsigned int size_of_this_struct = *(unsigned int*)&ModelBytes[offset];
-							offset += 4;
-							size_of_this_struct = size_of_this_struct == 0 ? 24u : 16u;
-							offset += size_of_this_struct;
-						}
-						offset = newoffset;
-					}
-					else
-					{
-						offset += 4;
-						offset += *(int*)&ModelBytes[offset];
-					}
-
-					offset += 4;
-				}
-			}
-
-			if (ReplaceSequenceID != -1)
-			{
-
-				int SeqEndTime = *Sequences[(unsigned int)ReplaceSequenceID].IntervalEnd;
-				int SeqStartTime = *Sequences[(unsigned int)ReplaceSequenceID].IntervalStart;
-				int NewEndTime = SeqStartTime + (int)((SeqEndTime - SeqStartTime) / mdlfix.SpeedUp);
-				int AddTime = NewEndTime - SeqEndTime;
-
-				for (unsigned int n = 0; n < Sequences.size(); n++)
-				{
-					if (*Sequences[n].IntervalStart >= SeqEndTime)
-					{
-						*Sequences[n].IntervalStart += AddTime;
-						*Sequences[n].IntervalEnd += AddTime;
-					}
-				}
-
-				*Sequences[(unsigned int)ReplaceSequenceID].IntervalEnd = NewEndTime;
-
-				for (int* dwTime : TimesForReplace)
-				{
-					if (*dwTime >= SeqEndTime)
-					{
-						*dwTime += AddTime;
-					}
-					else if (*dwTime >= SeqStartTime)
-					{
-						*dwTime = (int)SeqStartTime + (int)((float)(*dwTime - SeqStartTime) / mdlfix.SpeedUp);
-					}
-				}
-
-
-				/*if ( IsKeyPressed( '0' ) && FileExist( ".\\Test1234.mdx" ) )
-				{
-					FILE *f;
-					fopen_s( &f, ".\\Test1234.mdx", "wb" );
-					fwrite( ModelBytes, sz, 1, f );
-					fclose( f );
-					MessageBoxA( 0, "Ok dump", "DUMP", 0 );
-				}*/
-
-			}
-
-			if (!TimesForReplace.empty())
-				TimesForReplace.clear();
-			if (!Sequences.empty())
-				Sequences.clear();
-
-			ModelSequenceReSpeedList.erase(ModelSequenceReSpeedList.begin() + (int)i);
-
-		}
-
-	}
-
-
-	for (unsigned int i = 0; i < ModelRemoveTagList.size(); i++)
-	{
-		ModelRemoveTagStruct mdlfix = ModelRemoveTagList[i];
-		if (filename == mdlfix.FilePath)
-		{
-			int TagFound = false;
-			size_t TagStartOffset = 0;
-			size_t TagSize = 0;
-			size_t offset = 0;
-			if (memcmp(&ModelBytes[offset], "MDLX", 4) == 0)
-			{
-				offset += 4;
-				while (offset < sz)
-				{
-					if (memcmp(&ModelBytes[offset], mdlfix.TagName.c_str(), 4) == 0)
-					{
-
-						TagFound = true;
-						TagStartOffset = offset;
-						offset += 4;
-						offset += *(int*)&ModelBytes[offset];
-						TagSize = offset - TagStartOffset;
-
-					}
-					else
-					{
-						offset += 4;
-						offset += *(int*)&ModelBytes[offset];
-					}
-
-					offset += 4;
-				}
-
-			}
-
-			if (TagFound)
-			{
-				std::memcpy(&ModelBytes[TagStartOffset], &ModelBytes[TagStartOffset + TagSize + 4], sz - (TagStartOffset + TagSize));
-				memset(&ModelBytes[sz - TagSize - 4], 0xFF, TagSize);
-
-				sz = sz - TagSize - 4;
-				*OutSize = sz;
-			}
-
-
-			ModelRemoveTagList.erase(ModelRemoveTagList.begin() + (int)i);
-
-		}
-	}
-
-
-	for (unsigned int i = 0; i < ModelScaleList.size(); i++)
-	{
-		ModelScaleStruct mdlfix = ModelScaleList[i];
-		if (filename == mdlfix.FilePath)
-		{
-			if (!FullPatchData.empty())
-				FullPatchData.clear();
-
-			char TagName[5];
-			memset(TagName, 0, 5);
-			size_t offset = 0;
-
-			unsigned long MaxObjectId = 0;
-
-			std::vector<unsigned long*> parents;
-
-			unsigned long OffsetToInsertPivotPoint = 0;
-
-			int FoundGLBS = false;
-			const char* strGLBS = "GLBS";
-
-			if (memcmp(&ModelBytes[offset], "MDLX", 4) == 0)
-			{
-				offset += 4;
-				while (offset < sz)
-				{
-					std::memcpy(TagName, &ModelBytes[offset], 4);
-					if (memcmp(&ModelBytes[offset], strGLBS, 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						FoundGLBS = true;
-
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "PIVT", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-
-						*(size_t*)&ModelBytes[offset] = 12 + *(size_t*)&ModelBytes[offset];
-
-						OffsetToInsertPivotPoint = newoffset + 4;
-
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "BONE", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						Mdx_Node tmpNode;
-
-						while (newoffset > offset)
-						{
-							std::memcpy(&tmpNode, &ModelBytes[offset], sizeof(Mdx_Node));
-
-							if (tmpNode.ObjectId != 0xFFFFFFFF && tmpNode.ObjectId > MaxObjectId)
-							{
-								MaxObjectId = tmpNode.ObjectId;
-							}
-							parents.push_back((unsigned long*)&ModelBytes[offset + 88]);
-
-							offset += tmpNode.InclusiveSize + 8;
-						}
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "HELP", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						Mdx_Node tmpNode;
-						while (newoffset > offset)
-						{
-							std::memcpy(&tmpNode, &ModelBytes[offset], sizeof(Mdx_Node));
-							if (tmpNode.ObjectId != 0xFFFFFFFF && tmpNode.ObjectId > MaxObjectId)
-							{
-								MaxObjectId = tmpNode.ObjectId;
-							}
-							parents.push_back((unsigned long*)&ModelBytes[offset + 88]);
-
-
-							offset += tmpNode.InclusiveSize;
-						}
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "LITE", 4) == 0)
-					{
-
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						Mdx_Node tmpNode;
-						while (newoffset > offset)
-						{
-							size_t size_of_this_struct = *(size_t*)&ModelBytes[offset];
-							offset += 4;
-							std::memcpy(&tmpNode, &ModelBytes[offset], sizeof(Mdx_Node));
-							if (tmpNode.ObjectId != 0xFFFFFFFF && tmpNode.ObjectId > MaxObjectId)
-							{
-								MaxObjectId = tmpNode.ObjectId;
-							}
-							parents.push_back((unsigned long*)&ModelBytes[offset + 88]);
-
-							offset += size_of_this_struct - 4;
-						}
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "ATCH", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						Mdx_Node tmpNode;
-						//Mdx_Tracks tmpTracks;
-						while (newoffset > offset)
-						{
-							size_t size_of_this_struct = *(size_t*)&ModelBytes[offset];
-							offset += 4;
-
-							std::memcpy(&tmpNode, &ModelBytes[offset], sizeof(Mdx_Node));
-
-							if (tmpNode.ObjectId != 0xFFFFFFFF && tmpNode.ObjectId > MaxObjectId)
-							{
-								MaxObjectId = tmpNode.ObjectId;
-							}
-							parents.push_back((unsigned long*)&ModelBytes[offset + 88]);
-							//*( unsigned long* )&ModelBytes[ offset + 88 ] = 0xFFFFFFFF;
-							/*offset += tmpNode.InclusiveSize;
-
-
-							char * attchname = ( char * )&ModelBytes[ offset ];
-							offset += 260;
-
-
-							unsigned long attchid = *( unsigned long * )&ModelBytes[ offset ];
-
-							offset += 4;
-
-							if ( memcmp( &ModelBytes[ offset ], "KATV", 4 ) == 0 )
-							{
-							offset += 4;
-							Mdx_Track tmpTrack;
-							std::memcpy( &tmpTrack, &ModelBytes[ offset ], sizeof( Mdx_Track ) );
-							offset += sizeof( Mdx_Track );
-							for ( unsigned long i = 0; i < tmpTrack.NrOfTracks; i++ )
-							{
-							offset += ( tmpTrack.InterpolationType > 1 ? 16 : 8 );
-							}
-							}*/
-
-							offset += size_of_this_struct - 4;
-						}
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "PREM", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						Mdx_Node tmpNode;
-						while (newoffset > offset)
-						{
-							size_t size_of_this_struct = *(size_t*)&ModelBytes[offset];
-							offset += 4;
-							std::memcpy(&tmpNode, &ModelBytes[offset], sizeof(Mdx_Node));
-							if (tmpNode.ObjectId != 0xFFFFFFFF && tmpNode.ObjectId > MaxObjectId)
-							{
-								MaxObjectId = tmpNode.ObjectId;
-							}
-							parents.push_back((unsigned long*)&ModelBytes[offset + 88]);
-
-							offset += size_of_this_struct - 4;
-						}
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "PRE2", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						Mdx_Node tmpNode;
-						while (newoffset > offset)
-						{
-							size_t size_of_this_struct = *(size_t*)&ModelBytes[offset];
-							offset += 4;
-							std::memcpy(&tmpNode, &ModelBytes[offset], sizeof(Mdx_Node));
-
-							if (tmpNode.ObjectId != 0xFFFFFFFF && tmpNode.ObjectId > MaxObjectId)
-							{
-								MaxObjectId = tmpNode.ObjectId;
-							}
-							parents.push_back((unsigned long*)&ModelBytes[offset + 88]);
-
-							offset += size_of_this_struct - 4;
-						}
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "RIBB", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						Mdx_Node tmpNode;
-						while (newoffset > offset)
-						{
-							size_t size_of_this_struct = *(size_t*)&ModelBytes[offset];
-							offset += 4;
-							std::memcpy(&tmpNode, &ModelBytes[offset], sizeof(Mdx_Node));
-							if (tmpNode.ObjectId != 0xFFFFFFFF && tmpNode.ObjectId > MaxObjectId)
-							{
-								MaxObjectId = tmpNode.ObjectId;
-							}
-							parents.push_back((unsigned long*)&ModelBytes[offset + 88]);
-
-							offset += size_of_this_struct - 4;
-						}
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "EVTS", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						Mdx_Node tmpNode;
-						Mdx_Tracks tmpTracks;
-						while (newoffset > offset)
-						{
-							std::memcpy(&tmpNode, &ModelBytes[offset], sizeof(Mdx_Node));
-							if (tmpNode.ObjectId != 0xFFFFFFFF && tmpNode.ObjectId > MaxObjectId)
-							{
-								MaxObjectId = tmpNode.ObjectId;
-							}
-							parents.push_back((unsigned long*)&ModelBytes[offset + 88]);
-
-							offset += tmpNode.InclusiveSize;
-							if (memcmp(&ModelBytes[offset], "KEVT", 4) == 0)
-							{
-								offset += 4;
-								std::memcpy(&tmpTracks, &ModelBytes[offset], sizeof(Mdx_Tracks));
-								offset += sizeof(Mdx_Tracks);
-								for (int n = 0; n < tmpTracks.NrOfTracks; n++)
-								{
-									offset += 4;
-								}
-							}
-							else offset += 4;
-						}
-						offset = newoffset;
-					}
-					else if (memcmp(&ModelBytes[offset], "CLID", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(size_t*)&ModelBytes[offset];
-						offset += 4;
-						Mdx_Node tmpNode;
-						while (newoffset > offset)
-						{
-							std::memcpy(&tmpNode, &ModelBytes[offset], sizeof(Mdx_Node));
-
-							if (tmpNode.ObjectId != 0xFFFFFFFF && tmpNode.ObjectId > MaxObjectId)
-							{
-								MaxObjectId = tmpNode.ObjectId;
-							}
-							parents.push_back((unsigned long*)&ModelBytes[offset + 88]);
-
-							offset += tmpNode.InclusiveSize;
-							unsigned int size_of_this_struct = *(unsigned int*)&ModelBytes[offset];
-							offset += 4;
-							size_of_this_struct = size_of_this_struct == 0 ? 24 : 16;
-							offset += size_of_this_struct;
-						}
-						offset = newoffset;
-					}
-					else
-					{
-						offset += 4;
-						offset += *(int*)&ModelBytes[offset];
-					}
-
-					offset += 4;
-				}
-			}
-
-
-			MaxObjectId++;
-
-			for (unsigned long* parOffsets : parents)
-			{
-				unsigned long curparent = *parOffsets;
-				if (curparent == 0xFFFFFFFF)
-				{
-					*parOffsets = MaxObjectId;
-				}
-			}
-
-			FullPatchData.insert(FullPatchData.end(), (unsigned char*)(ModelBytes), (unsigned char*)(ModelBytes + sz));
-
-			if (OffsetToInsertPivotPoint != 0)
-			{
-				char ZeroPos[12];
-				memset(ZeroPos, 0, sizeof(ZeroPos));
-				FullPatchData.insert(FullPatchData.begin() + OffsetToInsertPivotPoint, ZeroPos, ZeroPos + 12);
-			}
-
-			FullPatchData.insert(FullPatchData.end(), (unsigned char*)(HelperBytesPart1), (unsigned char*)(HelperBytesPart1 + sizeof(HelperBytesPart1)));
-			unsigned char* patchbytes = (unsigned char*)&MaxObjectId;
-
-			FullPatchData.push_back(patchbytes[0]);
-			FullPatchData.push_back(patchbytes[1]);
-			FullPatchData.push_back(patchbytes[2]);
-			FullPatchData.push_back(patchbytes[3]);
-
-			FullPatchData.insert(FullPatchData.end(), (unsigned char*)(HelperBytesPart2), (unsigned char*)(HelperBytesPart2 + sizeof(HelperBytesPart2)));
-
-
-			float scaleall = mdlfix.Scale;
-
-			if (scaleall != 0.0f)
-			{
-				patchbytes = (unsigned char*)&mdlfix.Scale;
-
-
-				FullPatchData.push_back(patchbytes[0]);
-				FullPatchData.push_back(patchbytes[1]);
-				FullPatchData.push_back(patchbytes[2]);
-				FullPatchData.push_back(patchbytes[3]);
-
-				FullPatchData.push_back(patchbytes[0]);
-				FullPatchData.push_back(patchbytes[1]);
-				FullPatchData.push_back(patchbytes[2]);
-				FullPatchData.push_back(patchbytes[3]);
-
-				FullPatchData.push_back(patchbytes[0]);
-				FullPatchData.push_back(patchbytes[1]);
-				FullPatchData.push_back(patchbytes[2]);
-				FullPatchData.push_back(patchbytes[3]);
-			}
-			else
-			{
-				patchbytes = (unsigned char*)&mdlfix.ScaleX;
-
-
-				FullPatchData.push_back(patchbytes[0]);
-				FullPatchData.push_back(patchbytes[1]);
-				FullPatchData.push_back(patchbytes[2]);
-				FullPatchData.push_back(patchbytes[3]);
-
-				patchbytes = (unsigned char*)&mdlfix.ScaleY;
-
-				FullPatchData.push_back(patchbytes[0]);
-				FullPatchData.push_back(patchbytes[1]);
-				FullPatchData.push_back(patchbytes[2]);
-				FullPatchData.push_back(patchbytes[3]);
-
-				patchbytes = (unsigned char*)&mdlfix.ScaleZ;
-
-				FullPatchData.push_back(patchbytes[0]);
-				FullPatchData.push_back(patchbytes[1]);
-				FullPatchData.push_back(patchbytes[2]);
-				FullPatchData.push_back(patchbytes[3]);
-			}
-
-			FullPatchData.insert(FullPatchData.end(), (unsigned char*)(HelperBytesPart3), (unsigned char*)(HelperBytesPart3 + sizeof(HelperBytesPart3)));
-
-			if (!FoundGLBS)
-			{
-				FullPatchData.push_back(strGLBS[0]);
-				FullPatchData.push_back(strGLBS[1]);
-				FullPatchData.push_back(strGLBS[2]);
-				FullPatchData.push_back(strGLBS[3]);
-				unsigned long szGLBS = 4;
-				patchbytes = (unsigned char*)&szGLBS;
-				FullPatchData.push_back(patchbytes[0]);
-				FullPatchData.push_back(patchbytes[1]);
-				FullPatchData.push_back(patchbytes[2]);
-				FullPatchData.push_back(patchbytes[3]);
-				szGLBS = 0;
-				patchbytes = (unsigned char*)&szGLBS;
-				FullPatchData.push_back(patchbytes[0]);
-				FullPatchData.push_back(patchbytes[1]);
-				FullPatchData.push_back(patchbytes[2]);
-				FullPatchData.push_back(patchbytes[3]);
-			}
-
-
-			//if ( IsKeyPressed( '0' ) && FileExist( ".\\Test1234.mdx" ) )
-			//{
-			//	FILE *f;
-			//	fopen_s( &f, ".\\Test1234.mdx", "wb" );
-			//	fwrite( &FullPatchData[ 0 ], FullPatchData.size( ), 1, f );
-			//	fclose( f );
-			//	MessageBoxA( 0, "Ok dump", "DUMP", 0 );
-			//}
-
-
-			ICONMDLCACHE tmpih;
-			StormBuffer ResultBuffer;
-			ResultBuffer.buf = (unsigned char*)Storm::MemAlloc(FullPatchData.size());
-			ResultBuffer.length = FullPatchData.size();
-			std::memcpy(&ResultBuffer.buf[0], &FullPatchData[0], FullPatchData.size());
-
-			tmpih.buf = ResultBuffer.buf;
-			tmpih.size = ResultBuffer.length;
-			tmpih.hashlen = filename.length();
-			tmpih._hash = GetBufHash(filename.c_str(), tmpih.hashlen);
-
-			ICONMDLCACHELIST.push_back(tmpih);
-
-			/*if (!IsMemInCache(*OutDataPointer))
-				Storm::MemFree((void*)*OutDataPointer);*/
-
-			*OutDataPointer = tmpih.buf;
-			*OutSize = tmpih.size;
-
-			ModelBytes = (unsigned char*)tmpih.buf;
-			sz = tmpih.size;
-			ModelScaleList.erase(ModelScaleList.begin() + (int)i);
-		}
-	}
-
-
-	if (!FullPatchData.empty())
-		FullPatchData.clear();
-	for (unsigned int i = 0; i < ModelPatchList.size(); i++)
-	{
-		ModelPatchStruct mdlfix = ModelPatchList[i];
-		if (filename == mdlfix.FilePath)
-		{
-			unsigned char* PatchFileData;
-			size_t PatchFileSize;
-
-			if (GameGetFile_ptr(mdlfix.patchPath.c_str(), &PatchFileData, &PatchFileSize, unknown))
-			{
-				FullPatchData.insert(FullPatchData.end(), (char*)(PatchFileData), (char*)(PatchFileData + PatchFileSize));
-			}
-
-
-			ModelPatchList.erase(ModelPatchList.begin() + (int)i);
-
-		}
-	}
-
-	if (!FullPatchData.empty())
-	{
-		ICONMDLCACHE tmpih;
-		int FoundOldHelper = GetFromIconMdlCache(filename, tmpih);
-
-
-		if (FoundOldHelper)
-		{
-			StormBuffer ResultBuffer;
-			ResultBuffer.buf = (unsigned char*)Storm::MemAlloc(tmpih.size + FullPatchData.size());
-
-			ResultBuffer.length = tmpih.size + FullPatchData.size();
-
-			std::memcpy(&ResultBuffer.buf[0], tmpih.buf, sz);
-
-			std::memcpy(&ResultBuffer.buf[sz], &FullPatchData[0], FullPatchData.size());
-
-			Storm::MemFree(tmpih.buf);
-			tmpih.buf = ResultBuffer.buf;
-			tmpih.size = ResultBuffer.length;
-			*OutDataPointer = tmpih.buf;
-			*OutSize = tmpih.size;
-		}
-		else
-		{
-			StormBuffer ResultBuffer;
-			ResultBuffer.buf = (unsigned char*)Storm::MemAlloc(sz + FullPatchData.size());
-			ResultBuffer.length = sz + FullPatchData.size();
-			std::memcpy(&ResultBuffer.buf[0], ModelBytes, sz);
-			std::memcpy(&ResultBuffer.buf[sz], &FullPatchData[0], FullPatchData.size());
-
-			tmpih.buf = ResultBuffer.buf;
-			tmpih.size = ResultBuffer.length;
-
-			tmpih.hashlen = filename.length();
-			tmpih._hash = GetBufHash(filename.c_str(), tmpih.hashlen);
-			ICONMDLCACHELIST.push_back(tmpih);
-
-			// Не чистить файл который был создан не нами
-			//Storm::MemFree((void*)*OutDataPointer);
-
-
-			*OutDataPointer = tmpih.buf;
-			*OutSize = tmpih.size;
-
-			ModelBytes = (unsigned char*)tmpih.buf;
-			sz = tmpih.size;
-
-		}
-
-		//if (IsKeyPressed('0') && FileExist(".\\Test1234.mdx"))
-		//{
-		//	FILE* f;
-		//	fopen_s(&f, ".\\Test1234.mdx", "wb");
-		//	fwrite(ModelBytes, sz, 1, f);
-		//	fclose(f);
-		//}
-
-		FullPatchData.clear();
-	}
-
-
-	for (unsigned int i = 0; i < ModelCollisionFixList.size(); i++)
-	{
-		ModelCollisionFixStruct mdlfix = ModelCollisionFixList[i];
-		if (filename == mdlfix.FilePath)
-		{
-			size_t offset = 0;
-			if (memcmp(&ModelBytes[offset], "MDLX", 4) == 0)
-			{
-				offset += 4;
-				while (offset < sz)
-				{
-					if (memcmp(&ModelBytes[offset], "CLID", 4) == 0)
-					{
-						offset += 4;
-						size_t newoffset = offset + *(int*)&ModelBytes[offset];
-						offset += 4;
-						offset += *(int*)&ModelBytes[offset];
-						int shapetype = *(int*)&ModelBytes[offset];
-
-						if (shapetype == 2)
-						{
-							offset += 4;
-							*(float*)&ModelBytes[offset] = mdlfix.X;
-							offset += 4;
-							*(float*)&ModelBytes[offset] = mdlfix.Y;
-							offset += 4;
-							*(float*)&ModelBytes[offset] = mdlfix.Z;
-							offset += 4;
-							*(float*)&ModelBytes[offset] = mdlfix.Radius;
-						}
-						offset = newoffset + 4;
-					}
-					else
-					{
-						offset += 4;
-						offset += *(int*)&ModelBytes[offset];
-					}
-					offset += 4;
-				}
-			}
-
-			ModelCollisionFixList.erase(ModelCollisionFixList.begin() + (int)i);
-
-		}
-
-	}
-
-
-	for (unsigned int i = 0; i < ModelTextureFixList.size(); i++)
-	{
-		ModelTextureFixStruct mdlfix = ModelTextureFixList[i];
-		int TextureID = 0;
-		if (filename == mdlfix.FilePath)
-		{
-			size_t offset = 0;
-			if (memcmp(&ModelBytes[offset], "MDLX", 4) == 0)
-			{
-				offset += 4;
-				while (offset < sz)
-				{
-					if (memcmp(&ModelBytes[offset], "TEXS", 4) == 0)
-					{
-						Mdx_Texture tmpTexture;
-
-						//char TextNameBuf[ 0x100 ];
-						offset += 4;
-						int TagSize = *(int*)&ModelBytes[offset];
-						size_t newoffset = offset + TagSize;
-						int TexturesCount = TagSize / (int)sizeof(Mdx_Texture);
-						offset += 4;
-
-
-						while (TexturesCount > 0)
-						{
-							TexturesCount--;
-							std::memcpy(&tmpTexture, &ModelBytes[offset], sizeof(Mdx_Texture));
-							TextureID++;
-
-							if (mdlfix.TextureID == TextureID)
-							{
-								if (mdlfix.NewTexturePath.length() > 3)
-								{
-									tmpTexture.ReplaceableId = 0;
-									sprintf_s(tmpTexture.FileName, 260, "%s", mdlfix.NewTexturePath.c_str());
-								}
-								else
-								{
-									tmpTexture.ReplaceableId = atoi(mdlfix.NewTexturePath.c_str());
-									memset(tmpTexture.FileName, 0, 260);
-								}
-								std::memcpy(&ModelBytes[offset], &tmpTexture, sizeof(Mdx_Texture));
-							}
-							offset += sizeof(Mdx_Texture);
-						}
-						offset = newoffset + 4;
-					}
-					else
-					{
-						offset += 4;
-						offset += *(int*)&ModelBytes[offset];
-					}
-					offset += 4;
-				}
-			}
-
-
-
-			ModelTextureFixList.erase(ModelTextureFixList.begin() + (int)i);
-
-		}
-
-	}
-
-
+	gModelPatcher.removeProcessedTasks(filename);
 }
 
 
@@ -1829,7 +730,7 @@ int ProcessFile(const char* filename, unsigned char** OutDataPointer, size_t* Ou
 	{
 		if (IsFileExist)
 		{
-			ProcessMdx(filename, OutDataPointer, OutSize, unknown);
+			ProcessMdx(filename, OutDataPointer, OutSize);
 		}
 		else
 		{
@@ -1889,7 +790,7 @@ int ProcessFile(const char* filename, unsigned char** OutDataPointer, size_t* Ou
 				{
 					if (IsFileExist)
 					{
-						ProcessMdx(filename, OutDataPointer, OutSize, unknown);
+						ProcessMdx(filename, OutDataPointer, OutSize);
 					}
 					else
 					{
@@ -2032,7 +933,7 @@ int __fastcall GameGetFile_my(const char* filename, unsigned char** OutDataPoint
 //iconpath + _frame.blp
 int __stdcall CreateIconFrameMask(const char* iconpath)
 {
-	ApplyIconFrameFilter(iconpath, 0, 0);
+	ApplyIconFrameFilter(iconpath);
 
 
 	return true;
@@ -2064,22 +965,17 @@ int __stdcall CreateIconFrameMask(const char* iconpath)
 
 */
 
-std::string GetFileContent(std::string filename)
+std::string GetFileContent(const std::string& filename)
 {
-	std::ifstream t(filename);
-	std::string str;
-
+	std::ifstream t(filename, std::ios::binary);
+	if (!t) return {};
 	t.seekg(0, std::ios::end);
-
-	if (t.tellg() > NULL)
-	{
-		str.reserve((size_t)t.tellg());
-		t.seekg(0, std::ios::beg);
-
-		str.assign((std::istreambuf_iterator<char>(t)),
-			std::istreambuf_iterator<char>());
-	}
-
+	std::streampos end = t.tellg();
+	if (end <= 0) return {};
+	std::string str;
+	str.resize(static_cast<size_t>(end));
+	t.seekg(0, std::ios::beg);
+	t.read(&str[0], end);
 	return str;
 }
 
@@ -2131,20 +1027,22 @@ std::vector<std::string> get_file_list(const fs::path& path, bool dotolower)
 	return file_list;
 }
 
-int __stdcall IsLocalFilesEnabled(int)
-{
-	if (GameDll)
-		return *(int*)(GameDll + 0xAAE2AC);
-	return 0;
-}
 
 typedef void(__fastcall* EnableLocalFiles_p)(int enable);
 EnableLocalFiles_p EnableLocalFiles_org = NULL;
 
+
+int __stdcall IsLocalFilesEnabled(int)
+{
+	if (!GameDll) return 0;
+	return *(int*)(GameDll + 0xAAE2AC);
+}
+
 void __stdcall EnableLocalFiles(int enable)
 {
+	if (!GameDll) return;
 	EnableLocalFiles_org = (EnableLocalFiles_p)(GameDll + 0x0010B0);
-	EnableLocalFiles_org(enable);
+	if (EnableLocalFiles_org) EnableLocalFiles_org(enable);
 }
 
 int __stdcall CheckWriteAccess(int)

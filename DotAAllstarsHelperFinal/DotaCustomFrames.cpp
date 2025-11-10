@@ -55,26 +55,26 @@ void DestroyFrame(unsigned char* FrameAddr, int unk = true)
 	DestructThisFrame(FrameAddr, unk);
 }
 
-void ShowFrameWithPos(unsigned char* FrameAddr, float left, float bottom, int unk = true)
+void ShowFrameWithPos(unsigned char* FrameAddr, float left, float bottom)
 {
 	SetFramePos(FrameAddr + 180, 6, left, bottom, true);
 	ShowThisFrame(FrameAddr);
 }
 
-void ShowFrameItemWithPos(unsigned char* FrameAddr, float left, float bottom, int unk = true)
+void ShowFrameItemWithPos(unsigned char* FrameAddr, float left, float bottom)
 {
 	SetFramePos(FrameAddr, 6, left, bottom, true);
 	ShowThisFrame(FrameAddr);
 }
 
 
-void ShowFrameWithPosAligned(unsigned char* FrameAddr, float left, float bottom, int align, int unk = true)
+void ShowFrameWithPosAligned(unsigned char* FrameAddr, float left, float bottom, int align)
 {
 	SetFramePos(FrameAddr + 180, align, left, bottom, true);
 	ShowThisFrame(FrameAddr);
 }
 
-void ShowFrameWithPosAlternativeAligned(unsigned char* FrameAddr, float left, float bottom, int alignFirst, int alignTwo, int unk = true)
+void ShowFrameWithPosAlternativeAligned(unsigned char* FrameAddr, float left, float bottom, int alignFirst, int alignTwo)
 {
 	unsigned char* pGlobalGameClass = (unsigned char*)GameUIObjectGet();
 	ShowFrameAlternative(FrameAddr + 180, alignFirst, pGlobalGameClass + 180, alignTwo, left, bottom, 1);

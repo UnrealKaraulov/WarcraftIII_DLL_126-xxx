@@ -27,6 +27,7 @@ int GetFirstBytes(const char* filename, char* buffer, unsigned long length)
 
 int MaskOk(unsigned char* mask, int expectedWidth, int expectedHeight, int expectedBpp, long& offset, const char* maskFile)
 {
+	(void)(maskFile);
 	TGAHeader* header = (TGAHeader*)mask;
 	if (header->colorMapType != 0 || header->imageType != 2 || header->width == 0 || header->height == 0)
 		return false;
@@ -766,7 +767,7 @@ int CreateJpgBLP(StormBuffer rawData, StormBuffer& output, int quality, char con
 	return true;
 }
 
-int CreatePalettedBLP(StormBuffer rawData, StormBuffer& output, int colors, char const*, int width, int height, int bytespp, int alphaflag, int& maxmipmaps)
+int CreatePalettedBLP(StormBuffer rawData, StormBuffer& output, int colors, char const*, int width, int height, int bytespp, int& maxmipmaps)
 {
 	CQuantizer* q = new CQuantizer((unsigned int)colors, 8);
 	q->ProcessImage((unsigned char*)rawData.buf, (unsigned long)(width * height), (unsigned char)bytespp, 0x00);
@@ -861,7 +862,7 @@ int CreatePalettedBLP(StormBuffer rawData, StormBuffer& output, int colors, char
 	return true;
 }
 
-int TGA2Raw(StormBuffer input, StormBuffer& output, int& width, int& height, int& bpp, const char* filename)
+int TGA2Raw(StormBuffer input, StormBuffer& output, int& width, int& height, int& bpp)
 {
 	TGAHeader* header = (TGAHeader*)input.buf;
 	if (header->colorMapType != 0 || header->imageType != 2 || header->width == 0 || header->height == 0)
@@ -886,7 +887,7 @@ int TGA2Raw(StormBuffer input, StormBuffer& output, int& width, int& height, int
 	return true;
 }
 
-int RAW2Tga(StormBuffer input, StormBuffer& output, int width, int height, int bpp, const char* filename)
+int RAW2Tga(StormBuffer input, StormBuffer& output, int width, int height, int bpp)
 {
 	TGAHeader header;
 	memset(&header, 0, sizeof(TGAHeader));
@@ -905,7 +906,7 @@ int RAW2Tga(StormBuffer input, StormBuffer& output, int width, int height, int b
 	return true;
 }
 
-int BMP2Raw(StormBuffer input, StormBuffer& output, int& width, int& height, int& bpp, char const* filename)
+int BMP2Raw(StormBuffer input, StormBuffer& output, int& width, int& height, int& bpp)
 {
 	BITMAPFILEHEADER* FileHeader = (BITMAPFILEHEADER*)input.buf;
 	BITMAPINFOHEADER* InfoHeader = (BITMAPINFOHEADER*)(FileHeader + 1);
@@ -1123,7 +1124,7 @@ COLOR4* blp1_convert_paletted_no_alpha(unsigned char* pSrc, COLOR4* pInfos, unsi
 	return outrgba;
 }
 
-unsigned long Blp2Raw(StormBuffer input, StormBuffer& output, int& width, int& height, int& bpp, int& mipmaps, int& alphaflag, int& compresstype, int& pictype, char const* filename)
+unsigned long Blp2Raw(StormBuffer input, StormBuffer& output, int& width, int& height, int& bpp, int& mipmaps, int& alphaflag, int& compresstype, int& pictype)
 {
 	BLPHeader blph;
 	bpp = 4;
@@ -1265,7 +1266,7 @@ unsigned long Blp2Raw(StormBuffer input, StormBuffer& output, int& width, int& h
 
 		StormBuffer tmpout;
 
-		if (!JPG2Raw(tempdata, tmpout, width, height, bpp, filename))
+		if (!JPG2Raw(tempdata, tmpout, width, height, bpp))
 		{
 
 			tmpout.Clear();
@@ -1297,7 +1298,7 @@ unsigned long Blp2Raw(StormBuffer input, StormBuffer& output, int& width, int& h
 	return 0;
 }
 
-int JPG2Raw(StormBuffer input, StormBuffer& output, int width, int height, int& bpp, char const* filename)
+int JPG2Raw(StormBuffer input, StormBuffer& output, int width, int height, int& bpp)
 {
 	bpp = 4;
 

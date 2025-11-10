@@ -1,6 +1,5 @@
 #include "Main.h"
 
-
 unsigned int hpbarcolorsHero[20];
 unsigned int hpbarcolorsUnit[20];
 unsigned int hpbarcolorsTower[20];

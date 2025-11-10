@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.5.33103.201
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11201.2 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DotAAllstarsHelperFinal", "DotAAllstarsHelperFinal\DotAAllstarsHelper.vcxproj", "{4B94B582-A36C-43FF-AB86-D01CF1299739}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -12,11 +12,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libMinHook", "minhook_for_b
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release_Win7|x86 = Release_Win7|x86
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4B94B582-A36C-43FF-AB86-D01CF1299739}.Release_Win7|x86.ActiveCfg = Release_Win7|Win32
+		{4B94B582-A36C-43FF-AB86-D01CF1299739}.Release_Win7|x86.Build.0 = Release_Win7|Win32
 		{4B94B582-A36C-43FF-AB86-D01CF1299739}.Release|x86.ActiveCfg = Release|Win32
 		{4B94B582-A36C-43FF-AB86-D01CF1299739}.Release|x86.Build.0 = Release|Win32
+		{F142A341-5EE0-442D-A15F-98AE9B48DBAE}.Release_Win7|x86.ActiveCfg = Release_Win7|x64
+		{F142A341-5EE0-442D-A15F-98AE9B48DBAE}.Release_Win7|x86.Build.0 = Release_Win7|x64
 		{F142A341-5EE0-442D-A15F-98AE9B48DBAE}.Release|x86.ActiveCfg = Release|Win32
 		{F142A341-5EE0-442D-A15F-98AE9B48DBAE}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection

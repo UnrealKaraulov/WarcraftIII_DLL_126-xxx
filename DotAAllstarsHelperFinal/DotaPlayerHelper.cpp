@@ -74,7 +74,7 @@ int _GetPlayerByNumber(int number)
 	return result;
 }
 
-// Получить ID игрока
+// РџРѕР»СѓС‡РёС‚СЊ ID РёРіСЂРѕРєР°
 int GetLocalPlayerId()
 {
 	return player_local_id;
@@ -93,7 +93,7 @@ int _GetLocalPlayerId()
 }
 
 
-// Получить имя игрока по ID
+// РџРѕР»СѓС‡РёС‚СЊ РёРјСЏ РёРіСЂРѕРєР° РїРѕ ID
 p_GetPlayerName GetPlayerName = NULL;
 
 

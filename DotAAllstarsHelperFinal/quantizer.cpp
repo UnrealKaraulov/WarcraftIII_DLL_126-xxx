@@ -36,6 +36,7 @@ CQuantizer::~CQuantizer()
 
 int CQuantizer::ProcessImage(unsigned char* image, unsigned long size, unsigned char bytespp, unsigned char alpha)
 {
+	(void)(alpha);
 	for (unsigned long i = 0; i < size; i++)
 	{
 		COLOR4* pix = (COLOR4*)(image + i * bytespp);

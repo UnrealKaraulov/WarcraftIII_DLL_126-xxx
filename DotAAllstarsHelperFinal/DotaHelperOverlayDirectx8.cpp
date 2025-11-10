@@ -107,6 +107,7 @@ unsigned long MipMapCount = 0;
 
 int __fastcall Wc3SetTextureStageState_my(int a1, int a2, unsigned long Stage, D3DTEXTURESTAGESTATETYPE Type, unsigned long Value)
 {
+	(void)(a2);
 	if (Type == D3DTEXTURESTAGESTATETYPE::D3DTSS_TEXTURETRANSFORMFLAGS || MipMapCount >= 1000)
 	{
 		if (MipMapCount >= 1000)
@@ -423,8 +424,10 @@ void DrawImage(ID3DXSprite* pSprite, IDirect3DTexture8* texture, float width, fl
 D3DMATERIAL8 oldmat;
 void SetNewLightDx8(int id)
 {
+	(void)(id);
 	if (deviceglobal != NULL)
 	{
+		deviceglobal->GetMaterial(&oldmat);
 		D3DMATERIAL8 mymat;
 
 		mymat.Ambient.r = 1.0;
@@ -439,15 +442,15 @@ void SetNewLightDx8(int id)
 		mymat.Specular.b = 1.0;
 
 		deviceglobal->SetMaterial(&mymat);
-
 	}
 }
 
 void SetOldLightDx8(int id)
 {
+	(void)(id);
 	if (deviceglobal != NULL)
 	{
-
+		deviceglobal->SetMaterial(&oldmat);
 	}
 }
 

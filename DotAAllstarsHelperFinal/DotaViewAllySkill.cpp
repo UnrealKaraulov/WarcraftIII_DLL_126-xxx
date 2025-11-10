@@ -1,4 +1,4 @@
-﻿#include "Main.h"
+#include "Main.h"
 #include "ViewAllySkill.h"
 
 
@@ -153,7 +153,7 @@ signed int __fastcall  IsDrawSkillPanelOverlay_my(unsigned char* UnitAddr, int a
 }
 
 
-int __fastcall IsNeedDrawUnit2_my(unsigned char* UnitAddr, int unused/* converted from thiscall to fastcall*/)
+int __fastcall IsNeedDrawUnit2_my(unsigned char* UnitAddr, int /* converted from thiscall to fastcall*/)
 {
 	if (IsNotBadUnit(UnitAddr))
 	{

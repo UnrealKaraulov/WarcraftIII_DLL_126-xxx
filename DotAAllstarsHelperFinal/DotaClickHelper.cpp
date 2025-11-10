@@ -175,78 +175,6 @@ void SetHeroFrameXY_old()
 	}
 }
 
-
-
-void MouseClickX(int toX, int toY)
-{
-	if (Warcraft3Window)
-	{
-		Sleep(5);
-		POINT point;
-		GetCursorPos(&point);
-		PostMessage(Warcraft3Window, WM_LBUTTONDOWN, MK_LBUTTON, MAKELONG(point.x, point.y));
-		PostMessage(Warcraft3Window, WM_LBUTTONUP, MK_LBUTTON, MAKELONG(point.x, point.y));
-	}
-	/*
-		POINT cursorPos;
-		GetCursorPos( &cursorPos );
-
-		double dx = toX * ( 65535.0f / DesktopScreen_Width );
-		double dy = toY * ( 65535.0f / DesktopScreen_Height );
-		INPUT Input = { 0 };
-
-		Input.type = INPUT_MOUSE;
-		Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
-		Input.mi.dx = LONG( dx );
-		Input.mi.dy = LONG( dy );
-		SendInput( 1, &Input, sizeof( INPUT ) );
-		SetHeroFrameXY( );
-
-		SendInput( 1, &Input, sizeof( INPUT ) );
-		SetHeroFrameXY( );
-
-		Input.type = INPUT_MOUSE;
-		Input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
-		SendInput( 1, &Input, sizeof( INPUT ) );
-		SetHeroFrameXY( );
-
-		Input.type = INPUT_MOUSE;
-		Input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
-		SendInput( 1, &Input, sizeof( INPUT ) );
-		SetHeroFrameXY( );
-
-		dx = cursorPos.x*( 65535.0f / DesktopScreen_Width );
-		dy = cursorPos.y*( 65535.0f / DesktopScreen_Height );
-
-		Input.type = INPUT_MOUSE;
-		Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
-		Input.mi.dx = LONG( dx );
-		Input.mi.dy = LONG( dy );
-		SendInput( 1, &Input, sizeof( INPUT ) );
-		SetHeroFrameXY( );*/
-}
-
-
-
-
-void ThreadTest(POINT* p)
-{
-	SkipAllMessages = true;
-	MouseClickX(p->x, p->y);
-	SkipAllMessages = false;
-	delete p;
-}
-
-void MouseClick(int toX, int toY)
-{
-	POINT* ClickPoint = new POINT();
-	ClickPoint->x = toX;
-	ClickPoint->y = toY;
-	std::thread([&]() {
-		ThreadTest(ClickPoint);
-		}).detach();
-}
-
 void JustClickMouse()
 {
 	bool ButtonDown = false;
@@ -307,36 +235,10 @@ int PressMouseAtSelectedHero(int IsItem)
 				errorvalue = 4;
 				//PrintText( "ERROR 4" );
 			}
-
-			/*int ButtonDown = false;
-			if ( IsKeyPressed( VK_LBUTTON ) )
-			{
-				ButtonDown = true;
-				SendMessage( Warcraft3Window, WM_LBUTTONUP, 0, oldlParam );
-			}
-
-			int x = ( int )( *GetWindowXoffset * HeroPortX );
-			int y = ( int )( *GetWindowYoffset * HeroPortY );
-
-			POINT cursorhwnd;
-			GetCursorPos( &cursorhwnd );
-			ScreenToClient( Warcraft3Window, &cursorhwnd );
-			POINT cursor;
-			GetCursorPos( &cursor );
-
-			x = x - cursorhwnd.x;
-			y = y - cursorhwnd.y;
-
-			cursor.x = cursor.x + x;
-			cursor.y = cursor.y + y;
-			//( toXX, toYY );
-
-			MouseClick( cursor.x, cursor.y );*/
 		}
 		else
 		{
 			errorvalue = 3;
-			//PrintText( ( "ERROR 3:" + to_string( GetCursorSkillID( ) ) ).c_str( ) );
 		}
 
 	}
@@ -714,7 +616,6 @@ int IsNULLButtonFound(unsigned char* pButton)
 
 unsigned char* __stdcall GetSkillPanelButton(int idx)
 {
-
 	if (GetSelectedUnit(GetLocalPlayerId()))
 	{
 		unsigned char* pclass = (unsigned char*)GameUIObjectGet();
@@ -764,26 +665,6 @@ unsigned char* __stdcall GetItemPanelButton(int idx)
 						}
 					}
 				}
-			}
-		}
-	}
-	return 0;
-}
-
-
-unsigned char* GetHeroButton(int idx)
-{
-	unsigned char* pclass = (unsigned char*)GameUIObjectGet();
-	if (pclass)
-	{
-		unsigned char* pGamePlayerHeroBtn = *(unsigned char**)(pclass + 0x3c8);
-		if (pGamePlayerHeroBtn)
-		{
-			pGamePlayerHeroBtn = *(unsigned char**)(pGamePlayerHeroBtn + 0x40);
-			if (pGamePlayerHeroBtn)
-			{
-				pGamePlayerHeroBtn = *(unsigned char**)(pGamePlayerHeroBtn + 0x20);
-				return pGamePlayerHeroBtn;
 			}
 		}
 	}
@@ -1021,8 +902,7 @@ int PressItemPanelButton(int idx, int RightClick)
 
 int PressHeroPanelButton(int idx, int RightClick)
 {
-
-	unsigned char* button = GetHeroButton(idx);
+	unsigned char* button = GetSkillPanelButton(idx);
 	if (button && IsCommandButton(button))
 	{
 		unsigned int oldflag = *(unsigned int*)(button + flagsOffset);
@@ -1117,11 +997,9 @@ int __stdcall SetAutoSelectHero(int enabled)
 {
 	if (DEBUG_FULL)
 		std::cout << __func__ << std::endl;
-	AutoSelectHero = true;
+	AutoSelectHero = enabled > 0;
 	return AutoSelectHero;
 }
-
-
 
 safevector<DelayedPress> DelayedPressList;
 
@@ -1303,23 +1181,6 @@ void PressKeyWithDelay_timed()
 
 												DisableTargetCurcorWORK = 3;
 
-
-												/*	if ( IsCursorSelectTarget( ) )
-												{
-												PressSkillPanelButton( 11, false );
-												}*/
-
-												//POINT cursor;
-												//GetCursorPos( &cursor );
-
-												//x = x - cursorhwnd.x;
-												//y = y - cursorhwnd.y;
-
-												//cursor.x = cursor.x + x;
-												//cursor.y = cursor.y + y;
-												////( toXX, toYY );
-
-												//MouseClick( cursor.x, cursor.y );
 											}
 											else if (!keyAction.IsQuickCast)
 											{
@@ -1539,7 +1400,6 @@ void __stdcall SetForceHotkeyProcess(int lvl1, int lvl2, int lvl3)
 	ForceLvl3 = lvl3;
 }
 
-// �������� ����� � ������ 
 bool replaceAll(std::string& str, const std::string& from, const std::string& to, int addtofrom = 0)
 {
 	if (from.empty())
@@ -2363,24 +2223,6 @@ int ProcessHotkeys(HWND hWnd, unsigned int& Msg, const WPARAM& wParam, const LPA
 								WarcraftRealWNDProc_ptr(Warcraft3Window, WM_LBUTTONUP, 0, MAKELPARAM(cursorhwnd.x, cursorhwnd.y));
 
 								DisableTargetCurcorWORK = 3;
-
-
-								/*	if ( IsCursorSelectTarget( ) )
-								{
-								PressSkillPanelButton( 11, false );
-								}*/
-
-								//POINT cursor;
-								//GetCursorPos( &cursor );
-
-								//x = x - cursorhwnd.x;
-								//y = y - cursorhwnd.y;
-
-								//cursor.x = cursor.x + x;
-								//cursor.y = cursor.y + y;
-								////( toXX, toYY );
-
-								//MouseClick( cursor.x, cursor.y );
 							}
 							else if (!keyAction.IsQuickCast)
 							{
@@ -2475,6 +2317,7 @@ int ProcessHotkeys(HWND hWnd, unsigned int& Msg, const WPARAM& wParam, const LPA
 int ProcessSelectActionHotkeys(HWND hWnd, unsigned int& Msg, const WPARAM& wParam, const LPARAM& lParam, bool& _IsAltPressed,
 	bool& _IsCtrlPressed, bool& _IsShiftPressed, int WithModifiers)
 {
+	(void)(lParam); (void)(hWnd);
 	for (auto keyAction : KeySelectActionList)
 	{
 		if (keyAction.VK == (int)wParam)
@@ -2568,6 +2411,7 @@ int ProcessSelectActionHotkeys(HWND hWnd, unsigned int& Msg, const WPARAM& wPara
 int ProcessCallbackHotkeys(HWND hWnd, unsigned int& Msg, const WPARAM& wParam, const LPARAM& lParam, bool& _IsAltPressed,
 	bool& _IsCtrlPressed, bool& _IsShiftPressed, int WithModifiers)
 {
+	(void)(lParam); (void)(hWnd);
 	int selectedunits = GetSelectedUnitCountBigger(GetLocalPlayerId());
 
 	TestValues[7]++;
@@ -2638,6 +2482,7 @@ int ProcessCallbackHotkeys(HWND hWnd, unsigned int& Msg, const WPARAM& wParam, c
 int ProcessChatHotkeys(HWND hWnd, unsigned int& Msg, const WPARAM& wParam, const LPARAM& lParam, bool& _IsAltPressed,
 	bool& _IsCtrlPressed, bool& _IsShiftPressed, int WithModifiers)
 {
+	(void)(lParam); (void)(hWnd);
 	for (auto keyAction : KeyChatActionList)
 	{
 		if (keyAction.VK == (int)wParam)
@@ -2679,6 +2524,7 @@ int ProcessChatHotkeys(HWND hWnd, unsigned int& Msg, const WPARAM& wParam, const
 }
 int ProcessShopHelper(HWND hWnd, unsigned int& Msg, const WPARAM& wParam, const LPARAM& lParam)
 {
+	(void)(lParam); (void)(hWnd);
 	if (ShopHelperEnabled && IsGameFrameActive() && /*(*/ Msg == WM_KEYDOWN /*|| Msg == WM_KEYUP ) */)
 	{
 
@@ -2745,6 +2591,7 @@ int ProcessShopHelper(HWND hWnd, unsigned int& Msg, const WPARAM& wParam, const 
 }
 int SkipKeyboardAndMouseWhenTeleport(HWND hWnd, unsigned int& Msg, const WPARAM& wParam, const LPARAM& lParam)
 {
+	(void)(lParam); (void)(hWnd);
 	if (BlockKeyboardAndMouseWhenTeleport)
 	{
 		if (Msg == WM_KEYDOWN ||/* Msg == WM_KEYUP || */Msg == WM_RBUTTONDOWN)
@@ -2847,6 +2694,7 @@ int __stdcall GetLatestRegisteredHotkeyMsg(int)
 
 int ProcessRegisteredHotkeys(HWND hWnd, unsigned int& Msg, const WPARAM& wParam, const LPARAM& lParam)
 {
+	(void)(lParam); (void)(hWnd);
 	LatestRegisteredHotkeyWPARAM = wParam;
 	LatestRegisteredHotkeyMsg = Msg;
 	if (Msg == WM_KEYDOWN || Msg == WM_KEYUP ||
@@ -2976,6 +2824,7 @@ int ProcessRegisteredHotkeys(HWND hWnd, unsigned int& Msg, const WPARAM& wParam,
 
 int FixNumpad(HWND hWnd, unsigned int& Msg, WPARAM& wParam, const WPARAM& _wParam, const LPARAM& lParam, bool& _IsShiftPressed)
 {
+	(void)(hWnd);
 	// SHIFT+NUMPAD TRICK
 	if (IsGameFrameActive() && (Msg == WM_KEYDOWN || Msg == WM_KEYUP) && (
 		wParam == 0xC ||
@@ -4145,7 +3994,6 @@ void IssueFixerInit()
 
 }
 
-// ��������� ���� ����� ��� ��������
 void IssueFixerDisable()
 {
 	memset(LastPressedKeysTime, 0, sizeof(LastPressedKeysTime));
@@ -4190,7 +4038,6 @@ void IssueFixerDisable()
 	SkipAllMessages = false;
 }
 
-// ���������� ������� ������� ������ � ��� ������
 unsigned int BuildKeyCode()
 {
 	unsigned int code = 0;
@@ -4240,7 +4087,6 @@ unsigned int BuildKeyCode()
 
 }
 
-// �������������� ������ � ��� �������
 int _StrToVKey(const std::string& skey) {
 	if (skey == "LBTN") return VK_LBUTTON; // Left mouse button
 	if (skey == "RBTN") return VK_RBUTTON; // Right mouse button
@@ -4422,7 +4268,6 @@ int _StrToVKey(const std::string& skey) {
 	return 0;
 }
 
-// �������������� ��� ������� � ������
 std::string _VKeyToStr(int vkey) {
 	switch (vkey) {
 	case VK_LBUTTON: return "LBTN"; // Left mouse button
@@ -4606,7 +4451,6 @@ std::string _VKeyToStr(int vkey) {
 	return "NOTHING";
 }
 
-// �������������� ��� ������� � ������
 std::string ConvertKeyCodeToString(unsigned int val)
 {
 	std::string outstr;
@@ -4639,7 +4483,6 @@ std::string ConvertKeyCodeToString(unsigned int val)
 	return outstr;
 }
 
-// �������������� ������ � ��� ������� (���������� ������)
 unsigned int CovertStringToKeyCode(std::string code)
 {
 	if (code.length() == 0)
@@ -4681,7 +4524,6 @@ unsigned int CovertStringToKeyCode(std::string code)
 
 std::string tmpkeycode;
 
-// �������������� ������ � ��� ������� (���������� ������)
 int __stdcall ConvertKeyStringToKeyCode(const char* str)
 {
 	if (DEBUG_FULL)
@@ -4691,7 +4533,6 @@ int __stdcall ConvertKeyStringToKeyCode(const char* str)
 	return CovertStringToKeyCode(str);
 }
 
-// �������������� ��� ������� � ������
 const char* __stdcall ConvertKeyCodeToKeyString(unsigned int code)
 {
 	tmpkeycode = ConvertKeyCodeToString(code);

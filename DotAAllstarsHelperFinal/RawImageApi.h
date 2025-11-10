@@ -153,7 +153,7 @@ int __stdcall RawImage_AddCallback(unsigned int RawImage, const char* MouseActio
 int __stdcall RawImage_IsBtn(unsigned int RawImage, int enabled);
 int __stdcall RawImage_UseImageCoords(unsigned int RawImage, int enabled);
 int RawImageGlobalCallbackFunc(RawImageEventType callbacktype, float mousex, float mousey);
-void ApplyIconFrameFilter(std::string filename, int* OutDataPointer, size_t* OutSize);
+void ApplyIconFrameFilter(std::string filename);
 void ClearAllRawImages();
 int __stdcall GetScreenWidth(int);
 int __stdcall GetScreenHeight(int);

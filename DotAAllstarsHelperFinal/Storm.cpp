@@ -69,7 +69,7 @@ namespace Storm {
 		return aero::generic_c_call<unsigned short>(AddrFileGetLocale);
 	}
 
-	//TODO Debug版本加上调试信息
+	//TODO Debug鐗堟湰鍔犱笂璋冭瘯淇℃伅
 	void* MemAlloc(unsigned int size) {
 		auto retaddr = _ReturnAddress();
 
@@ -265,7 +265,7 @@ void *operator new(size_t size) {
 			return rv;
 		}
 
-		// 分配不成功，找出当前出错处理函数
+		// 鍒嗛厤涓嶆垚鍔燂紝鎵惧嚭褰撳墠鍑洪敊澶勭悊鍑芥暟
 		new_handler globalhandler = std::set_new_handler(0);
 		std::set_new_handler(globalhandler);
 

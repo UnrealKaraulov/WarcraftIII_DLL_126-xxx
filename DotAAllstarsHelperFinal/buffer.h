@@ -8,11 +8,6 @@
 
 
 //extern int memoryleakcheck;
-
-void  __stdcall AddNewLineToJassLog(const char* s);
-void __stdcall  AddNewLineToDotaChatLog(const char* s);
-void __stdcall  AddNewLineToDotaHelperLog(const char* s, int line);//( const char * s, int line );
-void __stdcall  AddNewLineToJassNativesLog(const char* s);
 void __stdcall EnableErrorHandler(int);
 void __stdcall DisableErrorHandler(int);
 

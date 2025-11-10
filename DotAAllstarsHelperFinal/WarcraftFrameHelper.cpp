@@ -170,6 +170,7 @@ namespace NWar3Frame
 
 	void __fastcall CWar3Frame::SetAnimOffset(unsigned char* real_frame, float* a2, float default_offset)
 	{
+		(void)(default_offset);
 		CWar3Frame* wc3frame = FindCWar3Frame(real_frame);
 		if (wc3frame)
 			*a2 = wc3frame->anim_offset;
@@ -177,9 +178,9 @@ namespace NWar3Frame
 	}
 
 
-
 	int __fastcall CWar3Frame::FrameEventCallback(unsigned char* FrameAddr, int dummy, unsigned int EventId)
 	{
+		(void)(dummy);
 		if (!FrameAddr)
 			return FrameEventHandler_ptr(FrameAddr, EventId);
 
@@ -1091,6 +1092,7 @@ namespace NWar3Frame
 
 	void CWar3Frame::Update(bool force)
 	{
+		(void)(force);// not used :(
 		//CONSOLE_Print( "Update " );
 
 		if (!FrameOk)
@@ -1477,7 +1479,7 @@ namespace NWar3Frame
 		FrameType = newframetype;
 	}
 
-	// Были внесены изменения!
+	// Р…С‹Р»Рё РІРЅРµСЃРµРЅС‹ РёР·РјРµРЅРµРЅРёВ¤!
 	CWar3Frame::CWar3Frame(const char* name, int id, bool show, unsigned char* relativeframe, bool showerror)
 	{
 		//CONSOLE_Print( "Create Frame 3" );

@@ -86,7 +86,7 @@ int __stdcall RestoreRawImage(unsigned int RawImage)
 	return true;
 }
 
-// Создает RawImage (RGBA) с указанным цветом
+// РЎРѕР·РґР°РµС‚ RawImage (RGBA) СЃ СѓРєР°Р·Р°РЅРЅС‹Рј С†РІРµС‚РѕРј
 int __stdcall CreateRawImage(int width, int height, COLOR4 defaultcolor)
 {
 	if (!InitFunctionCalled)
@@ -133,7 +133,7 @@ int __stdcall CreateRawImage(int width, int height, COLOR4 defaultcolor)
 	return resultid;
 }
 
-// Загружает RawImage из filename (tga,blp)
+// Р—Р°РіСЂСѓР¶Р°РµС‚ RawImage РёР· filename (tga,blp)
 int __stdcall LoadRawImage(const char* filename)
 {
 	if (!InitFunctionCalled || !filename || filename[0] == '\0')
@@ -190,9 +190,9 @@ int __stdcall LoadRawImage(const char* filename)
 		StormBuffer InBuffer(PatchFileData, PatchFileSize);
 
 		if (!IsBlp)
-			rawImageSize = (unsigned long)TGA2Raw(InBuffer, OutBuffer, w, h, bpp, filename);
+			rawImageSize = (unsigned long)TGA2Raw(InBuffer, OutBuffer, w, h, bpp);
 		else
-			rawImageSize = Blp2Raw(InBuffer, OutBuffer, w, h, bpp, mipmaps, alphaflag, compress, alphaenconding, filename);
+			rawImageSize = Blp2Raw(InBuffer, OutBuffer, w, h, bpp, mipmaps, alphaflag, compress, alphaenconding);
 
 		if (rawImageSize > 0)
 		{
@@ -215,9 +215,9 @@ int __stdcall LoadRawImage(const char* filename)
 			PrintText(("|cFFFF0000Error load RawImage file:" + std::string(filename) + ". DECODE ERROR").c_str());
 			IsBlp = !IsBlp;
 			if (!IsBlp)
-				rawImageSize = (unsigned long)TGA2Raw(InBuffer, OutBuffer, w, h, bpp, filename);
+				rawImageSize = (unsigned long)TGA2Raw(InBuffer, OutBuffer, w, h, bpp);
 			else
-				rawImageSize = Blp2Raw(InBuffer, OutBuffer, w, h, bpp, mipmaps, alphaflag, compress, alphaenconding, filename);
+				rawImageSize = Blp2Raw(InBuffer, OutBuffer, w, h, bpp, mipmaps, alphaflag, compress, alphaenconding);
 
 
 			if (rawImageSize > 0)
@@ -266,7 +266,7 @@ int __stdcall RawImage_EnableAutoFix(int enable)
 	return 0;
 }
 
-// Рисует RawImage2 на RawImage
+// Р РёСЃСѓРµС‚ RawImage2 РЅР° RawImage
 int __stdcall RawImage_DrawImg(unsigned int RawImage, unsigned int RawImage2, int drawx, int drawy, int blendmode)
 {
 	if (!InitFunctionCalled)
@@ -323,7 +323,7 @@ int __stdcall RawImage_DrawImg(unsigned int RawImage, unsigned int RawImage2, in
 	return true;
 }
 
-// Заполняет выбранный пиксель указанным цветом
+// Р—Р°РїРѕР»РЅСЏРµС‚ РІС‹Р±СЂР°РЅРЅС‹Р№ РїРёРєСЃРµР»СЊ СѓРєР°Р·Р°РЅРЅС‹Рј С†РІРµС‚РѕРј
 int __stdcall RawImage_DrawPixel(unsigned int RawImage, unsigned int x, unsigned int y, COLOR4 color)//COLOR4 = unsigned int
 {
 	if (!InitFunctionCalled)
@@ -384,9 +384,10 @@ int __stdcall RawImage_FillRectangle(unsigned int RawImage, unsigned int x1, uns
 }
 
 
-// Рисует прямоугольник с указанным цветом и размером
+// Р РёСЃСѓРµС‚ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє СЃ СѓРєР°Р·Р°РЅРЅС‹Рј С†РІРµС‚РѕРј Рё СЂР°Р·РјРµСЂРѕРј
 int __stdcall RawImage_DrawRect(unsigned int RawImage, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, unsigned int size, COLOR4 color)
 {
+	(void)(size);//not used :(
 	if (!InitFunctionCalled)
 		return 0;
 	if (RawImage >= (int)ListOfRawImages.size())
@@ -730,7 +731,7 @@ void drawThickLine(unsigned int RawImage, int aXStart, int aYStart, int aXEnd, i
 	}
 }
 
-// Рисует линию с указанным цветом и размером
+// Р РёСЃСѓРµС‚ Р»РёРЅРёСЋ СЃ СѓРєР°Р·Р°РЅРЅС‹Рј С†РІРµС‚РѕРј Рё СЂР°Р·РјРµСЂРѕРј
 int __stdcall RawImage_DrawLine(unsigned int RawImage, unsigned int x1, unsigned int y1, unsigned int x2
 	, unsigned int y2, unsigned int size, COLOR4 color)
 {
@@ -750,7 +751,7 @@ int __stdcall RawImage_DrawLine(unsigned int RawImage, unsigned int x1, unsigned
 	return true;
 }
 
-// Рисует круг с указанным радиусом и толщиной
+// Р РёСЃСѓРµС‚ РєСЂСѓРі СЃ СѓРєР°Р·Р°РЅРЅС‹Рј СЂР°РґРёСѓСЃРѕРј Рё С‚РѕР»С‰РёРЅРѕР№
 int __stdcall RawImage_DrawCircle(unsigned int RawImage, unsigned int x, unsigned int y, unsigned int radius,
 	unsigned int size, COLOR4 color)
 {
@@ -797,7 +798,7 @@ int __stdcall RawImage_DrawCircle(unsigned int RawImage, unsigned int x, unsigne
 
 
 
-// Заполняет круг указанным цветом
+// Р—Р°РїРѕР»РЅСЏРµС‚ РєСЂСѓРі СѓРєР°Р·Р°РЅРЅС‹Рј С†РІРµС‚РѕРј
 int __stdcall RawImage_FillCircle(unsigned int RawImage, unsigned int x, unsigned int y, unsigned int radius, COLOR4 color)
 {
 	if (!InitFunctionCalled)
@@ -836,7 +837,7 @@ int __stdcall RawImage_FillCircle(unsigned int RawImage, unsigned int x, unsigne
 	return true;
 }
 
-// Оставляет только круг с указанным радиусом
+// РћСЃС‚Р°РІР»СЏРµС‚ С‚РѕР»СЊРєРѕ РєСЂСѓРі СЃ СѓРєР°Р·Р°РЅРЅС‹Рј СЂР°РґРёСѓСЃРѕРј
 int __stdcall RawImage_EraseCircle(unsigned int RawImage, unsigned int x, unsigned int y, unsigned int radius, int inverse)
 {
 	if (!InitFunctionCalled)
@@ -879,7 +880,7 @@ int __stdcall RawImage_EraseCircle(unsigned int RawImage, unsigned int x, unsign
 	return true;
 	}
 
-// Делает пиксели с цветом color - прозрачными, power от 0 до 255
+// Р”РµР»Р°РµС‚ РїРёРєСЃРµР»Рё СЃ С†РІРµС‚РѕРј color - РїСЂРѕР·СЂР°С‡РЅС‹РјРё, power РѕС‚ 0 РґРѕ 255
 int __stdcall RawImage_EraseColor(unsigned int RawImage, COLOR4 color, int power)
 {
 	if (!InitFunctionCalled)
@@ -934,7 +935,7 @@ unsigned int _flags = 0;
 // 0x1 = BOLD
 
 
-// Устанавливает настройки шрифта для RawImage_DrawText
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅР°СЃС‚СЂРѕР№РєРё С€СЂРёС„С‚Р° РґР»СЏ RawImage_DrawText
 int __stdcall RawImage_LoadFontFromResource(const char* filepath)
 {
 	if (!InitFunctionCalled)
@@ -950,7 +951,7 @@ int __stdcall RawImage_LoadFontFromResource(const char* filepath)
 }
 
 
-// Устанавливает настройки шрифта для RawImage_DrawText
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅР°СЃС‚СЂРѕР№РєРё С€СЂРёС„С‚Р° РґР»СЏ RawImage_DrawText
 int __stdcall RawImage_SetFontSettings(const char* fontname, int fontsize, unsigned int flags)
 {
 	_fontname = fontname;
@@ -959,7 +960,7 @@ int __stdcall RawImage_SetFontSettings(const char* fontname, int fontsize, unsig
 	return true;
 }
 
-// Пишет текст в указанных координатах с указанными цветом и настройками шрифта RawImage_SetFontSettings
+// РџРёС€РµС‚ С‚РµРєСЃС‚ РІ СѓРєР°Р·Р°РЅРЅС‹С… РєРѕРѕСЂРґРёРЅР°С‚Р°С… СЃ СѓРєР°Р·Р°РЅРЅС‹РјРё С†РІРµС‚РѕРј Рё РЅР°СЃС‚СЂРѕР№РєР°РјРё С€СЂРёС„С‚Р° RawImage_SetFontSettings
 int __stdcall RawImage_DrawText(unsigned int RawImage, const char* text, unsigned int x, unsigned int y, COLOR4 color)
 {
 	if (!InitFunctionCalled)
@@ -1105,7 +1106,7 @@ int __stdcall RawImage_DrawText(unsigned int RawImage, const char* text, unsigne
 					colorstr[9] = text[i + 3];
 					colorstr[10] = '\0';
 
-					// Смысла от прозрачного текста нет так что считаем что FF это 0 прозрачность
+					// РЎРјС‹СЃР»Р° РѕС‚ РїСЂРѕР·СЂР°С‡РЅРѕРіРѕ С‚РµРєСЃС‚Р° РЅРµС‚ С‚Р°Рє С‡С‚Рѕ СЃС‡РёС‚Р°РµРј С‡С‚Рѕ FF СЌС‚Рѕ 0 РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚СЊ
 					textcolor = strtoul(colorstr, NULL, 0);
 					if ((textcolor & 0xFF000000) == 0xFF000000)
 						textcolor -= 0xFF000000;
@@ -1181,7 +1182,7 @@ int __stdcall RawImage_DrawText(unsigned int RawImage, const char* text, unsigne
 }
 
 
-// Сохраняет RawImage в blp и делает доступным для использования в игре
+// РЎРѕС…СЂР°РЅСЏРµС‚ RawImage РІ blp Рё РґРµР»Р°РµС‚ РґРѕСЃС‚СѓРїРЅС‹Рј РґР»СЏ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РІ РёРіСЂРµ
 int __stdcall SaveRawImageToGameFile(unsigned int RawImage, const char* filename, int IsTga, int enabled)
 {
 	if (!InitFunctionCalled)
@@ -1208,9 +1209,9 @@ int __stdcall SaveRawImageToGameFile(unsigned int RawImage, const char* filename
 	{
 		int mipmaps = 0;
 		if (IsTga)
-			RAW2Tga(inbuffer, ResultBuffer, tmpRawImage.width, tmpRawImage.height, 4, filename);
+			RAW2Tga(inbuffer, ResultBuffer, tmpRawImage.width, tmpRawImage.height, 4);
 		else
-			CreatePalettedBLP(inbuffer, ResultBuffer, 256, filename, tmpRawImage.width, tmpRawImage.height, 4, 8, mipmaps);
+			CreatePalettedBLP(inbuffer, ResultBuffer, 256, filename, tmpRawImage.width, tmpRawImage.height, 4, mipmaps);
 		tmpRawImage.ingamebuffer = ResultBuffer;
 	}
 
@@ -1219,7 +1220,7 @@ int __stdcall SaveRawImageToGameFile(unsigned int RawImage, const char* filename
 }
 
 
-// Сохраняет RawImage на диск в TGA по выбранному пути
+// РЎРѕС…СЂР°РЅСЏРµС‚ RawImage РЅР° РґРёСЃРє РІ TGA РїРѕ РІС‹Р±СЂР°РЅРЅРѕРјСѓ РїСѓС‚Рё
 int __stdcall DumpRawImageToFile(unsigned int RawImage, const char* filename)
 {
 	if (!InitFunctionCalled)
@@ -1233,7 +1234,7 @@ int __stdcall DumpRawImageToFile(unsigned int RawImage, const char* filename)
 	StormBuffer outbuffer;
 #ifdef OLD_CODE
 	StormBuffer inbuffer = tmpRawImage.img;
-	RAW2Tga(inbuffer, outbuffer, tmpRawImage.width, tmpRawImage.height, 4, filename);
+	RAW2Tga(inbuffer, outbuffer, tmpRawImage.width, tmpRawImage.height, 4);
 #else 
 
 
@@ -1251,7 +1252,7 @@ int __stdcall DumpRawImageToFile(unsigned int RawImage, const char* filename)
 }
 
 
-// Получает RawImage из списка RawImages по имени файла.
+// РџРѕР»СѓС‡Р°РµС‚ RawImage РёР· СЃРїРёСЃРєР° RawImages РїРѕ РёРјРµРЅРё С„Р°Р№Р»Р°.
 int __stdcall GetRawImageByFile(const char* filename)
 {
 	if (!InitFunctionCalled)
@@ -1267,7 +1268,7 @@ int __stdcall GetRawImageByFile(const char* filename)
 	return 0;
 }
 
-// Получает ширину RawImage
+// РџРѕР»СѓС‡Р°РµС‚ С€РёСЂРёРЅСѓ RawImage
 int __stdcall RawImage_GetWidth(unsigned int RawImage)
 {
 	if (RawImage >= (int)ListOfRawImages.size())
@@ -1278,7 +1279,7 @@ int __stdcall RawImage_GetWidth(unsigned int RawImage)
 	return ListOfRawImages[RawImage].width;
 }
 
-// Получает высоту RawImage
+// РџРѕР»СѓС‡Р°РµС‚ РІС‹СЃРѕС‚Сѓ RawImage
 int __stdcall RawImage_GetHeight(unsigned int RawImage)
 {
 	if (RawImage >= (int)ListOfRawImages.size())
@@ -1289,7 +1290,7 @@ int __stdcall RawImage_GetHeight(unsigned int RawImage)
 	return ListOfRawImages[RawImage].height;
 }
 
-// Изменяет размер RawImage
+// РР·РјРµРЅСЏРµС‚ СЂР°Р·РјРµСЂ RawImage
 int __stdcall RawImage_Resize(unsigned int RawImage, unsigned int newwidth, unsigned int newheight)
 {
 	if (!InitFunctionCalled)
@@ -1336,7 +1337,7 @@ unsigned int PowerOfTwo(int Value)
 	return InitValue;
 }
 
-// Рисует RawImage по заданным координатам (от 0.0 до 1.0) в игре. 
+// Р РёСЃСѓРµС‚ RawImage РїРѕ Р·Р°РґР°РЅРЅС‹Рј РєРѕРѕСЂРґРёРЅР°С‚Р°Рј (РѕС‚ 0.0 РґРѕ 1.0) РІ РёРіСЂРµ. 
 int __stdcall RawImage_DrawOverlay(unsigned int RawImage, int enabled, float xpos, float ypos)
 {
 	if (!InitFunctionCalled)
@@ -1881,7 +1882,7 @@ int RawImageGlobalCallbackFunc(RawImageEventType callbacktype, float mousex, flo
 //
 //
 
-void ApplyIconFrameFilter(std::string filename, int* OutDataPointer, size_t* OutSize)
+void ApplyIconFrameFilter(std::string filename)
 {
 	int RawImage = CreateRawImage(128, 128, COLOR4());
 	int RawImage2 = LoadRawImage(filename.c_str());
