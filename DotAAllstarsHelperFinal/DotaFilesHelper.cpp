@@ -7,7 +7,7 @@
 
 u_int64_t GetBufHash(const char* data, size_t data_len)
 {
-	u_int64_t hash;
+	u_int64_t hash = 0;
 	hash = fnv_64_buf((void*)data, (size_t)data_len, FNV1_64_INIT);
 	hash = (hash >> 56) ^ (hash & MASK_56);
 	return hash;
@@ -19,7 +19,7 @@ std::vector<FileRedirectStruct> FileRedirectList;
 int NeedDumpFilesToDisk = false;
 int __stdcall DumpFilesToDisk(int enabled)
 {
-	MessageBoxA(0, "Œÿ»¡ ¿ OSHIBKA ERROR", " ", 0);
+	MessageBoxA(0, "–û–®–ò–ë–ö–ê OSHIBKA ERROR", " ", 0);
 	//NeedDumpFilesToDisk = enabled;
 	return enabled;
 }
@@ -80,10 +80,6 @@ void FreeAllIHelpers()
 }
 
 
-char MPQFilePath[4000];
-
-
-
 int replaceAll(std::string& str, const std::string& from, const std::string& to)
 {
 	int Replaced = false;
@@ -92,11 +88,12 @@ int replaceAll(std::string& str, const std::string& from, const std::string& to)
 	if (str.empty())
 		return Replaced;
 	size_t start_pos = 0;
-	while ((start_pos = str.find(from, start_pos)) != std::string::npos)
-	{
+	size_t max_iterations = str.length() * 2;
+	size_t iterations = 0;
+	while ((start_pos = str.find(from, start_pos)) != std::string::npos &&
+		iterations++ < max_iterations) {
 		str.replace(start_pos, from.length(), to);
 		start_pos += to.length();
-		Replaced = true;
 	}
 	return Replaced;
 }
@@ -229,10 +226,10 @@ void ApplyIconFilter(std::string filename, unsigned char** OutDataPointer, size_
 		{
 			for (int y = 0; y < 64; y++)
 			{
-				OutImage[x * 64 + y] = BlackPix;//‚Âı
-				OutImage[y * 64 + x] = BlackPix;//ÎÂ‚Ó
-				OutImage[(63 - x) * 64 + y] = BlackPix;//ÌËÁ
-				OutImage[y * 64 + 63 - x] = BlackPix;//Ô‡‚Ó
+				OutImage[x * 64 + y] = BlackPix;//–≤–µ—Ä—Ö
+				OutImage[y * 64 + x] = BlackPix;//–ª–µ–≤–æ
+				OutImage[(63 - x) * 64 + y] = BlackPix;//–Ω–∏–∑
+				OutImage[y * 64 + 63 - x] = BlackPix;//–ø—Ä–∞–≤–æ
 			}
 		}
 
@@ -248,29 +245,29 @@ void ApplyIconFilter(std::string filename, unsigned char** OutDataPointer, size_
 			}
 		}
 
-		//„‡‰ËÂÌÚÌ˚Â ‡ÏÍË
-		//8 ÔÓÎÓÒ „‡‰ËÂÌÚ‡
+		//–≥—Ä–∞–¥–∏–µ–Ω—Ç–Ω—ã–µ —Ä–∞–º–∫–∏
+		//8 –ø–æ–ª–æ—Å –≥—Ä–∞–¥–∏–µ–Ω—Ç–∞
 		for (int x = 4; x < 12; x++)
 		{
 			for (int y = x; y < 64 - x; y++)
 			{
 				double colorfix = (x - 3.0) / 9.0;
 
-				OutImage[x * 64 + y].R = FixBounds(colorfix * OutImage[x * 64 + y].R);//‚Âı
-				OutImage[x * 64 + y].G = FixBounds(colorfix * OutImage[x * 64 + y].G);//‚Âı
-				OutImage[x * 64 + y].B = FixBounds(colorfix * OutImage[x * 64 + y].B);//‚Âı
+				OutImage[x * 64 + y].R = FixBounds(colorfix * OutImage[x * 64 + y].R);//–≤–µ—Ä—Ö
+				OutImage[x * 64 + y].G = FixBounds(colorfix * OutImage[x * 64 + y].G);//–≤–µ—Ä—Ö
+				OutImage[x * 64 + y].B = FixBounds(colorfix * OutImage[x * 64 + y].B);//–≤–µ—Ä—Ö
 
-				OutImage[y * 64 + x].R = FixBounds(colorfix * OutImage[y * 64 + x].R);//ÎÂ‚Ó
-				OutImage[y * 64 + x].G = FixBounds(colorfix * OutImage[y * 64 + x].G);//ÎÂ‚Ó
-				OutImage[y * 64 + x].B = FixBounds(colorfix * OutImage[y * 64 + x].B);//ÎÂ‚Ó
+				OutImage[y * 64 + x].R = FixBounds(colorfix * OutImage[y * 64 + x].R);//–ª–µ–≤–æ
+				OutImage[y * 64 + x].G = FixBounds(colorfix * OutImage[y * 64 + x].G);//–ª–µ–≤–æ
+				OutImage[y * 64 + x].B = FixBounds(colorfix * OutImage[y * 64 + x].B);//–ª–µ–≤–æ
 
-				OutImage[(63 - x) * 64 + y].R = FixBounds(colorfix * OutImage[(63 - x) * 64 + y].R);//ÌËÁ
-				OutImage[(63 - x) * 64 + y].G = FixBounds(colorfix * OutImage[(63 - x) * 64 + y].G);//ÌËÁ
-				OutImage[(63 - x) * 64 + y].B = FixBounds(colorfix * OutImage[(63 - x) * 64 + y].B);//ÌËÁ
+				OutImage[(63 - x) * 64 + y].R = FixBounds(colorfix * OutImage[(63 - x) * 64 + y].R);//–Ω–∏–∑
+				OutImage[(63 - x) * 64 + y].G = FixBounds(colorfix * OutImage[(63 - x) * 64 + y].G);//–Ω–∏–∑
+				OutImage[(63 - x) * 64 + y].B = FixBounds(colorfix * OutImage[(63 - x) * 64 + y].B);//–Ω–∏–∑
 
-				OutImage[y * 64 + 63 - x].R = FixBounds(colorfix * OutImage[y * 64 + 63 - x].R);//Ô‡‚Ó
-				OutImage[y * 64 + 63 - x].G = FixBounds(colorfix * OutImage[y * 64 + 63 - x].G);//Ô‡‚Ó
-				OutImage[y * 64 + 63 - x].B = FixBounds(colorfix * OutImage[y * 64 + 63 - x].B);//Ô‡‚Ó
+				OutImage[y * 64 + 63 - x].R = FixBounds(colorfix * OutImage[y * 64 + 63 - x].R);//–ø—Ä–∞–≤–æ
+				OutImage[y * 64 + 63 - x].G = FixBounds(colorfix * OutImage[y * 64 + 63 - x].G);//–ø—Ä–∞–≤–æ
+				OutImage[y * 64 + 63 - x].B = FixBounds(colorfix * OutImage[y * 64 + 63 - x].B);//–ø—Ä–∞–≤–æ
 			}
 		}
 
@@ -297,24 +294,32 @@ void ApplyIconFilter(std::string filename, unsigned char** OutDataPointer, size_
 			{
 				//fs::create_directories( )
 
-				fs::path p("DotaAllstars\\" + filename);
-				fs::path dir = p.parent_path();
-
-				if (dir.string().length() > 0)
+				try
 				{
-					std::error_code err;
-					fs::create_directories(dir.string(),err);
-				}
 
-				FILE* f;
-				fopen_s(&f, ("DotaAllstars\\" + filename).c_str(), "wb");
-				if (f)
+					fs::path p = "DotaAllstars\\" + filename;
+					fs::path dir = p.parent_path();
+
+					if (dir.string().length() > 0)
+					{
+						std::error_code err;
+						fs::create_directories(dir.string(), err);
+					}
+
+					FILE* f;
+					fopen_s(&f, ("DotaAllstars\\" + filename).c_str(), "wb");
+					if (f)
+					{
+						fwrite(tmpih.buf, tmpih.size, 1, f);
+
+						fclose(f);
+					}
+
+				}
+				catch (...)
 				{
-					fwrite(tmpih.buf, tmpih.size, 1, f);
 
-					fclose(f);
 				}
-
 			}
 		}
 	}
@@ -413,7 +418,7 @@ void ApplyTestFilter(std::string filename, unsigned char** OutDataPointer, size_
 		//	for ( int y = 0; y < w; x++ )
 		//	{
 		//		BlackPix.A = OutImage[ x * h + y ].A;
-		//		OutImage[ x * h + y ] = BlackPix;//‚Âı
+		//		OutImage[ x * h + y ] = BlackPix;//–≤–µ—Ä—Ö
 		//	}
 		//}
 
@@ -747,6 +752,9 @@ void ProcessMdx(std::string filename, unsigned char** OutDataPointer, size_t* Ou
 							{
 								size_t NeedPatchOffset = offset + 104 + (mdlfix.Indx * 4);
 								*(float*)&ModelBytes[NeedPatchOffset] = mdlfix.Value;
+								if (NeedPatchOffset + sizeof(float) <= sz) {
+									std::memcpy(&ModelBytes[NeedPatchOffset], &mdlfix.Value, sizeof(float));
+								}
 							}
 
 							offset += sizeof(Mdx_Sequence);
@@ -1604,7 +1612,7 @@ void ProcessMdx(std::string filename, unsigned char** OutDataPointer, size_t* Ou
 			tmpih._hash = GetBufHash(filename.c_str(), tmpih.hashlen);
 			ICONMDLCACHELIST.push_back(tmpih);
 
-			// ÕÂ ˜ËÒÚËÚ¸ Ù‡ÈÎ ÍÓÚÓ˚È ·˚Î ÒÓÁ‰‡Ì ÌÂ Ì‡ÏË
+			// –ù–µ —á–∏—Å—Ç–∏—Ç—å —Ñ–∞–π–ª –∫–æ—Ç–æ—Ä—ã–π –±—ã–ª —Å–æ–∑–¥–∞–Ω –Ω–µ –Ω–∞–º–∏
 			//Storm::MemFree((void*)*OutDataPointer);
 
 
@@ -1787,7 +1795,16 @@ int ProcessFile(const char* filename, unsigned char** OutDataPointer, size_t* Ou
 
 
 
-	std::string FileExtension = ToLower(fs::path(filename).extension().string());
+	std::string FileExtension = "";
+
+	try
+	{
+		FileExtension = ToLower(fs::path(filename).extension().string());
+	}
+	catch (...)
+	{
+
+	}
 
 
 	if (FileExtension == std::string(".tga"))
@@ -1948,7 +1965,7 @@ void AddNewFakeFile(char* filename, unsigned char* buffer, size_t FileSize)
 //
 //				if ( size <= s.ingamebuffer.length )
 //				{
-//					memcpy( buffer, s.ingamebuffer.buf, size );
+//					std::memcpy( buffer, s.ingamebuffer.buf, size );
 //
 //					if ( size_ptr )
 //						*size_ptr = size;
@@ -2069,30 +2086,56 @@ std::string GetFileContent(std::string filename)
 
 std::vector<std::string> get_file_list(const fs::path& path, bool dotolower)
 {
-	std::vector<std::string> m_file_list;
-	if (!path.empty())
-	{
-		std::error_code err{};
-		fs::path apk_path(path);
+	std::vector<std::string> file_list;
+
+	if (path.empty() || !fs::exists(path)) {
+		return file_list;
+	}
+
+	std::error_code err;
+	auto options = fs::directory_options::skip_permission_denied;
+
+	try {
+		fs::recursive_directory_iterator it(path, options, err);
 		fs::recursive_directory_iterator end;
 
-		for (fs::recursive_directory_iterator i(apk_path,err); i != end; ++i)
-		{
-			const fs::path cp = (*i);
+		if (err) {
+			return file_list;
+		}
 
-			m_file_list.push_back(dotolower ? ToLower(cp.string()) : cp.string());
+		for (; it != end; it.increment(err)) {
+			if (err) {
+				continue;
+			}
+
+			// –§–∏–ª—å—Ç—Ä—É–µ–º —Ç–æ–ª—å–∫–æ —Ñ–∞–π–ª—ã –µ—Å–ª–∏ –Ω—É–∂–Ω–æ
+			if (!fs::is_regular_file(it->path())) {
+				continue;
+			}
+
+			const auto& current_path = it->path();
+
+			if (dotolower) {
+				file_list.push_back(ToLower(current_path.string()));
+			}
+			else {
+				file_list.push_back(current_path.string());
+			}
 		}
 	}
-	return m_file_list;
+	catch (...) 
+	{
+
+	}
+
+	return file_list;
 }
-
-
 
 int __stdcall IsLocalFilesEnabled(int)
 {
 	if (GameDll)
-		return *(int*)GameDll + 0xAAE2AC;
-	return false;
+		return *(int*)(GameDll + 0xAAE2AC);
+	return 0;
 }
 
 typedef void(__fastcall* EnableLocalFiles_p)(int enable);

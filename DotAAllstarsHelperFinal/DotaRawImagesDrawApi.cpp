@@ -294,7 +294,7 @@ int __stdcall RawImage_DrawImg(unsigned int RawImage, unsigned int RawImage2, in
 		{
 			if (blendmode == BlendModes::BlendNormal)
 			{
-				memcpy(&RawImageData[ArrayXYtoId(tmpRawImage.width, x, y)], &RawImageData2[ArrayXYtoId(tmpRawImage2.width, x2, y2)], tmpRawImage2.height * sizeof(COLOR4));
+				std::memcpy(&RawImageData[ArrayXYtoId(tmpRawImage.width, x, y)], &RawImageData2[ArrayXYtoId(tmpRawImage2.width, x2, y2)], tmpRawImage2.height * sizeof(COLOR4));
 				break;
 				//RawImageData[ArrayXYtoId(tmpRawImage.width, x, y)] = RawImageData2[ArrayXYtoId(tmpRawImage2.width, x2, y2)];
 			}
