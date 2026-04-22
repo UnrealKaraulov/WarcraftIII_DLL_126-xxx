@@ -269,16 +269,9 @@ int __stdcall TraceEsp_Print(int)
 
 unsigned long __stdcall EXIT_CURRENT_PROCESS(LPVOID)
 {
-	Sleep(3000);
-	try
-	{
-		TerminateProcess(GetCurrentProcess(), 0);
-		ExitProcess(0);
-	}
-	catch (...)
-	{
-
-	}
+	Sleep(1000);	
+	ExitProcess(0);
+	std::quick_exit(0);
 
 	return 0;
 }

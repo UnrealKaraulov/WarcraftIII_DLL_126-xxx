@@ -114,7 +114,7 @@ int __stdcall HookTickTimerAccurate(unsigned int val)
 }
 // val 0 - Disable
 // val 1 - Enable (Periodic timer)
-// val 1 - Enable (Diff timer)
+// val 2 - Enable (Diff timer)
 // val 3 - Enable (Diff timer fast)
 int __stdcall HookTickTimer(int val)
 {

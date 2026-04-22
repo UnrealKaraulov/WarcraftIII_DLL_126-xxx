@@ -277,3 +277,5 @@ __pycache__/
 MinHook/libMinHook.x86.lib
 /DotAAllstarsHelperFinal/Release_Win7
 /Release_Win7
+/DotAAllstarsHelperFinal/Debug Asan
+/Debug Asan

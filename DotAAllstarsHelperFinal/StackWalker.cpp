@@ -839,7 +839,7 @@ public:
     pModuleInfo->SizeOfStruct = sizeof(IMAGEHLP_MODULE64_V3);
     void* pData = malloc(
         4096); // reserve enough memory, so the bug in v6.3.5.1 does not lead to memory-overwrites...
-    if ((int)pData <= NULL || !pModuleInfo)
+    if (pData == NULL || !pModuleInfo)
     {
       SetLastError(ERROR_NOT_ENOUGH_MEMORY);
       return FALSE;

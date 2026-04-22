@@ -159,7 +159,7 @@ int __stdcall GetScreenWidth(int);
 int __stdcall GetScreenHeight(int);
 int __stdcall GetWindowWidth(int);
 int __stdcall GetWindowHeight(int);
-int __stdcall SetDefaultSceenSize(int w, int h);
+int __stdcall SetDefaultScreenSize(int w, int h);
 
 extern RawImageCallbackData* GlobalRawImageCallbackData;
 extern std::vector<RawImageStruct> ListOfRawImages;

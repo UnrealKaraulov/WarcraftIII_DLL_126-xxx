@@ -32,6 +32,8 @@ SetMainFuncWork
 TriggerRegisterPlayerKeyboardEvent
 BlockKeyAction
 AddKeyButtonAction
+SetCourierIndicatorAbilityId
+SetCircleIndicatorAbilityId
 SetCustomGameDllandStormDLL
 JassLog
 FreeExecutableMemory
@@ -50,6 +52,8 @@ DrawRegenAllways
 TeleportHelper
 TeleportWhiteListKey
 ShopHelper
+CourierHelper
+CircleHelper
 _FlushInstructionCache
 ShowConfigWindow
 AddDoubleClickSkillID
@@ -98,6 +102,7 @@ ShowSkillPanelForAllUnits
 SetAutoSelectHero
 ScanJassStringForErrors
 GetJassStringCount
+SetDefaultScreenSize
 SetDefaultSceenSize
 ReplayDesyncScan
 FileHelperReleaseStorm
@@ -213,7 +218,6 @@ SetMagicAmpBonusStr1
 SetMagicAmpBonusStr2
 SetAttackBonusStr
 SetAttackReloadStr
-
 FixModelCollisionSphere
 FixModelTexturePath
 ChangeAnimationSpeed

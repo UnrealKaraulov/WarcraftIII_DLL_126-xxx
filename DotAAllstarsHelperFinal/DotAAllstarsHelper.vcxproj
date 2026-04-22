@@ -1,6 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug Asan|Win32">
+      <Configuration>Debug Asan</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release_Win7|Win32">
       <Configuration>Release_Win7</Configuration>
       <Platform>Win32</Platform>
@@ -35,6 +39,16 @@
     <CLRSupport>false</CLRSupport>
     <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Asan|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+    <SpectreMitigation>false</SpectreMitigation>
+    <EnableASAN>true</EnableASAN>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -42,6 +56,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_Win7|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug Asan|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -58,6 +75,16 @@
     <EnableMicrosoftCodeAnalysis>false</EnableMicrosoftCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Win7|Win32'">
+    <LibraryPath>.\..\MinHook;.\..\JPEG\;.\..\NTDLL\;.\..\includes\;.\..\portaudio\;.\..\openssl\;.\..\zlib\lib\;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86)</LibraryPath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);.\..\openssl\include\;$(WindowsSdk_71A_IncludePath);.\..\JPEG\;.\..\NTDLL\;.\..\includes\;.\..\portaudio\include\;.\..\ydbase\;.\..\zlib\include\;.\..\minhook_for_build\include</IncludePath>
+    <CodeAnalysisRuleSet>CppCoreCheckRawPointerRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <IgnoreImportLibrary />
+    <GenerateManifest>true</GenerateManifest>
+    <LinkIncremental />
+    <EnableMicrosoftCodeAnalysis>false</EnableMicrosoftCodeAnalysis>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Asan|Win32'">
     <LibraryPath>.\..\MinHook;.\..\JPEG\;.\..\NTDLL\;.\..\includes\;.\..\portaudio\;.\..\openssl\;.\..\zlib\lib\;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86)</LibraryPath>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);.\..\openssl\include\;$(WindowsSdk_71A_IncludePath);.\..\JPEG\;.\..\NTDLL\;.\..\includes\;.\..\portaudio\include\;.\..\ydbase\;.\..\zlib\include\;.\..\minhook_for_build\include</IncludePath>
     <CodeAnalysisRuleSet>CppCoreCheckRawPointerRules.ruleset</CodeAnalysisRuleSet>
@@ -195,6 +222,100 @@
       <PreprocessorDefinitions>SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;NDEBUG;NOMINMAX;WIN32;_CONSOLE;E_BOUNDS=_HRESULT_TYPEDEF_(0x8000000BL);__FILENAME__="*******************";_WIN32_WINNT=0x0601;WINVER=0x0601;NTDDI_VERSION=0x06010000;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WholeProgramOptimization>
       </WholeProgramOptimization>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <StringPooling>
+      </StringPooling>
+      <FloatingPointExceptions>
+      </FloatingPointExceptions>
+      <RuntimeTypeInfo>
+      </RuntimeTypeInfo>
+      <OmitDefaultLibName>
+      </OmitDefaultLibName>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ConformanceMode>
+      </ConformanceMode>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Windows</SubSystem>
+      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;zlib.lib;ijl15.lib;libMinHook.x86.lib;dbghelp.lib;mscoree.lib;psapi.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <TargetMachine>MachineX86</TargetMachine>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <LinkStatus>
+      </LinkStatus>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <SetChecksum>true</SetChecksum>
+      <CLRSupportLastError>
+      </CLRSupportLastError>
+      <RandomizedBaseAddress>
+      </RandomizedBaseAddress>
+      <DataExecutionPrevention>false</DataExecutionPrevention>
+      <EnableUAC>false</EnableUAC>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <MergeSections>
+      </MergeSections>
+      <SectionAlignment>
+      </SectionAlignment>
+      <GenerateMapFile>false</GenerateMapFile>
+      <AssemblyDebug>
+      </AssemblyDebug>
+      <MinimumRequiredVersion>6.01</MinimumRequiredVersion>
+      <LargeAddressAware>true</LargeAddressAware>
+      <FixedBaseAddress>false</FixedBaseAddress>
+      <BaseAddress>
+      </BaseAddress>
+    </Link>
+    <Manifest>
+      <UpdateFileHashes>true</UpdateFileHashes>
+    </Manifest>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>
+      </Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Asan|Win32'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <FunctionLevelLinking>
+      </FunctionLevelLinking>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <SDLCheck>
+      </SDLCheck>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <EnablePREfast>false</EnablePREfast>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <OmitFramePointers>false</OmitFramePointers>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <Optimization>Disabled</Optimization>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <StructMemberAlignment>
+      </StructMemberAlignment>
+      <SmallerTypeCheck>
+      </SmallerTypeCheck>
+      <BasicRuntimeChecks>
+      </BasicRuntimeChecks>
+      <ControlFlowGuard>
+      </ControlFlowGuard>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableParallelCodeGeneration>
+      </EnableParallelCodeGeneration>
+      <FloatingPointModel>
+      </FloatingPointModel>
+      <PreprocessorDefinitions>SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;NDEBUG;NOMINMAX;WIN32;_CONSOLE;E_BOUNDS=_HRESULT_TYPEDEF_(0x8000000BL);__FILENAME__="*******************";_WIN32_WINNT=0x0601;WINVER=0x0601;NTDDI_VERSION=0x06010000;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>

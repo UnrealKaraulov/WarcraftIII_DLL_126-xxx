@@ -149,7 +149,7 @@ int __stdcall  SetMPBarConfigForPlayer(unsigned char* unitaddr)
 	/*int retval = 0;*/
 	if (!unitaddr || ((IsEnemy(unitaddr) || IsUnitIllusion(unitaddr)) && protect_integer2 != protect_integer))
 		return 0;
-
+    // Can be configured for 15 player?
 	int unitslot = GetUnitOwnerSlot(unitaddr);
 	if (unitslot > 15 || unitslot < 0)
 		return 0;
@@ -183,7 +183,7 @@ int __stdcall  SetMPBarConfigForPlayer(unsigned char* unitaddr)
 		}
 		return 1;
 	}
-	else if (InMPBarWhiteList(unitaddr))
+	else if (InMPBarWhiteList(unitaddr) && GetUnitMPMax(unitaddr)>0)
 	{
 		if (IsTower(unitaddr))
 		{

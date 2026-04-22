@@ -318,90 +318,58 @@ unsigned long CCrc32Dynamic::FileCrc32Filemap(char* szFilename, unsigned long& d
 unsigned long CCrc32Dynamic::FileCrc32Assembly(char* szFilename, unsigned long& dwCrc32) const
 {
 	unsigned long dwErrorCode = NO_ERROR;
-	void* hFile = NULL;
+	HANDLE hFile = NULL;
 
 	dwCrc32 = 0xFFFFFFFF;
 
 	try
 	{
-		// Is the table initialized?
 		if (m_pdwCrc32Table == NULL)
 			throw 0;
 
-		// Open the file
-		hFile = CreateFileA(szFilename,
+		hFile = CreateFileA(
+			szFilename,
 			GENERIC_READ,
 			FILE_SHARE_READ,
 			NULL,
 			OPEN_EXISTING,
-			FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_SEQUENTIAL_SCAN,
-			NULL);
+			FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_HIDDEN |
+			FILE_ATTRIBUTE_READONLY | FILE_ATTRIBUTE_SYSTEM |
+			FILE_FLAG_SEQUENTIAL_SCAN,
+			NULL
+		);
+
 		if (hFile == INVALID_HANDLE_VALUE)
+		{
 			dwErrorCode = GetLastError();
+		}
 		else
 		{
 			unsigned char buffer[MAX_BUFFER_SIZE];
-			unsigned long dwBytesRead;
-			int bSuccess = ReadFile(hFile, buffer, sizeof(buffer), &dwBytesRead, NULL);
+			DWORD dwBytesRead = 0;
+
+			BOOL bSuccess = ReadFile(hFile, buffer, sizeof(buffer), &dwBytesRead, NULL);
+
 			while (bSuccess && dwBytesRead)
 			{
-				// Register use:
-				//		eax - CRC32 value
-				//		ebx - a lot of things
-				//		ecx - CRC32 value
-				//		edx - Address of end of buffer
-				//		esi - Address of start of buffer
-				//		edi - CRC32 table
-				__asm
+				for (DWORD i = 0; i < dwBytesRead; ++i)
 				{
-					// Save the esi and edi registers
-					push esi
-					push edi
-
-					mov eax, dwCrc32			// Load the pointer to dwCrc32
-					mov ecx, [eax]				// Dereference the pointer to load dwCrc32
-
-					mov ebx, this				// Load the CRC32 table
-					mov edi, [ebx]CCrc32Dynamic.m_pdwCrc32Table
-
-					lea esi, buffer				// Load buffer
-					mov ebx, dwBytesRead		// Load dwBytesRead
-					lea edx, [esi + ebx]		// Calculate the end of the buffer
-
-					crc32loop:
-					xor eax, eax				// Clear the eax register
-						mov bl, byte ptr[esi]		// Load the current source unsigned char
-
-						mov al, cl					// Copy crc value into eax
-						inc esi						// Advance the source pointer
-
-						xor al, bl					// Create the index into the CRC32 table
-						shr ecx, 8
-
-						mov ebx, [edi + eax * 4]	// Get the value out of the table
-						xor ecx, ebx				// xor with the current unsigned char
-
-						cmp edx, esi				// Have we reached the end of the buffer?
-						jne crc32loop
-
-						// Restore the edi and esi registers
-						pop edi
-						pop esi
-
-						mov eax, dwCrc32			// Load the pointer to dwCrc32
-						mov[eax], ecx				// Write the result
+					unsigned char byte = buffer[i];
+					dwCrc32 = (dwCrc32 >> 8) ^
+						m_pdwCrc32Table[(dwCrc32 ^ byte) & 0xFF];
 				}
+
 				bSuccess = ReadFile(hFile, buffer, sizeof(buffer), &dwBytesRead, NULL);
 			}
 		}
 	}
 	catch (...)
 	{
-		// An unknown exception happened, or the table isn't initialized
 		dwErrorCode = ERROR_CRC;
 	}
 
-	if (hFile != NULL) CloseHandle(hFile);
+	if (hFile && hFile != INVALID_HANDLE_VALUE)
+		CloseHandle(hFile);
 
 	dwCrc32 = ~dwCrc32;
 

@@ -93,11 +93,23 @@ std::string SendHttpPostRequest(const char* url, const char* data)
 	return "[ERROR] Unhandled error";
 }
 
-std::string SendHttpGetRequest(const char* host, const char* path)
+bool SendHttpGetRequest(const char* host, const char* path)
 {
-	if (!host || host[0] == '\0' || !path)
-		return "[ERROR] Bad hostname or request";
+	if (!host || !path || !*host || !*path) {
+#ifdef _DEBUG
+		OutputDebugStringA("[WebHelper] ERROR: Invalid host or path parameter\n");
+#endif
+		return false;
+	}
 
+#ifdef _DEBUG
+		char dbg[512];
+		sprintf_s(dbg, "[WebHelper] ERROR: Suspicious string length: host=%zu, path=%zu\n",
+			strlen(host), strlen(path));
+		OutputDebugStringA(dbg);
+#endif
+		return false;
+	}
 	try
 	{
 		httplib::Client client(host);
@@ -219,10 +231,14 @@ int __stdcall SendGetRequest(const char* url, const  char* path)
 		PrintText(("Send host:" + std::string(url) + ". Path:").c_str());
 		PrintText(std::string(path).c_str());
 	}
-	std::thread([&]() {
+
+	std::string _url = url;
+	std::string _path = path;
+
+	std::thread([_url, _path]() {
 		try
 		{
-			LatestDownloadedString = SendHttpGetRequest(url, path);
+			LatestDownloadedString = SendHttpGetRequest(_url, _path);
 		}
 		catch (...)
 		{
@@ -241,11 +257,13 @@ int __stdcall SendPostRequest(const char* url, const  char* request)
 	avaiableNow = false;
 	DownProgress = 0;
 	DownStatus = 0;
+	std::string _url = url;
+	std::string _request = request;
 
-	std::thread([&]() {
+	std::thread([_url, _request]() {
 		try
 		{
-			LatestDownloadedString = SendHttpPostRequest(url, request);
+			LatestDownloadedString = SendHttpPostRequest(_url, _request);
 		}
 		catch (...)
 		{
@@ -266,11 +284,14 @@ int __stdcall SendPostRequestEx(const char* url, const char* path, const  char* 
 	avaiableNow = false;
 	DownProgress = 0;
 	DownStatus = 0;
+	std::string _url = url;
+	std::string _path = path;
+	std::string _request = request;
 
-	std::thread([&]() {
+	std::thread([_url, _path, _request]() {
 		try
 		{
-			LatestDownloadedString = SendHttpPostRequest((std::string(url) + std::string(path)).c_str(), request);
+			LatestDownloadedString = SendHttpPostRequest((_url + _path).c_str(), _request);
 		}
 		catch (...)
 		{
@@ -282,7 +303,7 @@ int __stdcall SendPostRequestEx(const char* url, const char* path, const  char* 
 	return 1;
 }
 
-int __stdcall SaveNewDotaVersionFromUrl(const  char* addr, const  char* filepath)
+int __stdcall SaveNewDotaVersionFromUrl(const  char* url, const  char* path)
 {
 	if (!avaiableNow)
 		return 0;
@@ -290,8 +311,11 @@ int __stdcall SaveNewDotaVersionFromUrl(const  char* addr, const  char* filepath
 	DownProgress = 0;
 	DownStatus = 0;
 
-	std::thread([&]() {
-		DownloadNewMapToFile(addr, filepath);
+	std::string _url = url;
+	std::string _path = path;
+
+	std::thread([_url, _path]() {
+		DownloadNewMapToFile(_url, _path);
 		avaiableNow = true;
 		}).detach();
 

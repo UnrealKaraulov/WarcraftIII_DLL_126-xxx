@@ -139,7 +139,7 @@ Wc3DrawObject Wc3DrawObject_ptr;//sub_6F60FC00
 Wc3DrawObject Wc3DrawObject_org;
 
 
-typedef int(__stdcall* pStorm_503)(int a1, int a2, int a3);
+typedef int(__stdcall* pStorm_503)(unsigned char * target, const char * src, int size);
 pStorm_503 Storm_503;
 
 
@@ -1785,7 +1785,8 @@ int __stdcall DllMain(HINSTANCE Module, unsigned int reason, LPVOID)
 			ExitProcess(0);
 		}
 	}
-	return true;
+
+	return TRUE;
 }
 
 
@@ -1810,41 +1811,22 @@ int __stdcall GetEspValueStdCall(int)
 	return value;
 }
 
+using PrintTextFn = void(__thiscall*)(void* thisptr, const char* text, float staytime, int unk);
 
 void PrintText(const char* text, float staytime, int force)
 {
 	if (IsGame() || force)
 	{
-		__asm
-		{
-			push - 1;
-			push staytime;
-			push text;
-			mov ecx, pW3XGlobalClass;
-			mov ecx, [ecx];
-			mov eax, pPrintText2;
-			call eax;
-		}
+		void* thisptr = *(void**)pW3XGlobalClass;
+		auto fn = reinterpret_cast<PrintTextFn>(pPrintText2);
+
+		fn(thisptr, text, staytime, -1);
 	}
 }
 
-
-void PrintText(std::string strtext, float staytime, int force)
+void PrintText(const std::string& strtext, float staytime, int force)
 {
-	const char* text = strtext.c_str();
-	if (IsGame() || force)
-	{
-		__asm
-		{
-			push - 1;
-			push staytime;
-			push text;
-			mov ecx, pW3XGlobalClass;
-			mov ecx, [ecx];
-			mov eax, pPrintText2;
-			call eax;
-		}
-	}
+	PrintText(strtext.c_str(), staytime, force);
 }
 
 
@@ -1891,20 +1873,16 @@ int __declspec(naked) __cdecl GetUnitItemInSlot127a(unsigned char* /*unitaddr*/,
 	}
 }
 
-
-
 char* tmpGlobalBuffAddr = 0;
 
 // Функция принимает данные о скорости атаки (и о увеличении урона от способностей) и сохраняет в буфер который будет использоваться при отрисовке
-int __stdcall PrintAttackSpeedAndOtherInfo(unsigned char* addr, float* attackspeed, float* BAT, unsigned char** unitaddr)
+void __stdcall PrintAttackSpeedAndOtherInfo(unsigned char* addr, float* attackspeed, float* BAT, unsigned char** unitaddr)
 {
 	if (DEBUG_FULL)
 		std::cout << __func__ << std::endl;
-	int retval = 0;
-	__asm mov retval, eax;
+
 	if (unitaddr)
 	{
-
 		if (IsNotBadUnit(*unitaddr) && IsHero(*unitaddr))
 		{
 			tmpGlobalBuffAddr = buffer;
@@ -1985,13 +1963,7 @@ int __stdcall PrintAttackSpeedAndOtherInfo(unsigned char* addr, float* attackspe
 			if (fixedattackspeed < 0.2f)
 				fixedattackspeed = 0.2f;
 
-			__asm
-			{
-				PUSH 0x200;
-				PUSH tmpGlobalBuffAddr;
-				PUSH addr;
-				CALL Storm_503;
-			}
+			Storm_503(addr, tmpGlobalBuffAddr, 0x200);
 		}
 		else
 		{
@@ -2007,18 +1979,10 @@ int __stdcall PrintAttackSpeedAndOtherInfo(unsigned char* addr, float* attackspe
 
 			sprintf_s(buffer, sizeof(buffer), attackReloadStr.c_str(), (fixedattackspeed / *(float*)BAT), 1.0f / (fixedattackspeed / *(float*)BAT));
 
-			__asm
-			{
-				PUSH 0x200;
-				PUSH tmpGlobalBuffAddr;
-				PUSH addr;
-				CALL Storm_503;
-			}
+			Storm_503(addr, tmpGlobalBuffAddr, 0x200);
 		}
 
 	}
-
-	return retval;
 }
 
 int saveeax = 0;

@@ -44,6 +44,7 @@ extern std::vector<ObjInfoAction> IgnoreObjInfo;
 extern std::vector< int > InfoWhitelistedObj;
 
 unsigned int CovertStringToKeyCode(std::string code);
+std::string CovertKeyCodeToString(unsigned int val);
 unsigned int BuildKeyCode();
 void PressKeyWithDelay_timed();
 

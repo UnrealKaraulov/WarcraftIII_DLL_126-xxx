@@ -26,6 +26,38 @@ unsigned long SingleShift = 0;
 
 bool SkipAllMessages = false;
 
+int TeleportAbilityId = 'A3VO';
+int CourierIndicatorAbilityId = 0;
+int CircleIndicatorAbilityId = 0;
+
+void __stdcall SetTeleportAbilityId(int AbilId)
+{
+	TeleportAbilityId = AbilId;
+}
+
+void __stdcall SetCourierIndicatorAbilityId(int AbilId)
+{
+	CourierIndicatorAbilityId = AbilId;
+}
+
+void __stdcall SetCircleIndicatorAbilityId(int AbilId)
+{
+	CircleIndicatorAbilityId = AbilId;
+}
+
+bool IsCourier(unsigned char* addr)
+{
+	unsigned int abilscount = 0;
+	FindUnitAbils(addr, &abilscount, CourierIndicatorAbilityId);
+	return abilscount > 0;
+}
+
+bool IsCircle(unsigned char* addr)
+{
+	unsigned int abilscount = 0;
+	FindUnitAbils(addr, &abilscount, CircleIndicatorAbilityId);
+	return abilscount > 0;
+}
 
 /**
 + * Нажимает клавишу на клавиатуре, указанную кодом виртуальной клавиши.
@@ -672,6 +704,26 @@ unsigned char* __stdcall GetItemPanelButton(int idx)
 }
 
 
+unsigned char* GetHeroButton()
+{
+	unsigned char* pclass = (unsigned char*)GameUIObjectGet();
+	if (pclass)
+	{
+		unsigned char* pGamePlayerHeroBtn = *(unsigned char**)(pclass + 0x3c8);
+		if (pGamePlayerHeroBtn)
+		{
+			pGamePlayerHeroBtn = *(unsigned char**)(pGamePlayerHeroBtn + 0x40);
+			if (pGamePlayerHeroBtn)
+			{
+				pGamePlayerHeroBtn = *(unsigned char**)(pGamePlayerHeroBtn + 0x20);
+				return pGamePlayerHeroBtn;
+			}
+		}
+	}
+	return 0;
+}
+
+
 c_SimpleButtonClickEvent SimpleButtonClickEvent_org;
 c_SimpleButtonClickEvent SimpleButtonClickEvent_ptr;
 
@@ -973,6 +1025,8 @@ int __stdcall TeleportWhiteListKey(int VK)
 }
 
 bool ShopHelperEnabled = false;
+bool CourierHelperEnabled = false;
+bool CircleHelperEnabled = false;
 
 int __stdcall ShopHelper(int enable)
 {
@@ -981,6 +1035,23 @@ int __stdcall ShopHelper(int enable)
 	ShopHelperEnabled = enable;
 	return enable;
 }
+
+int __stdcall CourierHelper(int enable)
+{
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
+	CourierHelperEnabled = enable;
+	return enable;
+}
+
+int __stdcall CircleHelper(int enable)
+{
+	if (DEBUG_FULL)
+		std::cout << __func__ << std::endl;
+	CircleHelperEnabled = enable;
+	return enable;
+}
+
 bool rawimage_skipmouseevent = true;
 
 int __stdcall RawImage_SkipMouseClick(int enabled)
@@ -1482,7 +1553,7 @@ std::string GetObjectNameByID(int clid)
 }
 
 std::string IsCooldownMessage = "%s > On cooldown ( %02i:%02i ).";
-std::string IsCooldownAndNoMana = "%s > On cooldown and no mana.";
+std::string IsCooldownAndNoMana = "%s > On cooldown ( %02i:%02i ), need %i more mana.";
 std::string IsReadyMessage = "%s > is ready.";
 std::string WantToLearnMessage = "I want to %s";
 std::string WantToPickMessage = "I want to pick > %s";
@@ -1957,7 +2028,20 @@ int __fastcall SimpleButtonPreClickEvent_my(unsigned char* pButton, int unused, 
 				if (AbilManacost > UnitMana)
 				{
 					if (incooldown)
-						sprintf_s(PrintAbilState, IsCooldownAndNoMana.c_str(), AbilName.c_str());
+					{
+						int pAbilData = *(int*)(pAbil + 0xDC);
+						if (pAbilData)
+						{
+							float pAbilDataVal1 = *(float*)(pAbilData + 0x4);
+							int pAbilDataVal2tmp = *(int*)(pAbilData + 0xC);
+							float pAbilDataVal2 = *(float*)(pAbilDataVal2tmp + 0x40);
+							float AbilCooldown = pAbilDataVal1 - pAbilDataVal2;
+							int AbilCooldownMinutes = (int)(AbilCooldown / 60.0f);
+							int AbilCooldownSeconds = (int)((int)AbilCooldown % 60);
+
+							sprintf_s(PrintAbilState, IsCooldownAndNoMana.c_str(), AbilName.c_str(), AbilCooldownMinutes, AbilCooldownSeconds, (AbilManacost - UnitMana));
+						}
+					}
 					else
 						sprintf_s(PrintAbilState, NeedMoreMana.c_str(), (AbilManacost - UnitMana), AbilName.c_str());
 				}
@@ -2422,7 +2506,7 @@ int ProcessCallbackHotkeys(HWND hWnd, unsigned int& Msg, const WPARAM& wParam, c
 		int unitowner = GetUnitOwnerSlot(selectedunit);
 		if (unitowner != 15)
 		{
-			for (const auto & keyAction : KeyCalbackActionList)
+			for (const auto& keyAction : KeyCalbackActionList)
 			{
 				if (keyAction.VK == (int)wParam)
 				{
@@ -2522,6 +2606,140 @@ int ProcessChatHotkeys(HWND hWnd, unsigned int& Msg, const WPARAM& wParam, const
 	return false;
 
 }
+
+int ProcessCourierCircleHelper(HWND hWnd, unsigned int& Msg, const WPARAM& wParam, const LPARAM& lParam, bool& _IsCtrlPressed)
+{
+	(void)(lParam); (void)(hWnd);
+	if (!_IsCtrlPressed)
+	{
+		if (CourierHelperEnabled && IsGameFrameActive() && /*(*/ Msg == WM_KEYDOWN /*|| Msg == WM_KEYUP ) */)
+		{
+
+			if (
+				wParam == 'E' ||
+				wParam == 'C' ||
+				wParam == 'F' ||
+				wParam == 'T' ||
+				wParam == 'R' ||
+				wParam == 'G' ||
+				wParam == 'D'
+				)
+			{
+				unsigned char* selectedunit = GetSelectedUnit(GetLocalPlayerId());
+				if (selectedunit && GetSelectedUnitCountBigger(GetLocalPlayerId()) > 0)
+				{
+					if (IsCourier(selectedunit))
+					{
+						// | 0 | 3 | 6 | 9  |
+						// | 1 | 4 | 7 | 10 | 
+						// | 2 | 5 | 8 | 11 |
+
+						if (wParam == 'E')
+							PressSkillPanelButton(2, false);
+						else if (wParam == 'C')
+							PressSkillPanelButton(4, false);
+						else if (wParam == 'F')
+							PressSkillPanelButton(5, false);
+						else if (wParam == 'T')
+							PressSkillPanelButton(7, false);
+						else if (wParam == 'R')
+							PressSkillPanelButton(8, false);
+						else if (wParam == 'G')
+							PressSkillPanelButton(10, false);
+						else if (wParam == 'D')
+							PressSkillPanelButton(11, false);
+						else
+							return false;
+						return true;
+					}
+				}
+			}
+
+			if (CircleHelperEnabled && IsGameFrameActive() && /*(*/ Msg == WM_KEYDOWN /*|| Msg == WM_KEYUP ) */)
+				if (
+					wParam == 'Z' ||
+					wParam == 'U' ||
+					wParam == 'C' ||
+					wParam == 'F' ||
+					wParam == 'A' ||
+					wParam == 'D' ||
+					wParam == 'B' ||
+					wParam == 'O' ||
+					wParam == 'Q' ||
+					wParam == 'W' ||
+					wParam == 'E' ||
+					wParam == 'A' ||
+					wParam == 'S' ||
+					wParam == 'D' ||
+					wParam == 'X' ||
+					wParam == 'C'
+					)
+
+				{
+					unsigned char* selectedunit = GetSelectedUnit(GetLocalPlayerId());
+					if (selectedunit && GetSelectedUnitCountBigger(GetLocalPlayerId()) > 0)
+					{
+						if (IsCircle(selectedunit))
+						{
+							// | 0 | 3 | 6 | 9  |
+							// | 1 | 4 | 7 | 10 | 
+							// | 2 | 5 | 8 | 11 |
+
+							if (IsNULLButtonFound(GetSkillPanelButton(11)))
+							{
+								if (wParam == 'Q')
+									PressSkillPanelButton(0, false);
+								else if (wParam == 'W')
+									PressSkillPanelButton(3, false);
+								else if (wParam == 'E')
+									PressSkillPanelButton(6, false);
+								else if (wParam == 'A')
+									PressSkillPanelButton(1, false);
+								else if (wParam == 'S')
+									PressSkillPanelButton(4, false);
+								else if (wParam == 'D')
+									PressSkillPanelButton(7, false);
+								else if (wParam == 'Z')
+									PressSkillPanelButton(2, false);
+								else if (wParam == 'X')
+									PressSkillPanelButton(5, false);
+								else if (wParam == 'C')
+									PressSkillPanelButton(8, false);
+								else
+									return false;
+								return true;
+							}
+							else
+							{
+								if (wParam == 'Z')
+									PressSkillPanelButton(3, false);
+								else if (wParam == 'U')
+									PressSkillPanelButton(6, false);
+								else if (wParam == 'C')
+									PressSkillPanelButton(4, false);
+								else if (wParam == 'F')
+									PressSkillPanelButton(7, false);
+								else if (wParam == 'A')
+									PressSkillPanelButton(2, false);
+								else if (wParam == 'D')
+									PressSkillPanelButton(5, false);
+								else if (wParam == 'B')
+									PressSkillPanelButton(8, false);
+								else if (wParam == 'O')
+									PressSkillPanelButton(11, false);
+								else
+									return false;
+								return true;
+							}
+						}
+					}
+				}
+		}
+		return false;
+	}
+	return false;
+}
+
 int ProcessShopHelper(HWND hWnd, unsigned int& Msg, const WPARAM& wParam, const LPARAM& lParam)
 {
 	(void)(lParam); (void)(hWnd);
@@ -2602,7 +2820,7 @@ int SkipKeyboardAndMouseWhenTeleport(HWND hWnd, unsigned int& Msg, const WPARAM&
 				if (selectedunit)
 				{
 					unsigned int abilscount = 0;
-					FindUnitAbils(selectedunit, &abilscount, 'A3VO');
+					FindUnitAbils(selectedunit, &abilscount, TeleportAbilityId);
 					if (abilscount > 0)
 					{
 						if (TeleportShiftPress)
@@ -2640,7 +2858,7 @@ int SkipKeyboardAndMouseWhenTeleport(HWND hWnd, unsigned int& Msg, const WPARAM&
 					if (selectedunit)
 					{
 						unsigned int abilscount = 0;
-						FindUnitAbils(selectedunit, &abilscount, 'A3VO');
+						FindUnitAbils(selectedunit, &abilscount, TeleportAbilityId);
 						if (abilscount > 0)
 						{
 							if (TeleportShiftPress)
@@ -3129,34 +3347,40 @@ LRESULT __fastcall WarcraftWindowProcHooked(HWND hWnd, unsigned int _Msg, WPARAM
 
 	TestValues[1]++;
 
-	if (_Msg == WM_MOUSEWHEEL && IsKeyPressed(VK_LCONTROL))
+	//	if (Msg == WM_LBUTTONDOWN || Msg == WM_RBUTTONDOWN || Msg == WM_MBUTTONDOWN || Msg == WM_LBUTTONUP || Msg == WM_RBUTTONUP || Msg == WM_MBUTTONUP)
+	//	{
+			//DisableInputForAnyHotkeyAndEditBox();
+	//	}
+
+	if IsKeyPressed(VK_LCONTROL)
 	{
-		short wheeltarg = HIWORD(_wParam);
-		if (wheeltarg > 0)
+		if (_Msg == WM_MOUSEWHEEL)
 		{
-			DecreaseCameraOffset();
+			short wheeltarg = HIWORD(_wParam);
+			if (wheeltarg > 0)
+			{
+				DecreaseCameraOffset();
+			}
+			else
+			{
+				IncreaseCameraOffset();
+			}
+
+			WarcraftRealWNDProc_ptr(hWnd, WM_SYSKEYDOWN, VK_PRIOR, NULL);
+			WarcraftRealWNDProc_ptr(hWnd, WM_SYSKEYDOWN, VK_NEXT, NULL);
+
+			return DefWindowProc(hWnd, Msg, wParam, lParam);
 		}
-		else
+		else if (_Msg == WM_MBUTTONDOWN)
 		{
-			IncreaseCameraOffset();
+			ResetCameraOffset();
+
+			WarcraftRealWNDProc_ptr(hWnd, WM_SYSKEYDOWN, VK_PRIOR, NULL);
+			WarcraftRealWNDProc_ptr(hWnd, WM_SYSKEYDOWN, VK_NEXT, NULL);
+
+			return DefWindowProc(hWnd, Msg, wParam, lParam);
 		}
-
-		WarcraftRealWNDProc_ptr(hWnd, WM_SYSKEYDOWN, VK_PRIOR, NULL);
-		WarcraftRealWNDProc_ptr(hWnd, WM_SYSKEYDOWN, VK_NEXT, NULL);
-
-		return DefWindowProc(hWnd, Msg, wParam, lParam);
 	}
-
-	if (_Msg == WM_MBUTTONDOWN && IsKeyPressed(VK_LCONTROL))
-	{
-		ResetCameraOffset();
-
-		WarcraftRealWNDProc_ptr(hWnd, WM_SYSKEYDOWN, VK_PRIOR, NULL);
-		WarcraftRealWNDProc_ptr(hWnd, WM_SYSKEYDOWN, VK_NEXT, NULL);
-
-		return DefWindowProc(hWnd, Msg, wParam, lParam);
-	}
-
 
 
 	if (Msg == WM_LBUTTONDOWN || Msg == WM_RBUTTONDOWN || Msg == WM_MBUTTONDOWN || Msg == WM_LBUTTONUP || Msg == WM_RBUTTONUP || Msg == WM_MBUTTONUP)
@@ -3471,9 +3695,18 @@ LRESULT __fastcall WarcraftWindowProcHooked(HWND hWnd, unsigned int _Msg, WPARAM
 				}
 				if (SetInfoObjDebugVal && (Msg == WM_KEYUP || Msg == WM_KEYDOWN))
 				{
-					PrintText("ProcessChatHotkeys...");
+					PrintText("ProcessCourierCircleHelper...");
 				}
 
+				if (ProcessCourierCircleHelper(hWnd, Msg, wParam, lParam, _IsCtrlPressed))
+				{
+					return DefWindowProc(hWnd, Msg, wParam, lParam);
+				}
+
+				if (SetInfoObjDebugVal && (Msg == WM_KEYUP || Msg == WM_KEYDOWN))
+				{
+					PrintText("ProcessChatHotkeys...");
+				}
 
 				if (ProcessChatHotkeys(hWnd, Msg, wParam, lParam, _IsAltPressed, _IsCtrlPressed, _IsShiftPressed, true) ||
 					ProcessChatHotkeys(hWnd, Msg, wParam, lParam, _IsAltPressed, _IsCtrlPressed, _IsShiftPressed, false))
@@ -3567,8 +3800,8 @@ LRESULT __fastcall WarcraftWindowProcHooked(HWND hWnd, unsigned int _Msg, WPARAM
 
 					if (!ClickHelperWork && DoubleClickHelper)
 					{
-						if (GetTickCount() - LastPressedKeysTime[wParam] < 450 && 
-							((wParam == LatestPressedKey && LatestButtonClickTime + 500 > GetTickCount()) || (wParam != LatestPressedKey)) )
+						if (GetTickCount() - LastPressedKeysTime[wParam] < 450 &&
+							((wParam == LatestPressedKey && LatestButtonClickTime + 500 > GetTickCount()) || (wParam != LatestPressedKey)))
 						{
 							itempressed = itempressed || (wParam >= VK_NUMPAD1 && wParam <= VK_NUMPAD8);
 

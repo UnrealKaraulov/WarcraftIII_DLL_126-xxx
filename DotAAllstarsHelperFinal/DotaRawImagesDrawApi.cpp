@@ -1949,12 +1949,17 @@ int __stdcall GetWindowHeight(int)
 float DefaultSceenWidth = (float)GetSystemMetrics(SM_CXSCREEN);
 float DefaultSceenHeight = (float)GetSystemMetrics(SM_CYSCREEN);
 
-int __stdcall SetDefaultSceenSize(int w, int h)
+int __stdcall SetDefaultScreenSize(int w, int h)
 {
 	DefaultSceenWidth = (float)w;
 	DefaultSceenHeight = (float)h;
 
 	return 0;
+}
+
+int __stdcall SetDefaultSceenSize(int w, int h)
+{
+	return SetDefaultScreenSize(w, h);
 }
 
 float RawImageOffsetToWar3_X(float raw_offset_x)
