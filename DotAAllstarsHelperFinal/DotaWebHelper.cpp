@@ -102,6 +102,7 @@ bool SendHttpGetRequest(const char* host, const char* path)
 		return false;
 	}
 
+	if (strlen(host) > 256 || strlen(path) > 1024) {
 #ifdef _DEBUG
 		char dbg[512];
 		sprintf_s(dbg, "[WebHelper] ERROR: Suspicious string length: host=%zu, path=%zu\n",
