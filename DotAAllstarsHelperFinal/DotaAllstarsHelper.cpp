@@ -12,7 +12,7 @@
 
 #include <Psapi.h>
 
-bool FileExist(const char* name)
+bool FileExist(const std::string& name)
 {
 	std::error_code err{};
 	return fs::exists(name,err) && !fs::is_directory(name,err);

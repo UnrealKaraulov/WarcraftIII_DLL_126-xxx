@@ -43,14 +43,11 @@ UrlComponents parse_url(const std::string& url) {
 }
 
 
-std::string SendHttpPostRequest(const char* url, const char* data)
+std::string SendHttpPostRequest(const std::string & url, const std::string& data)
 {
-	if (!url || url[0] == '\0' || !data)
-		return "[ERROR] Bad hostname or request";
-
-	UrlComponents uril = parse_url(url);
 	try
 	{
+		UrlComponents uril = parse_url(url);
 		httplib::Client client(uril.host);
 
 		client.set_follow_location(true);
@@ -93,24 +90,8 @@ std::string SendHttpPostRequest(const char* url, const char* data)
 	return "[ERROR] Unhandled error";
 }
 
-bool SendHttpGetRequest(const char* host, const char* path)
+std::string SendHttpGetRequest(const std::string & host, const std::string& path)
 {
-	if (!host || !path || !*host || !*path) {
-#ifdef _DEBUG
-		OutputDebugStringA("[WebHelper] ERROR: Invalid host or path parameter\n");
-#endif
-		return false;
-	}
-
-	if (strlen(host) > 256 || strlen(path) > 1024) {
-#ifdef _DEBUG
-		char dbg[512];
-		sprintf_s(dbg, "[WebHelper] ERROR: Suspicious string length: host=%zu, path=%zu\n",
-			strlen(host), strlen(path));
-		OutputDebugStringA(dbg);
-#endif
-		return false;
-	}
 	try
 	{
 		httplib::Client client(host);
@@ -157,7 +138,7 @@ bool SendHttpGetRequest(const char* host, const char* path)
 }
 
 
-void DownloadNewMapToFile(const char* szUrl, const char* filepath)
+void DownloadNewMapToFile(const std::string & szUrl, const std::string& filepath)
 {
 	if (FileExist(filepath))
 	{

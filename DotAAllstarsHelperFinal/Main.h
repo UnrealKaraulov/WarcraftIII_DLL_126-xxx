@@ -86,7 +86,7 @@ void PatchOffsetValue1(void* addr, unsigned char value);
 extern int RenderStage;
 
 war3::CGameUI* GameUIObjectGet();
-bool FileExist(const char* name);
+bool FileExist(const std::string& name);
 unsigned long GetDllCrc32();
 typedef void* (__cdecl* _TriggerExecute)(int TriggerHandle);
 extern _TriggerExecute TriggerExecute;
@@ -320,8 +320,8 @@ extern SetGameAreaFOV SetGameAreaFOV_org, SetGameAreaFOV_ptr;
 
 
 
-std::string SendHttpPostRequest(const char* url, const char* data);
-std::string SendHttpGetRequest(const char* host, const char* path);
+std::string SendHttpPostRequest(const std::string& url, const std::string& data);
+std::string SendHttpGetRequest(const std::string& host, const std::string& path);
 extern std::string LatestDownloadedString;
 
 
